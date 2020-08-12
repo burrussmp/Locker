@@ -8,9 +8,7 @@ List all users
 
 **Auth required** : NO
 
-**Data constraints**
-
-None
+**Data constraints** : NONE
 
 ## Success Response
 
