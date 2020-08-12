@@ -23,6 +23,11 @@ const config = {
             {
                 test: /\.(ttf|eot|svg|gif|jpg|png)(\?[\s\S]+)?$/,
                 use: 'file-loader'
+            },
+            {
+                test: /test\.js$/,
+                use: 'mocha-loader',
+                exclude: /node_modules/,
             }
         ]
     }

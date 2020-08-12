@@ -1,0 +1,17 @@
+Start a mongo
+
+sudo mongod --dbpath ./data/db
+npm run development
+
+Stop a mongo
+
+mongod --shutdown
+
+Specify the port
+sudo mongod --dbpath ./data/db --port 27016
+
+Mongo Help
+https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs/mongoose
+
+Create an instance of a model with new and then you can save instance
+You can also use find to search for something. 

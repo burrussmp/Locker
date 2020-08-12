@@ -6,9 +6,16 @@ const UserSchema = new mongoose.Schema({
     trim: true,
     required: 'Name is required'
   },
+  username: {
+    type: String,
+    trim: true,
+    unique: 'Username already exists',
+    index: { unique: true }
+  },
   email: {
     type: String,
     trim: true,
+    index: { unique: true },
     unique: 'Email already exists',
     match: [/.+\@.+\..+/, 'Please fill a valid email address'],
     required: 'Email is required'
@@ -32,7 +39,13 @@ const UserSchema = new mongoose.Schema({
     contentType: String
   },
   following: [{type: mongoose.Schema.ObjectId, ref: 'User'}],
-  followers: [{type: mongoose.Schema.ObjectId, ref: 'User'}]
+  followers: [{type: mongoose.Schema.ObjectId, ref: 'User'}],
+  seller: {
+    type: Boolean,
+    default: false
+  },
+  stripe_seller: {},
+  stripe_customer: {}
 })
 
 UserSchema
