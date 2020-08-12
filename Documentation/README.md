@@ -1,5 +1,7 @@
 # REST API Documentation
 
-## Open Endpoints
+## User (Customers)
 
-Open endpoints require no authentication.
+### No Authentication
+
+* [List All Users](user/list.md) : `GET /api/users/`
