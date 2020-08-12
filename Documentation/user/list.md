@@ -37,16 +37,6 @@ List all users
 
 ## Error Response
 
-**Condition** : If 'username' and 'password' combination is wrong.
+**Condition** : Unable to connect to database
 
 **Code** : `400 BAD REQUEST`
-
-**Content** :
-
-```json
-{
-    "non_field_errors": [
-        "Unable to login with provided credentials."
-    ]
-}
-```

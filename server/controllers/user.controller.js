@@ -51,6 +51,7 @@ const list = async (req, res) => {
     let users = await User.find().select('name email updated created')
     res.json(users)
   } catch (err) {
+    console.log('here')
     return res.status(400).json({
       error: errorHandler.getErrorMessage(err)
     })
