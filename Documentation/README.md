@@ -1,6 +1,6 @@
 # REST API Documentation
 
-Steps to Update the Back-End
+### Steps to Update the Back-End
 
 1. Determine new test cases
     - Update `/test/<model>.test.js` file
