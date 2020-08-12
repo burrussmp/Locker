@@ -2,19 +2,25 @@
 import User from '../server/models/user.model';
 
 const UserData = [{
-        name: 'admin',
+        username: 'admin',
+        first_name: 'admin',
+        last_name: 'admin',
         email: 'a@mail.com',
-        password: 'admin123',
+        password: 'Admin123$',
     },
     {
-        name: 'matthew',
-        email: 'm@mail.com',
-        password: 'admin123',
+        username: 'matthewpburruss',
+        first_name: 'Matthew',
+        last_name: 'Burruss',
+        email: 'matthew@mail.com',
+        password: 'Admin124$',
     },
     {
-        name: 'paul',
-        email: 'p@mail.com',
-        password: 'admin124',
+        username: 'paulsullivan123',
+        first_name: 'Paul',
+        last_name: 'Sullivan',
+        email: 'paul@mail.com',
+        password: 'Admin125$',
     },
 ]
 

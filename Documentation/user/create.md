@@ -8,11 +8,14 @@ Create a New User
 
 **Auth required** : NO
 
-**Data constraints**
+**Data constraints**: Required
 
 ```json
 {
-    "name": "[valid email address]",
+    "first_name": "[first name]",
+    "last_name": "[last name]",
+    "username": "[alpnanumeric (underscore allowed); < 17 characters]",
+    "email": "[valid email address]",
     "password": "[password in plain text]"
 }
 ```
@@ -20,10 +23,13 @@ Create a New User
 **Data example**
 
 ```json
-{
-    "username": "iloveauth@example.com",
-    "password": "abcd1234"
-}
+    {
+        "first_name": "Paul",
+        "last_name": "Sullivan",
+        "username": "paulsullivan123",
+        "email": "paul@mail.com",
+        "password": "Admin125$",
+    }
 ```
 
 ## Success Response
