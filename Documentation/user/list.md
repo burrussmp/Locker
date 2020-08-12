@@ -10,12 +10,7 @@ List all users
 
 **Data constraints**
 
-```json
-{
-    "username": "[valid email address]",
-    "password": "[password in plain text]"
-}
-```
+None
 
 ## Success Response
 
@@ -31,13 +26,14 @@ List all users
         "email": "EmailA@mail.com",
         "created": "2020-08-12T21:28:27.713Z",
     },
+    ⋮
+    ⋮
     {
         "_id": "5f345f5932dd773792386978",
         "name": "UserB",
         "email": "EmailB@mail.com",
         "created": "2020-08-12T21:30:01.149Z",
     }
-    ...
 ]
 ```
 
