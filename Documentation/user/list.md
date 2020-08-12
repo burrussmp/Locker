@@ -18,7 +18,7 @@ None
 
 **Content example**
 
-```json
+```
 [
     {
         "_id": "5f345efbe5bf4a374959a697",
