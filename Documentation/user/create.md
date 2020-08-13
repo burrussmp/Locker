@@ -14,9 +14,9 @@ Create a New User
 {
     "first_name": "[first name]",
     "last_name": "[last name]",
-    "username": "[alpnanumeric (underscore allowed); < 17 characters]",
-    "email": "[valid email address]",
-    "password": "[password in plain text]"
+    "username": "[unique alpnanumeric (underscore allowed); < 17 characters]",
+    "email": "[unique valid email address]",
+    "password": "[> 7 characters; > 1 numeric char; at least one of @, !, #, $, % or ^; > 1 uppercase char; not reserved password (i.e. 'password')]"
 }
 ```
 
@@ -40,22 +40,13 @@ Create a New User
 
 ```json
 {
-    "token": "93144b288eb1fdccbe46d6fc0f241a51766ecd3d"
+    "message": "Successfully signed up!"
 }
 ```
 
 ## Error Response
 
-**Condition** : If 'username' and 'password' combination is wrong.
+**Condition** : Data constraints not met
 
 **Code** : `400 BAD REQUEST`
 
-**Content** :
-
-```json
-{
-    "non_field_errors": [
-        "Unable to login with provided credentials."
-    ]
-}
-```
