@@ -4,10 +4,10 @@ import expressJwt from 'express-jwt'
 import config from './../../config/config'
 
 import {isValidEmail,isValidUsername,isValidPhoneNumber} from '../helpers/validators';
+import Roles from '../roles';
 
 const find_user = async (req) => {
   let login_info = req.body.login;
-  let user;
   if (isValidUsername(login_info)){
     user = await User.findOne({'username':login_info})
     if (user) return user;
@@ -47,8 +47,10 @@ const login = async (req, res) => {
     }
 
     const token = jwt.sign({
-      _id: user._id
-    }, config.jwtSecret)
+      _id: user._id,
+      role: Roles.user
+    }, config.jwtSecret,
+    { algorithm: 'HS256'})
 
     res.cookie("t", token, {
       expire: new Date() + 9999
@@ -80,7 +82,8 @@ const logout = (req, res) => {
 
 const requireLogin = expressJwt({
   secret: config.jwtSecret,
-  userProperty: 'auth'
+  requestProperty: 'auth',
+  algorithms: ['HS256']
 })
 
 const hasAuthorization = (req, res, next) => {

@@ -138,10 +138,48 @@ describe('User Auth', () => {
                     done();
                 });
         });
-        it("No matching user", (done) => {
+        it("Correct username but no matching", (done) => {
             let user = UserData[0];
             let login_user = {
-                login: "INCORRECT",
+                login: "somecrazyusername",
+                password: user.password
+            };
+            chai.request(app)
+                .post('/auth/login')
+                .type('form')
+                .send(login_user)
+                .end((err, res) => {
+                    if (err){
+                        console.log(err);
+                    }
+                    res.should.have.status(401);
+                    res.body.error.should.be.eql('User not found');
+                    done();
+                });
+        });
+        it("Correct email but no matching", (done) => {
+            let user = UserData[0];
+            let login_user = {
+                login: "crazy@mail.com",
+                password: user.password
+            };
+            chai.request(app)
+                .post('/auth/login')
+                .type('form')
+                .send(login_user)
+                .end((err, res) => {
+                    if (err){
+                        console.log(err);
+                    }
+                    res.should.have.status(401);
+                    res.body.error.should.be.eql('User not found');
+                    done();
+                });
+        });
+        it("Correct phone number but no matching", (done) => {
+            let user = UserData[0];
+            let login_user = {
+                login: "204-323-3421",
                 password: user.password
             };
             chai.request(app)
