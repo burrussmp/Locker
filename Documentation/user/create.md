@@ -14,7 +14,7 @@ Create a New User
 {
     "first_name": "[first name]",
     "last_name": "[last name]",
-    "username": "[unique alpnanumeric (underscore allowed); < 17 characters]",
+    "username": "[unique alphanumeric (underscore allowed); < 33 characters]",
     "email": "[unique valid email address]",
     "password": "[> 7 characters; > 1 numeric char; at least one of @, !, #, $, % or ^; > 1 uppercase char; not reserved password (i.e. 'password')]"
 }
