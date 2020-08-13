@@ -18,7 +18,7 @@
   "homepage": "https://github.com/burrussmp/OpenMarket.git",
   "main": "./dist/server.generated.js",
   "scripts": {
-    "test": "NODE_ENV=test mocha --require @babel/register --exit",
+    "test": "NODE_ENV=test mocha ./test/mochacfg.js --require @babel/register ./test/*.js --exit",
     "development": "nodemon",
     "build": "webpack --config webpack.config.client.production.js && webpack --mode=production --config webpack.config.server.js",
     "start": "NODE_ENV=production node ./dist/server.generated.js"

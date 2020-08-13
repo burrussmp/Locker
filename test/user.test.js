@@ -1,5 +1,4 @@
 // Import the dependencies for testing
-process.env.NODE_ENV = 'development';
 import chai  from 'chai';
 import chaiHttp from 'chai-http';
 import {app} from '../server/server';
@@ -192,7 +191,19 @@ describe('Users', () => {
                         done();
                     });
                 });      
-            }       
+            }
+            it(`Check if Empty`, (done) => {
+                chai.request(app)
+                    .get('/api/users')
+                    .end(async (err, res) => {
+                    if (err){
+                        console.log(err);
+                    }
+                    res.should.have.status(200);
+                    res.body.should.have.lengthOf(0)
+                    done();
+                });
+            });   
         });
         describe('Check email validation', () => {
             let userB = UserData[1];
@@ -235,6 +246,18 @@ describe('Users', () => {
                     });
                 });      
             }
+            it(`Check if Empty`, (done) => {
+                chai.request(app)
+                    .get('/api/users')
+                    .end(async (err, res) => {
+                    if (err){
+                        console.log(err);
+                    }
+                    res.should.have.status(200);
+                    res.body.should.have.lengthOf(0)
+                    done();
+                });
+            });  
         });
         describe('Check password validation', () => {
             let userB = UserData[1];
@@ -287,8 +310,33 @@ describe('Users', () => {
                         await drop_database()
                         done();
                     });
-                });      
-            }
-        });   
+                });
+            }  
+            it(`Check if Empty`, (done) => {
+                chai.request(app)
+                    .get('/api/users')
+                    .end(async (err, res) => {
+                    if (err){
+                        console.log(err);
+                    }
+                    res.should.have.status(200);
+                    res.body.should.have.lengthOf(0)
+                    done();
+                });
+            });   
+        });
+    });
+    describe('Check password authentication', () => {
+        it('Should authenticate', async ()=>{
+            let userA = UserData[0];
+            let user = new User(userA);
+            user = await user.save();
+            user.authenticate(userA.password).should.be.true;
+        })
+        it('Should not authenticate', async ()=>{
+            let user = await User.findOne({username:UserData[0].username})
+            user.authenticate('SomeDumbPassword').should.be.false;
+            await drop_database();
+        })       
     });
 });
