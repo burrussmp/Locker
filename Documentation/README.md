@@ -16,3 +16,5 @@
 ### No Authentication
 
 * [List All Users](user/list.md) : `GET /api/users/`
+
+* [Sign Up](user/create.md) : `POST /api/users/`
