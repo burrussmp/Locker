@@ -1,8 +1,10 @@
 "use strict";
 import User from '../server/models/user.model';
 
+// should be valid users
 const UserData = [{
         username: 'admin',
+        phone_number: '502-682-1822',
         first_name: 'admin',
         last_name: 'admin',
         email: 'a@mail.com',
@@ -11,6 +13,7 @@ const UserData = [{
     {
         username: 'matthewpburruss',
         first_name: 'Matthew',
+        phone_number: '502-354-1823',
         last_name: 'Burruss',
         email: 'matthew@mail.com',
         password: 'Admin124$',
@@ -18,6 +21,7 @@ const UserData = [{
     {
         username: 'paulsullivan123',
         first_name: 'Paul',
+        phone_number: '502-682-7341',
         last_name: 'Sullivan',
         email: 'paul@mail.com',
         password: 'Admin125$',

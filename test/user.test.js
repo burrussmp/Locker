@@ -14,6 +14,18 @@ chai.should();
 (async () => await drop_database())();
 describe('Users', () => {
     describe('/GET /api/users', () => {
+        it(`Check if User Collection Empty`, (done) => {
+            chai.request(app)
+                .get('/api/users')
+                .end(async (err, res) => {
+                if (err){
+                    console.log(err);
+                }
+                res.should.have.status(200);
+                res.body.should.have.lengthOf(0)
+                done();
+            });
+        });
         it('GET empty user list', (done) => {
           chai.request(app)
               .get('/api/users')
@@ -100,56 +112,51 @@ describe('Users', () => {
                     done();
                 });
             });
-            let userC = JSON.parse(JSON.stringify(userB))
-            userC.username = userA.username;
-            it('CREATE a user w/ same username (should fail)', (done) => {
-                chai.request(app)
-                    .post('/api/users')
-                    .send(userC)
-                    .end((err, res) => {
-                    if (err){
-                        console.log(err);
-                    }
-                    res.should.have.status(400);
-                    res.body.error.should.eql('Username already exists');
-                    done();
+            describe('Check unique fields', () => {
+                let unique_fields = ['username','email','phone_number'];
+                let unique_response = ['Username','Email','Phone number']
+                for (let i = 0; i < unique_fields.length;++i){
+                    let field = unique_fields[i];
+                    let resp = unique_response[i];
+                    let userC = JSON.parse(JSON.stringify(userB))
+                    userC[field] = userA[field];
+                    it(`CREATE a user w/ same ${field} (should fail)`, (done) => {
+                        chai.request(app)
+                            .post('/api/users')
+                            .send(userC)
+                            .end((err, res) => {
+                            if (err){
+                                console.log(err);
+                            }
+                            res.should.have.status(400);
+                            res.body.error.should.eql(`${resp} already exists`);
+                            done();
+                            });
                     });
+                }
             });
-            let userD = JSON.parse(JSON.stringify(userB))
-            userD.email = userA.email;
-            it('CREATE a user w/ same email (should fail)', (done) => {
-                chai.request(app)
-                    .post('/api/users')
-                    .send(userD)
-                    .end((err, res) => {
-                    if (err){
-                        console.log(err);
-                    }
-                    res.should.have.status(400);
-                    res.body.error.should.eql('Email already exists');
-                    done();
-                });
+            describe('Check required fields', () => {
+                let required_fields = ['username','email','first_name','last_name','password','phone_number'];
+                let suspected_error = ['Username','Email','First name','Last name','Password','Phone number']
+                for (let i = 0; i < required_fields.length; ++i){
+                    let required_field = required_fields[i];
+                    let userE = JSON.parse(JSON.stringify(userB))
+                    delete userE[required_field];
+                    it(`CREATE a user w/out ${required_field} (should fail)`, (done) => {
+                        chai.request(app)
+                            .post('/api/users')
+                            .send(userE)
+                            .end((err, res) => {
+                            if (err){
+                                console.log(err);
+                            }
+                            res.should.have.status(400);
+                            res.body.error.should.eql(`${suspected_error[i]} is required`);
+                            done();
+                        });
+                    });            
+                }
             });
-            let required_fields = ['username','email','first_name','last_name','password'];
-            let suspected_error = ['Username','Email','First name','Last name','Password']
-            for (let i = 0; i < required_fields.length; ++i){
-                let required_field = required_fields[i];
-                let userE = JSON.parse(JSON.stringify(userB))
-                delete userE[required_field];
-                it(`CREATE a user w/out ${required_field} (should fail)`, (done) => {
-                    chai.request(app)
-                        .post('/api/users')
-                        .send(userE)
-                        .end((err, res) => {
-                        if (err){
-                            console.log(err);
-                        }
-                        res.should.have.status(400);
-                        res.body.error.should.eql(`${suspected_error[i]} is required`);
-                        done();
-                    });
-                });            
-            }
         });
         describe('Check username validation', () => {
             let userB = UserData[1];
@@ -192,7 +199,7 @@ describe('Users', () => {
                     });
                 });      
             }
-            it(`Check if Empty`, (done) => {
+            it(`Check if User Collection Empty`, (done) => {
                 chai.request(app)
                     .get('/api/users')
                     .end(async (err, res) => {
@@ -246,7 +253,62 @@ describe('Users', () => {
                     });
                 });      
             }
-            it(`Check if Empty`, (done) => {
+            it(`Check if User Collection Empty`, (done) => {
+                chai.request(app)
+                    .get('/api/users')
+                    .end(async (err, res) => {
+                    if (err){
+                        console.log(err);
+                    }
+                    res.should.have.status(200);
+                    res.body.should.have.lengthOf(0)
+                    done();
+                });
+            });  
+        });
+
+        describe('Check phone number validation', () => {
+            let userB = UserData[1];
+            let invalid = ['502689128a22','fafs','3421','############',''];
+            let reasons = ['Valid phone number is required','Valid phone number is required','Valid phone number is required','Valid phone number is required','Phone number is required']
+            let valid = ['502-689-1243','605-232-2342','533-343-1342']
+            for (let i = 0; i < invalid.length; ++i){
+                let inv = invalid[i];
+                let userC = JSON.parse(JSON.stringify(userB))
+                userC.phone_number = inv;
+                it(`CREATE user with invalid phone number test ${i+1}: phone # = ${inv}`, (done) => {
+                    chai.request(app)
+                        .post('/api/users')
+                        .send(userC)
+                        .end((err, res) => {
+                        if (err){
+                            console.log(err);
+                        }
+                        res.should.have.status(400);
+                        res.body.error.should.eql(`${reasons[i]}`);
+                        done();
+                    });
+                });
+            }
+            for (let i = 0; i < valid.length; ++i){
+                let val = valid[i];
+                let userC = JSON.parse(JSON.stringify(userB))
+                userC.phone_number = val;
+                it(`CREATE user with valid phone number test ${i+1}: phone # = ${val}`, (done) => {
+                    chai.request(app)
+                        .post('/api/users')
+                        .send(userC)
+                        .end(async (err, res) => {
+                        if (err){
+                            console.log(err);
+                        }
+                        res.should.have.status(200);
+                        await drop_database()
+                        done();
+                    });
+                });      
+            }
+            it(`Check if User Collection Empty`, (done) => {
                 chai.request(app)
                     .get('/api/users')
                     .end(async (err, res) => {
@@ -312,7 +374,7 @@ describe('Users', () => {
                     });
                 });
             }  
-            it(`Check if Empty`, (done) => {
+            it(`Check if User Collection Empty`, (done) => {
                 chai.request(app)
                     .get('/api/users')
                     .end(async (err, res) => {

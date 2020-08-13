@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 import crypto from 'crypto'
+import {isValidEmail,isValidUsername,isValidPhoneNumber} from '../helpers/validators';
 
 const checkIfPasswordInvalid = password => {
   if (!password){
@@ -23,6 +24,12 @@ const UserSchema = new mongoose.Schema({
     type: String,
     trim: true,
     required: 'First name is required'
+  },
+  phone_number: {
+    type: String,
+    trim: true,
+    required: 'Phone number is required',
+    index: { unique: true },
   },
   last_name: {
     type: String,
@@ -95,6 +102,11 @@ UserSchema.path('email').validate(async (value) => {
   return !emailCount;
 }, 'Email already exists');
 
+UserSchema.path('phone_number').validate(async (value) => {
+  const phoneCount = await mongoose.models.User.countDocuments({phone_number: value });
+  return !phoneCount;
+}, "Phone number already exists");
+
 UserSchema.path('username').validate(async (value) => {
   const usernameCount = await mongoose.models.User.countDocuments({username: value });
   return !usernameCount;
@@ -114,6 +126,17 @@ UserSchema.pre("save", function(next){
   // sanitize
   this.first_name = this.first_name.replace(/<(?:.|\n)*?>/gm, "");
   this.last_name = this.last_name.replace(/<(?:.|\n)*?>/gm, "");
+  
+  // check if all valid
+  if (!isValidPhoneNumber(this.phone_number)){
+    throw this.invalidate('phone_number','Valid phone number is required');
+  }
+  if (!isValidEmail(this.email)){
+    throw this.invalidate('email','Valid email is required');
+  }
+  if (!isValidUsername(this.username)){
+    throw this.invalidate('username','Valid username is required');
+  }
   next();
 })
 

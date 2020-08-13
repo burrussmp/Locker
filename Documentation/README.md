@@ -17,4 +17,8 @@
 
 * [List All Users](user/list.md) : `GET /api/users/`
 
-* [Sign Up](user/create.md) : `POST /api/users/`
+* [Create New User](user/create.md) : `POST /api/users/`
+
+* [Login](auth/login.md) : `POST /auth/logout`
+
+* [Logout](auth/logout.md) : `GET /auth/logout`

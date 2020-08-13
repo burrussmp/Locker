@@ -2,6 +2,7 @@
 import Product from '../server/models/product.model';
 import Shop from '../server/models/shop.model';
 
+// should be valid products
 const ProductData = [{
     name: 'reg grounds (0.5 lb)',
     quantity: 10000,

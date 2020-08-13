@@ -3,12 +3,38 @@ import jwt from 'jsonwebtoken'
 import expressJwt from 'express-jwt'
 import config from './../../config/config'
 
-const signin = async (req, res) => {
-  try {
-    let user = await User.findOne({
-      "email": req.body.email
-    })
+import {isValidEmail,isValidUsername,isValidPhoneNumber} from '../helpers/validators';
 
+const find_user = async (req) => {
+  let login_info = req.body.login;
+  let user;
+  if (isValidUsername(login_info)){
+    user = await User.findOne({'username':login_info})
+    if (user) return user;
+  }
+  if (isValidEmail(login_info)){
+    user = await User.findOne({'email':login_info})
+    if (user) return user;
+  }
+  if (isValidPhoneNumber(login_info)){
+    user = await User.findOne({'phone_number':login_info})
+    if (user) return user;
+  }
+}
+
+const login = async (req, res) => {
+  try {
+    if (!req.body.login){
+      return res.status('400').json({
+        error: "Missing username, phone number, or email"
+      })
+    }
+    if (!req.body.password){
+      return res.status('400').json({
+        error: "Missing password"
+      })
+    }
+    let user = await find_user(req);
     if (!user)
       return res.status('401').json({
         error: "User not found"
@@ -16,7 +42,7 @@ const signin = async (req, res) => {
 
     if (!user.authenticate(req.body.password)) {
       return res.status('401').send({
-        error: "Email and password don't match."
+        error: "Invalid password"
       })
     }
 
@@ -30,25 +56,29 @@ const signin = async (req, res) => {
 
     return res.json({
       token,
-      user: {_id: user._id, name: user.name, email: user.email}
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email
+      }
     })
   } catch (err) {
     console.log(err)
-    return res.status('401').json({
-      error: "Could not sign in"
+    return res.status('500').json({
+      error: "Sorry, we could not log you in"
     })
 
   }
 }
 
-const signout = (req, res) => {
+const logout = (req, res) => {
   res.clearCookie("t")
   return res.status('200').json({
-    message: "signed out"
+    message: "Logged out"
   })
 }
 
-const requireSignin = expressJwt({
+const requireLogin = expressJwt({
   secret: config.jwtSecret,
   userProperty: 'auth'
 })
@@ -64,8 +94,8 @@ const hasAuthorization = (req, res, next) => {
 }
 
 export default {
-  signin,
-  signout,
-  requireSignin,
+  login,
+  logout,
+  requireLogin,
   hasAuthorization
 }

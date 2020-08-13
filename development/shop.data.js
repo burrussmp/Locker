@@ -1,6 +1,7 @@
 "use strict";
 import Shop from '../server/models/shop.model';
 
+// should be valid shops
 const ShopData = [{
         name: 'CoffeeShop'
     },
