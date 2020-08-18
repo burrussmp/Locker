@@ -7,29 +7,28 @@ const router = express.Router()
 // Path parameter middleware handlers
 router.param('userId', userCtrl.userByID)
 // Check permissions (path parameter is now populated so we have to re-check)
-router.use('/api/users/:userId',permission.checkPermissions);
 
 router.route('/api/users')
-  .get(userCtrl.list)
-  .post(userCtrl.create);
+  .get(permission.Authorize,userCtrl.list)
+  .post(permission.Authorize,userCtrl.create);
 
 router.route('/api/users/:userId')
-  .get(userCtrl.read)
-  .put(userCtrl.requireAuthorization,userCtrl.update)
-  .delete(userCtrl.requireAuthorization,userCtrl.remove);
+  .get(permission.Authorize,userCtrl.read)
+  .put(permission.Authorize,userCtrl.requireOwnership,userCtrl.update)
+  .delete(permission.Authorize,userCtrl.requireOwnership,userCtrl.remove);
 
 router.route('/api/users/:userId/avatar')
-  .get(userCtrl.getProfilePhoto)
-  .post(userCtrl.requireAuthorization,userCtrl.uploadProfilePhoto)
-  .delete(userCtrl.requireAuthorization,userCtrl.removeProfilePhoto);
+  .get(permission.Authorize,userCtrl.getProfilePhoto)
+  .post(permission.Authorize,userCtrl.requireOwnership,userCtrl.uploadProfilePhoto)
+  .delete(permission.Authorize,userCtrl.requireOwnership,userCtrl.removeProfilePhoto);
   
 router.route('/api/users/follow')
-    .put(userCtrl.addFollowing, userCtrl.addFollower)
+    .put(permission.Authorize,userCtrl.addFollowing, userCtrl.addFollower)
 
 router.route('/api/users/unfollow')
-    .put( userCtrl.removeFollowing, userCtrl.removeFollower)
+    .put(permission.Authorize,userCtrl.removeFollowing, userCtrl.removeFollower)
 
 router.route('/api/users/findpeople/:userId')
-   .get(userCtrl.findPeople)
+   .get(permission.Authorize,userCtrl.findPeople)
 
 export default router

@@ -74,7 +74,7 @@ const User_Role = {
 };
 
 // express middleware to handle permissions
-const checkPermissions = (req,res,next) => {
+const Authorize = (req,res,next) => {
     let required_permissions = [];
     let path = req.originalUrl;
     let method = req.method;
@@ -105,10 +105,10 @@ const checkPermissions = (req,res,next) => {
     }
     res.locals.require_login = require_login;
     res.locals.permissions = required_permissions;
-    authCtrl.requirePermissions(req,res,next)
+    authCtrl.checkLogin(req,res,next)
 }
 
 export default {
     User_Role,
-    checkPermissions,
+    Authorize,
 };

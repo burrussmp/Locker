@@ -281,7 +281,7 @@ const findPeople = async (req, res) => {
   }
 }
 
-const requireAuthorization = (req, res, next) => {
+const requireOwnership = (req, res, next) => {
   let authorized =  authCtrl.isAdmin(req) || (req.profile && req.auth && req.profile._id == req.auth._id)
   if (!authorized) {
     return res.status('403').json({
@@ -307,5 +307,5 @@ export default {
   removeFollowing,
   removeFollower,
   findPeople,
-  requireAuthorization
+  requireOwnership
 }

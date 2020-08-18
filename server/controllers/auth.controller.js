@@ -50,7 +50,7 @@ const login = async (req, res) => {
     const token = jwt.sign({
       _id: user._id,
       permissions: user.permissions
-    }, config.jwtSecret,
+    }, process.env.JWT_SECRET,
     { algorithm: 'HS256'})
 
     res.cookie("t", token, {
@@ -106,24 +106,10 @@ const isAdmin = (req) => {
   * @param Function next - Go to next middleware
 */
 const isLoggedIn = expressJwt({
-  secret: config.jwtSecret,
+  secret: process.env.JWT_SECRET,
   requestProperty: 'auth',
   algorithms: ['HS256']
 });
-
-/**
-  * @desc Middleware to ensure logged in if necessary
-  * @param Object req - Contains login info
-  * @param Object res - res.locals.require_login determines if login necessary
-  * @param Function next - Go to next middleware
-*/
-const requireLogin = (req,res,next) => {
-  if(!isAdmin(req) && res.locals.require_login){
-    isLoggedIn(req,res,next);
-  } else {
-    next()
-  }
-}
 
 /**
   * @desc Middleware to check if permissions of request match what is necessary for API call
@@ -131,27 +117,38 @@ const requireLogin = (req,res,next) => {
   * @param Object res - res.locals.permissions contains necessary permissions
   * @param Function next - Go to next middleware
 */
-const requirePermissions = (req,res,next) => {
+const checkPermissions = (req,res,next) => {
   if (!isAdmin(req) && res.locals.permissions.length != 0){
-    let A = req.auth.permissions;
-    let B = res.locals.permissions;
-    let authorized = _.isEqual(_.intersection(_.sortBy(A),_.sortBy(B)),_.sortBy(B));
+    let authorized = req.auth && _.difference(res.locals.permissions,req.auth.permissions).length == 0;
     if (!authorized) {
       return res.status(403).json({
         error: StaticStrings.ErrorInsufficientPermissions
       })
-    } else {
-      next();
     }
+  }
+  next()
+}
+
+/**
+  * @desc Middleware to ensure logged in if necessary
+  * @param Object req - Contains login info
+  * @param Object res - res.locals.require_login determines if login necessary
+  * @param Function next - Go to next middleware
+*/
+const checkLogin = (req,res,next) => {
+  if(!isAdmin(req) && res.locals.require_login){
+    isLoggedIn(req,res,(err)=>{
+      if (err) next(err);
+      checkPermissions(req,res,next);
+    });
   } else {
-    next();
+    checkPermissions(req,res,next)
   }
 }
 
 export default {
   login,
   logout,
-  requireLogin,
-  requirePermissions,
+  checkLogin,
   isAdmin
 }

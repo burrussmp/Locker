@@ -24,10 +24,6 @@ import theme from './../client/theme'
 //comment out before building for production
 import devBundle from './devBundle'
 
-//check permissions on API calls (express middleware)
-import permissionCtrl from './permissions';
-import authCtrl from './controllers/auth.controller';
-
 const CURRENT_WORKING_DIR = process.cwd()
 const app = express()
 
@@ -45,10 +41,6 @@ app.use(helmet())
 app.use(cors())
 // form data
 app.use('/dist', express.static(path.join(CURRENT_WORKING_DIR, 'dist')))
-
-// authorization pipeline
-app.use(permissionCtrl.checkPermissions);
-app.use(authCtrl.requireLogin)
 
 // mount routes
 app.use('/', userRoutes)
