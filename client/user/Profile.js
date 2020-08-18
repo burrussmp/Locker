@@ -140,7 +140,7 @@ export default function Profile({ match }) {
           <Divider/>
           <ListItem>
             <ListItemText primary={values.user.about} secondary={"Joined: " + (
-              new Date(values.user.created)).toDateString()}/>
+              new Date(values.user.createdAt)).toDateString()}/>
           </ListItem>
         </List>
         <ProfileTabs user={values.user} posts={posts} removePostUpdate={removePost}/>

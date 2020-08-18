@@ -113,7 +113,7 @@ export default function Post (props){
               </IconButton>
             }
             title={<Link to={"/user/" + props.post.postedBy._id}>{props.post.postedBy.name}</Link>}
-            subheader={(new Date(props.post.created)).toDateString()}
+            subheader={(new Date(props.post.createdAt)).toDateString()}
             className={classes.cardHeader}
           />
         <CardContent className={classes.cardContent}>

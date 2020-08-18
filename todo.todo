@@ -1,3 +1,42 @@
-1. Make an actually secure JWT secret and store in .env
-2. Allow login with phone number without hyphens
-3. Create roles
+
+Very Short Term
+
+6. Add basic url to change (put)
+7. Update login to accomodate users and organizations
+8. Assign a few users the admin privileges
+9. Write unit tests to cover the various privileges and the roles
+10. What happens if reference gets deleted? Like if a User deletes and they have a comment?
+11. Write tests for update a specific field
+12. Include permissions in API calls
+13. Include permissions in API documentation
+14. Update the API call to list all users to include permission to do so.
+15. Change followers and following
+16. Create the product, order, ContentPost, and AssortmentPost schema
+17. Check if development populate db still works
+18. Add private public to user settings
+19. In getUserByID make sure to get it correctly based on private or public
+20. Don't require login when getting user by ID
+21. Add test cases for permissions
+22. Add tests to see if admin user can do anything
+23. Comment code
+24. Test the update function
+25. Test the admin access
+26. Migrate to AWS profiles
+
+Documentation to add
+1. Permissions to API
+2. Admin secret on login
+
+Medium Term
+1. Allow login with phone number without hyphens
+2. Add other genders to enum in User
+
+Types of roles
+1. admin
+2. business
+3. creator
+4. user
+
+
+Long Term
+1. Create insights for organizations (visualizations to track engagement)

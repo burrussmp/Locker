@@ -1,30 +1,36 @@
 import express from 'express'
-import userCtrl from '../controllers/user.controller'
-import authCtrl from '../controllers/auth.controller'
+import userCtrl from '../controllers/user.controller';
+import permission from '../permissions'
+import file_upload from '../services/S3.services';
 
 const router = express.Router()
+// Path parameter middleware handlers
+router.param('userId', userCtrl.userByID)
+// Check permissions (path parameter is now populated so we have to re-check)
+router.use('/api/users/:userId',permission.checkPermissions);
+
 router.route('/api/users')
   .get(userCtrl.list)
-  .post(userCtrl.create)
+  .post(userCtrl.create);
+
+router.route('/api/users/:userId')
+  .get(userCtrl.read)
+  .put(userCtrl.requireAuthorization,file_upload.uploadProfilePhoto,userCtrl.update)
+  .delete(userCtrl.requireAuthorization,userCtrl.remove);
 
 router.route('/api/users/photo/:userId')
   .get(userCtrl.photo, userCtrl.defaultPhoto)
+
 router.route('/api/users/defaultphoto')
   .get(userCtrl.defaultPhoto)
 
 router.route('/api/users/follow')
-    .put(authCtrl.requireLogin, userCtrl.addFollowing, userCtrl.addFollower)
+    .put(userCtrl.addFollowing, userCtrl.addFollower)
+
 router.route('/api/users/unfollow')
-    .put(authCtrl.requireLogin, userCtrl.removeFollowing, userCtrl.removeFollower)
+    .put( userCtrl.removeFollowing, userCtrl.removeFollower)
 
 router.route('/api/users/findpeople/:userId')
-   .get(authCtrl.requireLogin, userCtrl.findPeople)
-
-router.route('/api/users/:userId')
-  .get(authCtrl.requireLogin, userCtrl.read)
-  .put(authCtrl.requireLogin, authCtrl.hasAuthorization, userCtrl.update)
-  .delete(authCtrl.requireLogin, authCtrl.hasAuthorization, userCtrl.remove)
-
-router.param('userId', userCtrl.userByID)
+   .get(userCtrl.findPeople)
 
 export default router

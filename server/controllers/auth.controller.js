@@ -2,26 +2,27 @@ import User from '../models/user.model'
 import jwt from 'jsonwebtoken'
 import expressJwt from 'express-jwt'
 import config from './../../config/config'
+import _ from 'lodash';
 
-import {isValidEmail,isValidUsername,isValidPhoneNumber} from '../helpers/validators';
-import Roles from '../roles';
+import StaticStrings from '../../config/StaticStrings';
 
+/**
+  * @desc Queries User model matching either email, username, or phone number and returns results
+  * @param Object req - req.body.login : email, username, or phone number
+  * @return Mongoose.model.User
+*/
 const find_user = async (req) => {
   let login_info = req.body.login;
-  if (isValidUsername(login_info)){
-    user = await User.findOne({'username':login_info})
-    if (user) return user;
-  }
-  if (isValidEmail(login_info)){
-    user = await User.findOne({'email':login_info})
-    if (user) return user;
-  }
-  if (isValidPhoneNumber(login_info)){
-    user = await User.findOne({'phone_number':login_info})
-    if (user) return user;
-  }
+  let query = {$or: [{ email: login_info }, { username: login_info }, { phone_number: login_info }]};
+  return await User.findOne(query)
 }
 
+/**
+  * @desc Login controller: If successful, provides user a JWT token
+  * used for permissions, authorization, authentication, and to stay logged in
+  * @param Object req - Contains login info
+  * @param Object res - HTTP response
+*/
 const login = async (req, res) => {
   try {
     if (!req.body.login){
@@ -36,7 +37,7 @@ const login = async (req, res) => {
     }
     let user = await find_user(req);
     if (!user)
-      return res.status('401').json({
+      return res.status('404').json({
         error: "User not found"
       })
 
@@ -48,7 +49,7 @@ const login = async (req, res) => {
 
     const token = jwt.sign({
       _id: user._id,
-      role: Roles.user
+      permissions: user.permissions
     }, config.jwtSecret,
     { algorithm: 'HS256'})
 
@@ -73,6 +74,11 @@ const login = async (req, res) => {
   }
 }
 
+/**
+  * @desc Logout controller: Removes JWT token from cookies
+  * @param Object req - Contains login info
+  * @param Object res - HTTP response
+*/
 const logout = (req, res) => {
   res.clearCookie("t")
   return res.status('200').json({
@@ -80,25 +86,72 @@ const logout = (req, res) => {
   })
 }
 
-const requireLogin = expressJwt({
+/**
+  * @desc Checks to see if the request is an admin (requires secret)
+  * @param Object req - Contains login info
+  * @param Object res - HTTP response
+*/
+const isAdmin = (req) => {
+  if (req.headers.authorization && req.headers.authorization === process.env.ADMIN_SECRET){
+    return true;
+  } else {
+    return false;
+  }
+}
+
+/**
+  * @desc Checks to see if logged in (decrypt the JWT token)
+  * @param Object req - Contains login info
+  * @param Object res - HTTP response
+  * @param Function next - Go to next middleware
+*/
+const isLoggedIn = expressJwt({
   secret: config.jwtSecret,
   requestProperty: 'auth',
   algorithms: ['HS256']
-})
+});
 
-const hasAuthorization = (req, res, next) => {
-  const authorized = req.profile && req.auth && req.profile._id == req.auth._id
-  if (!(authorized)) {
-    return res.status('403').json({
-      error: "User is not authorized"
-    })
+/**
+  * @desc Middleware to ensure logged in if necessary
+  * @param Object req - Contains login info
+  * @param Object res - res.locals.require_login determines if login necessary
+  * @param Function next - Go to next middleware
+*/
+const requireLogin = (req,res,next) => {
+  if(!isAdmin(req) && res.locals.require_login){
+    isLoggedIn(req,res,next);
+  } else {
+    next()
   }
-  next()
+}
+
+/**
+  * @desc Middleware to check if permissions of request match what is necessary for API call
+  * @param Object req - Contains login info
+  * @param Object res - res.locals.permissions contains necessary permissions
+  * @param Function next - Go to next middleware
+*/
+const requirePermissions = (req,res,next) => {
+  if (!isAdmin(req) && res.locals.permissions.length != 0){
+    let A = req.auth.permissions;
+    let B = res.locals.permissions;
+    let authorized = _.isEqual(_.intersection(_.sortBy(A),_.sortBy(B)),_.sortBy(B));
+    if (!authorized) {
+      return res.status(403).json({
+        error: StaticStrings.ErrorInsufficientPermissions
+      })
+    } else {
+      next();
+    }
+  } else {
+    next();
+  }
 }
 
 export default {
   login,
   logout,
   requireLogin,
-  hasAuthorization
+  requirePermissions,
+  isAdmin
 }

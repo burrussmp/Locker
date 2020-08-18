@@ -83,7 +83,7 @@ export default function Comments (props) {
           <Link to={"/user/" + item.postedBy._id}>{item.postedBy.name}</Link><br/>
           {item.text}
           <span className={classes.commentDate}>
-            {(new Date(item.created)).toDateString()} |
+            {(new Date(item.createdAt)).toDateString()} |
             {auth.isAuthenticated().user._id === item.postedBy._id &&
               <Icon onClick={deleteComment(item)} className={classes.commentDelete}>delete</Icon> }
           </span>

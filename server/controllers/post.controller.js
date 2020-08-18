@@ -1,5 +1,5 @@
 import Post from '../models/post.model'
-import errorHandler from './../helpers/dbErrorHandler'
+import errorHandler from '../services/dbErrorHandler'
 import formidable from 'formidable'
 import fs from 'fs'
 
@@ -50,7 +50,7 @@ const listByUser = async (req, res) => {
     let posts = await Post.find({postedBy: req.profile._id})
                           .populate('comments.postedBy', '_id name')
                           .populate('postedBy', '_id name')
-                          .sort('-created')
+                          .sort('-createdAt')
                           .exec()
     res.json(posts)
   }catch(err){
@@ -67,7 +67,7 @@ const listNewsFeed = async (req, res) => {
     let posts = await Post.find({postedBy: { $in : req.profile.following } })
                           .populate('comments.postedBy', '_id name')
                           .populate('postedBy', '_id name')
-                          .sort('-created')
+                          .sort('-createdAt')
                           .exec()
     res.json(posts)
   }catch(err){

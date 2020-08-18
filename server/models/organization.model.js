@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
-const ShopSchema = new mongoose.Schema({
+
+const OrgSchema = new mongoose.Schema({
   name: {
     type: String,
     trim: true,
@@ -18,7 +19,6 @@ const ShopSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  owner: {type: mongoose.Schema.ObjectId, ref: 'User'}
 })
 
-export default mongoose.model('Shop', ShopSchema)
+export default mongoose.model('Organization', OrgSchema)

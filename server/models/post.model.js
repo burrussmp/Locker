@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 const PostSchema = new mongoose.Schema({
-  text: {
+  description: {
     type: String,
     required: 'Text is required'
   },
@@ -14,7 +14,7 @@ const PostSchema = new mongoose.Schema({
     created: { type: Date, default: Date.now },
     postedBy: { type: mongoose.Schema.ObjectId, ref: 'User'}
   }],
-  postedBy: {type: mongoose.Schema.ObjectId, ref: 'User'},
+  postedBy: {type: mongoose.Schema.ObjectId, ref: 'Organization'},
   created: {
     type: Date,
     default: Date.now

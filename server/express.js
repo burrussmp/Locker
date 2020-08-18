@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser'
 import compress from 'compression'
 import cors from 'cors'
 import helmet from 'helmet'
+import multer from 'multer';
 import Template from './../template'
 import userRoutes from './routes/user.routes'
 import authRoutes from './routes/auth.routes'
@@ -23,6 +24,10 @@ import theme from './../client/theme'
 //comment out before building for production
 import devBundle from './devBundle'
 
+//check permissions on API calls (express middleware)
+import permissionCtrl from './permissions';
+import authCtrl from './controllers/auth.controller';
+
 const CURRENT_WORKING_DIR = process.cwd()
 const app = express()
 
@@ -38,8 +43,12 @@ app.use(compress())
 app.use(helmet())
 // enable CORS - Cross Origin Resource Sharing
 app.use(cors())
-
+// form data
 app.use('/dist', express.static(path.join(CURRENT_WORKING_DIR, 'dist')))
+
+// authorization pipeline
+app.use(permissionCtrl.checkPermissions);
+app.use(authCtrl.requireLogin)
 
 // mount routes
 app.use('/', userRoutes)
@@ -67,16 +76,6 @@ app.get('*', (req, res) => {
       markup: markup,
       css: css
     }))
-})
-
-// Catch unauthorised errors
-app.use((err, req, res, next) => {
-  if (err.name === 'UnauthorizedError') {
-    res.status(401).json({"error" : err.name + ": " + err.message})
-  }else if (err) {
-    res.status(400).json({"error" : err.name + ": " + err.message})
-    console.log(err)
-  }
 })
 
 export default app
