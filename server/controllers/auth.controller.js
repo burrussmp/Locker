@@ -1,9 +1,9 @@
-import User from '../models/user.model'
+// imports
 import jwt from 'jsonwebtoken'
 import expressJwt from 'express-jwt'
-import config from './../../config/config'
 import _ from 'lodash';
 
+import User from '../models/user.model'
 import StaticStrings from '../../config/StaticStrings';
 
 /**
@@ -27,36 +27,33 @@ const login = async (req, res) => {
   try {
     if (!req.body.login){
       return res.status('400').json({
-        error: "Missing username, phone number, or email"
+        error: StaticStrings.ErrorsLogin.MissingLogin
       })
     }
     if (!req.body.password){
       return res.status('400').json({
-        error: "Missing password"
+        error: StaticStrings.ErrorsLogin.MissingPassword
       })
     }
     let user = await findUserLogin(req);
     if (!user)
       return res.status('404').json({
-        error: "User not found"
+        error: StaticStrings.ErrorsLogin.UserNotFound
       })
 
     if (!user.authenticate(req.body.password)) {
       return res.status('401').send({
-        error: "Invalid password"
+        error: StaticStrings.ErrorsLogin.InvalidPassword
       })
     }
-
     const token = jwt.sign({
       _id: user._id,
       permissions: user.permissions
     }, process.env.JWT_SECRET,
     { algorithm: 'HS256'})
-
     res.cookie("t", token, {
       expire: new Date() + 9999
     })
-
     return res.json({
       token,
       user: {
@@ -66,9 +63,8 @@ const login = async (req, res) => {
       }
     })
   } catch (err) {
-    console.log(err)
     return res.status('500').json({
-      error: "Sorry, we could not log you in"
+      error: StaticStrings.ErrorsLogin.ServerError
     })
 
   }
@@ -82,7 +78,7 @@ const login = async (req, res) => {
 const logout = (req, res) => {
   res.clearCookie("t")
   return res.status('200').json({
-    message: "Logged out"
+    message: StaticStrings.SuccessLoggedOut
   })
 }
 

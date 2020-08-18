@@ -138,7 +138,7 @@ function main(){
                             console.log(err);
                         }
                         res.should.have.status(400);
-                        res.body.error.should.be.eql('Missing username, phone number, or email');
+                        res.body.error.should.be.eql(StaticStrings.ErrorsLogin.MissingLogin);
                         done();
                     });
             });
@@ -156,7 +156,7 @@ function main(){
                             console.log(err);
                         }
                         res.should.have.status(400);
-                        res.body.error.should.be.eql('Missing password');
+                        res.body.error.should.be.eql(StaticStrings.ErrorsLogin.MissingPassword);
                         done();
                     });
             });
@@ -175,7 +175,7 @@ function main(){
                             console.log(err);
                         }
                         res.should.have.status(404);
-                        res.body.error.should.be.eql('User not found');
+                        res.body.error.should.be.eql(StaticStrings.ErrorsLogin.UserNotFound);
                         done();
                     });
             });
@@ -194,7 +194,7 @@ function main(){
                             console.log(err);
                         }
                         res.should.have.status(404);
-                        res.body.error.should.be.eql('User not found');
+                        res.body.error.should.be.eql(StaticStrings.ErrorsLogin.UserNotFound);
                         done();
                     });
             });
@@ -213,7 +213,7 @@ function main(){
                             console.log(err);
                         }
                         res.should.have.status(404);
-                        res.body.error.should.be.eql('User not found');
+                        res.body.error.should.be.eql(StaticStrings.ErrorsLogin.UserNotFound);
                         done();
                     });
             });
@@ -232,7 +232,7 @@ function main(){
                             console.log(err);
                         }
                         res.should.have.status(401);
-                        res.body.error.should.be.eql('Invalid password');
+                        res.body.error.should.be.eql(StaticStrings.ErrorsLogin.InvalidPassword);
                         done();
                     });
             });
@@ -246,7 +246,7 @@ function main(){
                             console.log(err);
                         }
                         res.should.have.status(200);
-                        res.body.message.should.be.eql('Logged out');
+                        res.body.message.should.be.eql(StaticStrings.SuccessLoggedOut);
                         await drop_database();
                         done();
                     });
