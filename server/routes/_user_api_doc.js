@@ -6,7 +6,7 @@
  * @apiVersion 0.1.0
  * @apiPermission none
  * @apiSuccess (200) {Object[]}   profiles            List of all user profiles
- * @apiSuccess (200) {ObjectId}     profiles._id      MongoDB ID
+ * @apiSuccess (200) {ObjectId}   profiles._id        MongoDB ID
  * @apiSuccess (200) {String}     profiles.username   Username
  * @apiSuccess (200) {Date}       profile.updatedAt   Timestamp of last update to user profile
  * @apiSuccess (200) {Date}       profile.createdAt   Timestamp of when user was created  
@@ -52,7 +52,6 @@
  * @apiParam    (Request body)  {Date}        [date_of_birth] Date of birth
  * @apiParam    (Request body)  {String}      [gender]        Gender
  * @apiParam    (Request body)  {String}      [about]         Description of user
- * @apiParam    (Request body)  {File}        [profile_photo] Profile image
  * @apiParamExample {json} Request-Example:
  * {
  *  "first_name"    : "John",
@@ -70,12 +69,21 @@
  *        "message": "Successfully signed up!"
  *      }
  * @apiError (4xx) BadRequest Missing required fields, invalid fields, non-unique username/email/phone number, etc.
- * @apiErrorExample Error-Response:
+ * @apiErrorExample Invalid username:
  *     HTTP/1.1 400 Internal Server Error
  *     {
  *       "error": "A valid username is required"
  *     }
- * 
+ * @apiErrorExample Invalid field:
+ *     HTTP/1.1 400 Internal Server Error
+        {
+            "error": "Bad request: The following are invalid fields 'bad_key'"
+        }
+ * @apiErrorExample Non-Unique Constraint:
+ *     HTTP/1.1 400 Internal Server Error
+        {
+            "error": "Email already exists"
+        }
  */
 
  /**
@@ -88,9 +96,10 @@
  * @apiPermission LoginRequired
  * @apiPermission UserRead 
  * @apiSuccess (200) {ObjectId}     _id                 MongoDB ID
+ * @apiSuccess (200) {String}       about               About the user
  * @apiSuccess (200) {String}       first_name          First name of user
  * @apiSuccess (200) {String}       last_name           Last name of user 
- * @apiSuccess (200) {String}       phone_number        Phone number of user
+ * @apiSuccess (200) {String}       username            Username of user 
  * @apiSuccess (200) {Object[]}     following           Array of who user followers
  * @apiSuccess (200) {ObjectId}     following._id       MongoDB ID of user following
  * @apiSuccess (200) {String}       following._username Username of user following 
@@ -102,6 +111,7 @@
  * @apiSuccessExample Response (example):
  *     HTTP/1.1 200 OK
     {
+        "about" :   "Hi I am John Doe!"
         "following": [],
         "followers": [],
         "_id": "5f3ac37951772102cbb2ce58",

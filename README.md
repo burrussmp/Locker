@@ -66,7 +66,7 @@ kill -9 <PID>
 mongo <URI>
 ```
 
-Example of a URI: "mongodb://localhost:27017/TestOpenMarketDB"
+Example: "mongo mongodb://localhost:27017/TestOpenMarketDB"
 
 The development database can be found here `https://cloud.mongodb.com/v2/5f33f3f7f345b67f0eccb772#clusters/detail/DevOpenMarket`
 
@@ -83,6 +83,13 @@ use <DB>
 ```
 
 ### Drop Specific DB
+
+```bash
+use <DB>
+db.dropDatabase()
+```
+
+### List DB entries
 
 ```bash
 use <DB>

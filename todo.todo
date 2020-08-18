@@ -26,9 +26,10 @@ Very Short Term
 27. Add Redis to server
 28. Check security practices
 
-Documentation to add
-1. Permissions to API
-2. Admin secret on login
+Tests to add
+1. Valid gender required test
+2. All tests for avatar
+3. R
 
 Medium Term
 1. Allow login with phone number without hyphens

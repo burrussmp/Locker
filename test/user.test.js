@@ -650,7 +650,7 @@ function main(){
                             .send({'hashed_password':'myNewPassword12$','bad_key':123,'old_password':UserData[1].password})
                             .set('Authorization',`Bearer ${res.body.token}`)
                             .then(async (res)=>{
-                                res.body.error.should.be.eql('Cannot update fields: hashed_password,bad_key')
+                                res.body.error.should.be.eql("Bad request: The following are invalid fields 'hashed_password,bad_key'")
                                 res.status.should.eql(400);
                             });
                     });

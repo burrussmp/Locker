@@ -1,12 +1,14 @@
 "use strict"; 
 
+//imports
 import aws from 'aws-sdk';
 import multer from 'multer';
 import multerS3 from 'multer-s3';
 import crypto from 'crypto';
 import errorHandler from './dbErrorHandler';
-import User from '../models/user.model';
+import Image from '../models/image.model';
 
+// configure environment
 aws.config.update({
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -23,93 +25,100 @@ const ImageFilter = (req, file, next) => {
   }
 }
 
-const deleteFileS3 = (key) =>{
+
+const deleteFileS3 = async (key) =>{
   let params = {
       Bucket: process.env.BUCKET_NAME,
       Key: key
   }
+  try {
+    await Image.deleteOne({'key':key});
+  } catch (err) {
+    console.log(err);
+  }
   s3.deleteObject(params, function(err, data) {
       if (err) console.log(err);
-});
+  });
 }
 
-
-const uploadProfilePhoto = (req, res, next) => {
-    const profile_upload = multer({
-        ImageFilter,
-        storage: multerS3({
-          s3,
-          bucket: process.env.BUCKET_NAME,
-          metadata: function (req, file, next) {
-            next(null, {
-                'type':'profile_photo',
-                'user_id':req.params.userId
-            });
-          },
-          key: function (req, file, next) {
-              next(null, crypto.randomBytes(16).toString('hex') + '_profile_photo')
-          }
-        })
-      })
-    const upload = profile_upload.single('profile_photo');
-    return upload(req, res, async function (err) {
-        if (err instanceof multer.MulterError) {
-            return res.status(500).send({error:'Multer error processing image'})
-        } else if (err) {
-            return res.status(422).send({error:'Access Denied: No access to S3 bucket. Check bucket policy.'});
-        }
-        let update = {
-          'profile_photo': {
-            'mimetype' : req.file.mimetype,
-            'key': req.file.key
-          } 
-        };
-        let query = {'_id' : req.params.userId};
-        try {
-          let user = await User.findOneAndUpdate(query, update,{runValidators:true});
-          if (user.profile_photo.key) deleteFileS3(user.profile_photo.key); // delete old
-          return res.status(200).json('Successfully updated user profile')
-        } catch (err) {
-          console.log(err);
-          if (req.file) deleteFileS3(req.file.key); // delete file that was uploaded if error
-          return res.status(400).json({
-            error: errorHandler.getErrorMessage(err)
-          })
-        }
+const uploadImageToS3 = (req,res,meta,imageHandler) => {
+  const image_upload = multer({
+    fileFilter: ImageFilter,
+    storage: multerS3({
+      s3,
+      bucket: process.env.BUCKET_NAME,
+      metadata: function (req, file, next) {
+        next(null, {
+            'type':meta.type,
+            'user_id':meta.uploadedBy
+        });
+      },
+      key: function (req, file, next) {
+          next(null, crypto.randomBytes(16).toString('hex') + `_meta.type`)
+      }
     })
+  });
+  const upload = image_upload.single('image');
+  return upload(req, res, async function (err) {
+      if (err instanceof multer.MulterError) {
+          return res.status(500).send({error:"Bad request: Check key in form data (should be 'image')"})
+      } else if (err) {
+          return res.status(422).send({error:err.message});
+      }
+      meta.key = req.file.key;
+      meta.mimetype = req.file.mimetype;
+      meta.originalName = req.file.originalname;
+      try {
+        let image = new Image(meta);
+        await image.save();
+        return imageHandler(req,res,image)
+      } catch (err) {
+        return res.status(400).json({
+          error: errorHandler.getErrorMessage(err)
+        })
+      }
+  })
 }
 
-const getFileS3 = (key) => {
+const getImageFromS3 = (req,res,image) => {
   let params = {
     Bucket: process.env.BUCKET_NAME,
-    Key: key
+    Key: image.key
   }
-  return s3.getObject(params,function(err,data){
+  s3.getObject(params,function(err,data){
     if (err){
-      console.log(err);
+      res.status(404).json({message:err.message})
+    } else {
+      try {
+        res.setHeader('Content-Length', data.ContentLength);
+        res.setHeader('Content-Type', image.mimetype);
+        res.write(data.Body)
+        res.end(null);
+      } catch {
+        res.status(500).json({message:'ServerError: Unable to send S3 image.'})
+      }
     }
   });
-};
+}
 
-const fileExistsS3 = (key) => {
+const listObjectsS3 = () => {
   let params = {
     Bucket: process.env.BUCKET_NAME,
-    Key: key
   }
-  return s3.headObject(params, function(err,data){
+  return s3.listObjectsV2(params, function(err,data){
     if (err){
       console.log(err);
     } else {
       console.log(data);
     }
-  }).createReadStream();
+  });
 };
 
 export default {
-    uploadProfilePhoto,
+    uploadImageToS3,
     deleteFileS3,
-    getFileS3,
-    fileExistsS3
+    getImageFromS3,
+    listObjectsS3,
 }
 
 // Missing secret

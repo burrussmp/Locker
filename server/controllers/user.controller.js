@@ -4,10 +4,10 @@ import User from '../models/user.model'
 import errorHandler from '../services/dbErrorHandler'
 import authCtrl from './auth.controller';
 import StaticStrings from '../../config/StaticStrings';
-import permissions from '../permissions'
-import file_upload from '../services/S3.services';
+import S3_services from '../services/S3.services';
 import _ from 'lodash';
 import fs from 'fs';
+
 /**
   * @desc Filter user for data
   * @param Object User query result
@@ -29,6 +29,24 @@ const filter_user = (user) => {
   * @param Object res - HTTP response object
 */ 
 const create = async (req, res) => {
+  // check if any invalid fields (bad request)
+  let mutable_fields = [
+    'first_name',
+    'phone_number',
+    'last_name',
+    'username',
+    'gender',
+    'email',
+    'date_of_birth',
+    'about',
+    'password',
+  ]
+  let update_fields = Object.keys(req.body);
+  let allowedToEdit = _.difference(update_fields,mutable_fields).length == 0;
+  if(!allowedToEdit){
+    let invalid_fields = _.difference(update_fields,mutable_fields)
+    return res.status(400).json({error:`Bad request: The following are invalid fields '${invalid_fields}'`})
+  }
   let user = new User(req.body);
   try {
     await user.save()
@@ -52,6 +70,7 @@ const userByID = async (req, res, next, id) => {
     let user = await User.findById(id)
       .populate('following', '_id name')
       .populate('followers', '_id name')
+      .populate('profile_photo','_id key mimetype')
       .exec()
     if (!user)
       return res.status('404').json({
@@ -99,7 +118,7 @@ const list = async (req, res) => {
 */ 
 const update = async (req, res) => {
     // check if any invalid fields (bad request)
-    let fields_that_can_be_updated = [
+    let mutable_fields = [
       'first_name',
       'phone_number',
       'last_name',
@@ -109,21 +128,19 @@ const update = async (req, res) => {
       'date_of_birth',
       'about',
       'password',
-      'old_password'
+      'old_password',
     ]
     let update_fields = Object.keys(req.body);
-    let allowedToEdit = _.isEqual(_.intersection(_.sortBy(fields_that_can_be_updated),_.sortBy(update_fields)),_.sortBy(update_fields));
+    let allowedToEdit = _.difference(update_fields,mutable_fields).length == 0;
     if(!allowedToEdit){
-      let invalid_fields = _.difference(update_fields,fields_that_can_be_updated)
-      return res.status(400).json({error:`Cannot update fields: ${invalid_fields}`})
+      let invalid_fields = _.difference(update_fields,mutable_fields)
+      return res.status(400).json({error:`Bad request: The following are invalid fields '${invalid_fields}'`})
     }
-
     let query = {'_id' : req.params.userId};
     try {
       let user = await User.findOneAndUpdate(query, req.body,{new:true,runValidators:true});
       return res.status(200).json(user)
     } catch (err) {
-      console.log(err)
       return res.status(400).json({
         error: errorHandler.getErrorMessage(err)
       })
@@ -136,7 +153,7 @@ const remove = async (req, res) => {
     let deletedUser = await user.remove()
     deletedUser.hashed_password = undefined
     deletedUser.salt = undefined
-    res.json(deletedUser)
+    return res.json(deletedUser)
   } catch (err) {
     return res.status(400).json({
       error: errorHandler.getErrorMessage(err)
@@ -146,37 +163,56 @@ const remove = async (req, res) => {
 
 
 const getProfilePhoto = (req, res) => {
-  if (req.profile.profile_photo.key){
+  if (req.profile.profile_photo && req.profile.profile_photo.key){
     let profile_photo = req.profile.profile_photo;
-    let s3_file = file_upload.getFileS3(profile_photo.key);
-    s3_file.on('httpHeaders', function (statusCode, headers) {
-      res.setHeader('Content-Length', headers['content-length']);
-      res.setHeader('Content-Type', profile_photo.mimetype);
-      this.response.httpResponse.createUnbufferedStream()
-          .pipe(res);
-    })
+    S3_services.getImageFromS3(req,res,profile_photo);
   } else {
     fs.createReadStream(process.cwd()+'/client/assets/images/profile-pic.png').pipe(res)
   }
 }
 
+const uploadProfilePhoto = (req, res) => {
+  let meta = {
+    'type': 'profile_photo',
+    'uploadedBy' : req.params.userId
+  };
+  return S3_services.uploadImageToS3(req,res,meta, async (req,res,image)=>{
+    let query = {'_id' : req.params.userId};
+    let update = {$set:{'profile_photo' : image._id}};
+    try {
+      let user = await User.findOneAndUpdate(query, update,{runValidators:true})
+        .populate('profile_photo','key')
+        .exec();
+      if (user.profile_photo) await S3_services.deleteFileS3(user.profile_photo.key); // delete old
+      return res.status(200).json('Successfully updated user profile')
+    } catch (err) {
+      if (req.file) await S3_services.deleteFileS3(req.file.key); // delete file that was uploaded if error
+      return res.status(400).json({
+        error: errorHandler.getErrorMessage(err)
+      })
+    }
+  })
+}
+
 const removeProfilePhoto = async (req, res) => {
   let query = {'_id' : req.params.userId};
-  let update = {'profile_photo' : undefined};
+  let update = {$unset: {'profile_photo' : ""}};
   try {
-    let user = await User.findOneAndUpdate(query, update);
-    if (user.profile_photo.key) file_upload.deleteFileS3(user.profile_photo.key); // delete old
-    return res.status(200).json({'message':'Successfully removed profile photo.'})
+    let user = await User.findOneAndUpdate(query, update)
+      .populate('profile_photo','key')
+      .exec();
+    if (user.profile_photo && user.profile_photo.key) {
+      await file_upload.deleteFileS3(user.profile_photo.key); // delete old
+      return res.status(200).json({'message':'Successfully removed profile photo.'})
+    } else {
+      return res.status(200).json({'message':'No profile photo to delete'});
+    }
   } catch (err) {
     return res.status(400).json({
       error: errorHandler.getErrorMessage(err)
     })
   }
 
-}
-
-const defaultPhoto = (req, res) => {
-  return res.sendFile(process.cwd()+profileImage)
 }
 
 const addFollowing = async (req, res, next) => {
@@ -264,8 +300,8 @@ export default {
   remove,
   update,
   getProfilePhoto,
+  uploadProfilePhoto,
   removeProfilePhoto,
-  defaultPhoto,
   addFollowing,
   addFollower,
   removeFollowing,

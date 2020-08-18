@@ -52,21 +52,17 @@ const UserSchema = new mongoose.Schema({
   },
   gender: {
     type: String,
-    enum: ['male','female','other',''],
-    default: ''
+    enum: {
+      values: ['male','female','other',''],
+      message: 'Valid gender required'
+    },
+    default: ""
   },
   about: {
     type: String,
-    trim: true
+    default: ""
   },
-  profile_photo: {
-    key : {
-      type: String
-    },
-    mimetype: {
-      type: String
-    }
-  },
+  profile_photo: {type: mongoose.Schema.ObjectId, ref: 'Image'},
   following: [{type: mongoose.Schema.ObjectId, ref: 'User'}],
   followers: [{type: mongoose.Schema.ObjectId, ref: 'User'}],
 
@@ -96,37 +92,29 @@ UserSchema.virtual('password')
 
 
 UserSchema.path('email').validate(async function (value) {
-  // check uniqueness
   const count = await mongoose.models.User.countDocuments({email: value });
   let isUnique = this ? count == 0 || !this.isModified('email') : count == 0;
   if (!isUnique)
     throw create_validation_error('Email already exists');
-  // check validity
   if (!isValidEmail(value))
     throw create_validation_error('Valid email is required');
 }, null);
 
 UserSchema.path('phone_number').validate(async function (value){
-  // check uniqueness
   const count = await mongoose.models.User.countDocuments({phone_number: value });
   let isUnique = this ? count == 0 || !this.isModified('phone_number') : count == 0;
   if (!isUnique) 
     throw create_validation_error('Phone number already exists');
-  // check validity
   if (!isValidPhoneNumber(value))
     throw create_validation_error('Valid phone number is required');
 }, null);
 
 
 UserSchema.path('username').validate(async function (value) {
-  // check uniqueness
   const count = await mongoose.models.User.countDocuments({username: value });
-  // if this is defined then 
   let isUnique = this ? count == 0 || !this.isModified('username') : count == 0;
   if (!isUnique)
-    // see if we are updating outself or someone else
     throw create_validation_error('Username already exists')
-  // check validity
   if (!isValidUsername(value)) 
     throw create_validation_error('Valid alphanumeric username (underscores allowed) required');
 }, null);
@@ -139,7 +127,7 @@ UserSchema.pre("save", function(next){
 })
 
 UserSchema.pre("remove",function(next){
-  if (this.profile_photo.key){
+  if (this.profile_photo && this.profile_photo.key){
     file_upload.deleteFileS3(this.profile_photo.key);
   }
   next();
@@ -148,12 +136,18 @@ UserSchema.pre("remove",function(next){
 UserSchema.pre("findOneAndUpdate", async function(){
   // sanitize
   let update = await this.getUpdate();
-  if (!update){
-    return;
+  if (!update) return // no updates
+  let doc = await this.model.findOne(this.getQuery());
+  if (!doc) return // nothing to update
+  // if no update, don't bother
+  for (let key of Object.keys(update)){
+    if (update[key] == doc[key]){
+      delete update[key]
+    }
   }
+  this.setUpdate(update);
   if (update.first_name){
     update.first_name = update.first_name.replace(/<(?:.|\n)*?>/gm, "");
-
   }
   if(update.last_name){
     update.last_name = update.last_name.replace(/<(?:.|\n)*?>/gm, "");
@@ -165,7 +159,7 @@ UserSchema.pre("findOneAndUpdate", async function(){
     ValidationError.addError('hashed_password',create_validation_error(StaticStrings.ErrorPasswordUpdateMissing));
     throw ValidationError;
   } else if (update.password && update.old_password){
-    let doc = await this.model.findOne(this.getQuery());
+    // add doc here later
     if (!doc.authenticate(update.old_password)){
       let ValidationError = new mongoose.Error.ValidationError(null);
       ValidationError.addError('password',create_validation_error(StaticStrings.ErrorPasswordUpdateIncorrect));

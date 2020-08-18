@@ -20,7 +20,7 @@ router.route('/api/users/:userId')
 
 router.route('/api/users/:userId/avatar')
   .get(userCtrl.getProfilePhoto)
-  .put(userCtrl.requireAuthorization,file_upload.uploadProfilePhoto)
+  .post(userCtrl.requireAuthorization,userCtrl.uploadProfilePhoto)
   .delete(userCtrl.requireAuthorization,userCtrl.removeProfilePhoto);
   
 router.route('/api/users/follow')

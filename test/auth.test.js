@@ -24,17 +24,17 @@ function main(){
             user = UserData[0];
             let new_user2 = new User(user);
             await new_user2.save();
-            console.log('valid')
-            console.log(new_user._id);
-            console.log('invalid')
-            console.log(new_user2._id);
-            chai.request(app)
-            .post('/auth/login')
-            .type('form')
-            .send({login:new_user.username,password:new_user.password})
-            .end((err, res) => {
-                console.log(res.body.token);
-            });
+            // console.log('valid')
+            // console.log(new_user._id);
+            // console.log('invalid')
+            // console.log(new_user2._id);
+            // chai.request(app)
+            // .post('/auth/login')
+            // .type('form')
+            // .send({login:new_user.username,password:new_user.password})
+            // .end((err, res) => {
+            //     console.log(res.body.token);
+            // });
         })
         it(`Check if User Collection Empty`, (done) => {
             chai.request(app)
