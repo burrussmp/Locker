@@ -11,7 +11,7 @@ import StaticStrings from '../../config/StaticStrings';
   * @param Object req - req.body.login : email, username, or phone number
   * @return Mongoose.model.User
 */
-const find_user = async (req) => {
+const findUserLogin = async (req) => {
   let login_info = req.body.login;
   let query = {$or: [{ email: login_info }, { username: login_info }, { phone_number: login_info }]};
   return await User.findOne(query)
@@ -35,7 +35,7 @@ const login = async (req, res) => {
         error: "Missing password"
       })
     }
-    let user = await find_user(req);
+    let user = await findUserLogin(req);
     if (!user)
       return res.status('404').json({
         error: "User not found"
