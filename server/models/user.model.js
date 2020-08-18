@@ -60,9 +60,6 @@ const UserSchema = new mongoose.Schema({
     trim: true
   },
   profile_photo: {
-    location: {
-      type: String,
-    },
     key : {
       type: String
     },
@@ -101,8 +98,8 @@ UserSchema.virtual('password')
 UserSchema.path('email').validate(async function (value) {
   // check uniqueness
   const count = await mongoose.models.User.countDocuments({email: value });
-  let valid = this ? count == 0 || !this.isModified('email') : count == 0;
-  if (!valid)
+  let isUnique = this ? count == 0 || !this.isModified('email') : count == 0;
+  if (!isUnique)
     throw create_validation_error('Email already exists');
   // check validity
   if (!isValidEmail(value))
@@ -112,19 +109,22 @@ UserSchema.path('email').validate(async function (value) {
 UserSchema.path('phone_number').validate(async function (value){
   // check uniqueness
   const count = await mongoose.models.User.countDocuments({phone_number: value });
-  let valid = this ? count == 0 || !this.isModified('phone_number') : count == 0;
-  if (!valid) 
+  let isUnique = this ? count == 0 || !this.isModified('phone_number') : count == 0;
+  if (!isUnique) 
     throw create_validation_error('Phone number already exists');
   // check validity
   if (!isValidPhoneNumber(value))
     throw create_validation_error('Valid phone number is required');
 }, null);
 
+
 UserSchema.path('username').validate(async function (value) {
   // check uniqueness
   const count = await mongoose.models.User.countDocuments({username: value });
-  let valid = this ? count == 0 || !this.isModified('username') : count == 0;
-  if (!valid) 
+  // if this is defined then 
+  let isUnique = this ? count == 0 || !this.isModified('username') : count == 0;
+  if (!isUnique)
+    // see if we are updating outself or someone else
     throw create_validation_error('Username already exists')
   // check validity
   if (!isValidUsername(value)) 
@@ -147,7 +147,10 @@ UserSchema.pre("remove",function(next){
 
 UserSchema.pre("findOneAndUpdate", async function(){
   // sanitize
-  let update = this.getUpdate();
+  let update = await this.getUpdate();
+  if (!update){
+    return;
+  }
   if (update.first_name){
     update.first_name = update.first_name.replace(/<(?:.|\n)*?>/gm, "");
 

@@ -2,14 +2,12 @@
 // imports
 import User from '../models/user.model'
 import errorHandler from '../services/dbErrorHandler'
-import profileImage from './../../client/assets/images/profile-pic.png'
 import authCtrl from './auth.controller';
 import StaticStrings from '../../config/StaticStrings';
 import permissions from '../permissions'
 import file_upload from '../services/S3.services';
 import _ from 'lodash';
-const fs = require('fs');
-
+import fs from 'fs';
 /**
   * @desc Filter user for data
   * @param Object User query result
@@ -74,12 +72,7 @@ const userByID = async (req, res, next, id) => {
   * @param Object res - HTTP response object
 */ 
 const read = (req, res) => {
-  if (req.profile.profile_photo){
-    res.setHeader('content-type',req.profile.profile_photo.mimetype);
-    let profile_read_stream = file_upload.getFileS3(req.profile_photo.profile_photo)
-    fs.createReadStream
-  }
-  req.profile = filter_user(req.profile)
+  req.profile = filter_user(req.profile);
   return res.json(req.profile)
 }
 
@@ -105,28 +98,32 @@ const list = async (req, res) => {
   * @param Object res - HTTP response object
 */ 
 const update = async (req, res) => {
-    // check if file has been uploaded to S3
-    if (req.file){
-      req.body.profile_photo = {
-        'mimetype' : req.file.mimetype,
-        'location': req.file.location,
-        'key': req.file.key
-      };
-    }
-    let A = permissions.MutableMongooseFields.User
-    let B = Object.keys(req.body);
-    let allowedToEdit = _.isEqual(_.intersection(_.sortBy(A),_.sortBy(B)),_.sortBy(B));
+    // check if any invalid fields (bad request)
+    let fields_that_can_be_updated = [
+      'first_name',
+      'phone_number',
+      'last_name',
+      'username',
+      'gender',
+      'email',
+      'date_of_birth',
+      'about',
+      'password',
+      'old_password'
+    ]
+    let update_fields = Object.keys(req.body);
+    let allowedToEdit = _.isEqual(_.intersection(_.sortBy(fields_that_can_be_updated),_.sortBy(update_fields)),_.sortBy(update_fields));
     if(!allowedToEdit){
-      if (req.file) file_upload.deleteFileS3(req.file.key); // delete file that was uploaded if error
-      let invalid_fields = _.difference(B,A)
+      let invalid_fields = _.difference(update_fields,fields_that_can_be_updated)
       return res.status(400).json({error:`Cannot update fields: ${invalid_fields}`})
     }
+
     let query = {'_id' : req.params.userId};
     try {
       let user = await User.findOneAndUpdate(query, req.body,{new:true,runValidators:true});
       return res.status(200).json(user)
     } catch (err) {
-      if (req.file) file_upload.deleteFileS3(req.file.key); // delete file that was uploaded if error
+      console.log(err)
       return res.status(400).json({
         error: errorHandler.getErrorMessage(err)
       })
@@ -148,12 +145,34 @@ const remove = async (req, res) => {
 }
 
 
-const photo = (req, res, next) => {
-  if(req.profile.photo.data){
-    res.set("Content-Type", req.profile.photo.contentType)
-    return res.send(req.profile.photo.data)
+const getProfilePhoto = (req, res) => {
+  if (req.profile.profile_photo.key){
+    let profile_photo = req.profile.profile_photo;
+    let s3_file = file_upload.getFileS3(profile_photo.key);
+    s3_file.on('httpHeaders', function (statusCode, headers) {
+      res.setHeader('Content-Length', headers['content-length']);
+      res.setHeader('Content-Type', profile_photo.mimetype);
+      this.response.httpResponse.createUnbufferedStream()
+          .pipe(res);
+    })
+  } else {
+    fs.createReadStream(process.cwd()+'/client/assets/images/profile-pic.png').pipe(res)
   }
-  next()
+}
+
+const removeProfilePhoto = async (req, res) => {
+  let query = {'_id' : req.params.userId};
+  let update = {'profile_photo' : undefined};
+  try {
+    let user = await User.findOneAndUpdate(query, update);
+    if (user.profile_photo.key) file_upload.deleteFileS3(user.profile_photo.key); // delete old
+    return res.status(200).json({'message':'Successfully removed profile photo.'})
+  } catch (err) {
+    return res.status(400).json({
+      error: errorHandler.getErrorMessage(err)
+    })
+  }
+
 }
 
 const defaultPhoto = (req, res) => {
@@ -244,7 +263,8 @@ export default {
   list,
   remove,
   update,
-  photo,
+  getProfilePhoto,
+  removeProfilePhoto,
   defaultPhoto,
   addFollowing,
   addFollower,

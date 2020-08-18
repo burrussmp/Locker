@@ -1,6 +1,7 @@
 
 Very Short Term
 
+5. Add tests
 6. Add basic url to change (put)
 7. Update login to accomodate users and organizations
 8. Assign a few users the admin privileges
@@ -22,6 +23,8 @@ Very Short Term
 24. Test the update function
 25. Test the admin access
 26. Migrate to AWS profiles
+27. Add Redis to server
+28. Check security practices
 
 Documentation to add
 1. Permissions to API
@@ -30,6 +33,12 @@ Documentation to add
 Medium Term
 1. Allow login with phone number without hyphens
 2. Add other genders to enum in User
+3. Change AWS configuration (change names and add various users)
+4. Migrate the permissions to a database
+    - Create a schema for the scopes
+    - Create a schema for the roles
+    - Map the roles to <resource><scope>
+    - Create function to append a role's permission to a User
 
 Types of roles
 1. admin

@@ -8,6 +8,7 @@ const StaticStrings = {
     ErrorPasswordUpdateIncorrect: 'Old password is incorrect',
     ErrorPasswordUpdateMissing: 'Must include the old password',
     ErrorCannotUpdateHashedPassword: 'Updating hashed password not allowed',
+    ErrorEmptyUpdate : 'Update object empty',
     // success
     SuccessSignedUp: "Successfully signed up!",
     

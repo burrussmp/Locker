@@ -46,7 +46,6 @@ const MutableMongooseFields = {
         'email',
         'date_of_birth',
         'about',
-        'profile_photo',
         'password',
         'old_password'
     ]
@@ -112,5 +111,4 @@ const checkPermissions = (req,res,next) => {
 export default {
     User_Role,
     checkPermissions,
-    MutableMongooseFields
 };

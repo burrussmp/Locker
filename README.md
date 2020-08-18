@@ -53,6 +53,13 @@ npm run development
 sudo mongod --dbpath ./data/db
 ```
 
+### Terminate MongoDB Locally
+
+```bash
+sudo lsof -iTCP -sTCP:LISTEN -n -P
+kill -9 <PID>
+```
+
 ### Connect
 
 ```bash

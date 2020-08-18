@@ -6,7 +6,6 @@ import {app} from '../server/server';
 import {UserData} from '../development/user.data'
 import {drop_database} from  './helper';
 import User from '../server/models/user.model';
-import { inRange } from 'lodash';
 import StaticStrings from '../config/StaticStrings';
 
 // Configure chai
@@ -648,10 +647,10 @@ function main(){
                         .send(login_user)
                         .then((res) => {
                         return agent.put(`/api/users/${res.body.user._id}`)
-                            .send({'hashed_password':'myNewPassword12$','old_password':UserData[1].password})
+                            .send({'hashed_password':'myNewPassword12$','bad_key':123,'old_password':UserData[1].password})
                             .set('Authorization',`Bearer ${res.body.token}`)
                             .then(async (res)=>{
-                                res.body.error.should.be.eql('Cannot update fields: hashed_password')
+                                res.body.error.should.be.eql('Cannot update fields: hashed_password,bad_key')
                                 res.status.should.eql(400);
                             });
                     });
@@ -671,6 +670,36 @@ function main(){
                             .then(async (res)=>{
                                 user_new_pass = await User.findOne({'username':UserData[1].username});
                                 user_new_pass.authenticate('myNewPassword12$').should.be.true;
+                                res.status.should.eql(200);
+                            });
+                    });
+                });
+            });
+            it("/PUT all possible mutable fields (except password and photo)", async ()=>{
+                let data = {
+                    'first_name': 'test',
+                    'last_name' : 'test',
+                    'username' : 'test',
+                    'gender' : 'male',
+                    'email' : 'new@mail.com',
+                    'date_of_birth' : new Date(2006,6,18,18,7),
+                    'about':'test',
+                    'phone_number': '345-323-3421'
+                }
+                return agent.get('/api/users')
+                    .then(res=>{
+                    res.body.length.should.eql(1);
+                    return agent.post('/auth/login')
+                        .send(login_user)
+                        .then((res) => {
+                        return agent.put(`/api/users/${res.body.user._id}`)
+                            .send(data)
+                            .set('Authorization',`Bearer ${res.body.token}`)
+                            .then(async (res)=>{
+                                let info = await User.findOne({'username':'test'}).select(Object.keys(data));
+                                for (let key of Object.keys(data)){
+                                    info[key].should.eql(data[key]);
+                                }
                                 res.status.should.eql(200);
                             });
                     });

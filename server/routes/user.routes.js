@@ -15,15 +15,14 @@ router.route('/api/users')
 
 router.route('/api/users/:userId')
   .get(userCtrl.read)
-  .put(userCtrl.requireAuthorization,file_upload.uploadProfilePhoto,userCtrl.update)
+  .put(userCtrl.requireAuthorization,userCtrl.update)
   .delete(userCtrl.requireAuthorization,userCtrl.remove);
 
-router.route('/api/users/photo/:userId')
-  .get(userCtrl.photo, userCtrl.defaultPhoto)
-
-router.route('/api/users/defaultphoto')
-  .get(userCtrl.defaultPhoto)
-
+router.route('/api/users/:userId/avatar')
+  .get(userCtrl.getProfilePhoto)
+  .put(userCtrl.requireAuthorization,file_upload.uploadProfilePhoto)
+  .delete(userCtrl.requireAuthorization,userCtrl.removeProfilePhoto);
+  
 router.route('/api/users/follow')
     .put(userCtrl.addFollowing, userCtrl.addFollower)
 
