@@ -1,3 +1,3 @@
 #!/bin/bash
 
-apidoc -i ./server/routes -o ./Documentation/
+apidoc -i ./_api_doc -o ./Documentation/ && xdg-open ./Documentation/index.html

@@ -12,30 +12,10 @@ import User from '../server/models/user.model';
 chai.use(chaiHttp);
 chai.should();
 
-function main(){
-    describe('User Auth', () => {
+const auth_tests = () => {
         before(async () =>{
             await drop_database();
         });
-        after(async function(){
-            let user = UserData[1];
-            let new_user = new User(user);
-            await new_user.save();
-            user = UserData[0];
-            let new_user2 = new User(user);
-            await new_user2.save();
-            // console.log('valid')
-            // console.log(new_user._id);
-            // console.log('invalid')
-            // console.log(new_user2._id);
-            // chai.request(app)
-            // .post('/auth/login')
-            // .type('form')
-            // .send({login:new_user.username,password:new_user.password})
-            // .end((err, res) => {
-            //     console.log(res.body.token);
-            // });
-        })
         it(`Check if User Collection Empty`, (done) => {
             chai.request(app)
                 .get('/api/users')
@@ -236,6 +216,19 @@ function main(){
                         done();
                     });
             });
+            describe('Check password authentication', () => {
+                it('Should authenticate', async ()=>{
+                    let userA = UserData[2];
+                    let user = new User(userA);
+                    user = await user.save();
+                    user.authenticate(userA.password).should.be.true;
+                })
+                it('Should not authenticate', async ()=>{
+                    let user = await User.findOne({username:UserData[0].username})
+                    user.authenticate('SomeDumbPassword').should.be.false;
+                    await drop_database();
+                })       
+            });
         });
         describe('Logout', () => {
             it("Correct logout", (done) => {
@@ -252,7 +245,6 @@ function main(){
                     });
             });
         });
-    });
 }
 
-export default main;
+export default auth_tests;

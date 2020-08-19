@@ -32,7 +32,7 @@ define({ "api": [
         }
       ]
     },
-    "filename": "server/routes/_auth_api_doc.js",
+    "filename": "_api_doc/_auth_api_doc.js",
     "groupTitle": "Auth",
     "sampleRequest": [
       {
@@ -197,7 +197,7 @@ define({ "api": [
         }
       ]
     },
-    "filename": "server/routes/_auth_api_doc.js",
+    "filename": "_api_doc/_auth_api_doc.js",
     "groupTitle": "Auth",
     "sampleRequest": [
       {
@@ -285,7 +285,7 @@ define({ "api": [
         }
       ]
     },
-    "filename": "server/routes/_user_api_doc.js",
+    "filename": "_api_doc/_user_api_doc.js",
     "groupTitle": "User",
     "sampleRequest": [
       {
@@ -327,6 +327,13 @@ define({ "api": [
             "group": "200",
             "type": "String",
             "optional": false,
+            "field": "about",
+            "description": "<p>About the user</p>"
+          },
+          {
+            "group": "200",
+            "type": "String",
+            "optional": false,
             "field": "first_name",
             "description": "<p>First name of user</p>"
           },
@@ -341,8 +348,8 @@ define({ "api": [
             "group": "200",
             "type": "String",
             "optional": false,
-            "field": "phone_number",
-            "description": "<p>Phone number of user</p>"
+            "field": "username",
+            "description": "<p>Username of user</p>"
           },
           {
             "group": "200",
@@ -405,7 +412,7 @@ define({ "api": [
       "examples": [
         {
           "title": "Response (example):",
-          "content": "HTTP/1.1 200 OK\n{\n    \"following\": [],\n    \"followers\": [],\n    \"_id\": \"5f3ac37951772102cbb2ce58\",\n    \"username\": \"JohnDoe\",\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\",\n    \"createdAt\": \"2020-08-17T17:50:49.777Z\",\n    \"updatedAt\": \"2020-08-17T17:50:49.777Z\"\n}",
+          "content": "HTTP/1.1 200 OK\n{\n    \"about\" :   \"Hi I am John Doe!\"\n    \"following\": [],\n    \"followers\": [],\n    \"_id\": \"5f3ac37951772102cbb2ce58\",\n    \"username\": \"JohnDoe\",\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\",\n    \"createdAt\": \"2020-08-17T17:50:49.777Z\",\n    \"updatedAt\": \"2020-08-17T17:50:49.777Z\"\n}",
           "type": "json"
         }
       ]
@@ -442,7 +449,7 @@ define({ "api": [
         }
       ]
     },
-    "filename": "server/routes/_user_api_doc.js",
+    "filename": "_api_doc/_user_api_doc.js",
     "groupTitle": "User",
     "sampleRequest": [
       {
@@ -541,13 +548,6 @@ define({ "api": [
             "optional": true,
             "field": "about",
             "description": "<p>Description of user</p>"
-          },
-          {
-            "group": "Request body",
-            "type": "File",
-            "optional": true,
-            "field": "profile_photo",
-            "description": "<p>Profile image</p>"
           }
         ]
       },
@@ -592,18 +592,164 @@ define({ "api": [
       },
       "examples": [
         {
-          "title": "Error-Response:",
+          "title": "Invalid username:",
           "content": "HTTP/1.1 400 Internal Server Error\n{\n  \"error\": \"A valid username is required\"\n}",
+          "type": "json"
+        },
+        {
+          "title": "Invalid field:",
+          "content": "HTTP/1.1 400 Internal Server Error\n    {\n        \"error\": \"Bad request: The following are invalid fields 'bad_key'\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "Non-Unique Constraint:",
+          "content": "HTTP/1.1 400 Internal Server Error\n    {\n        \"error\": \"Email already exists\"\n    }",
           "type": "json"
         }
       ]
     },
-    "filename": "server/routes/_user_api_doc.js",
+    "filename": "_api_doc/_user_api_doc.js",
     "groupTitle": "User",
     "sampleRequest": [
       {
         "url": "http://localhost:3000/api/users"
       }
     ]
+  },
+  {
+    "type": "post",
+    "url": "/api/users/:userId/avatar",
+    "title": "Update Profile Photo",
+    "description": "<p>Updates the user's profile photo by storing it in AWS S3 bucket.</p>",
+    "name": "PostApiUsersUserIdAvatar",
+    "group": "User",
+    "version": "0.1.0",
+    "permission": [
+      {
+        "name": "LoginRequired",
+        "title": "Require login",
+        "description": ""
+      },
+      {
+        "name": "OwnershipRequired",
+        "title": "Require Ownership",
+        "description": "<p>Must own the resource you are requesting</p>"
+      },
+      {
+        "name": "UserEditContent",
+        "title": "Require scope \"user:edit_content\"",
+        "description": "<p>Assigned to all Users by default</p>"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Form Data": [
+          {
+            "group": "Form Data",
+            "type": "File",
+            "optional": false,
+            "field": "image",
+            "description": "<p>Profile image to upload</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "200": [
+          {
+            "group": "200",
+            "type": "String",
+            "optional": false,
+            "field": "message",
+            "description": "<p>Successfully uploaded user profile photo</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Response (example):",
+          "content": "HTTP/1.1 200 OK\n{\n    \"message\" :  Successfully uploaded user profile photo\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "4xx": [
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "401",
+            "description": "<p>Invalid or missing token in Authorization header (Authorization: bearer <token>)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "400",
+            "description": "<p>No file selected</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Insufficient permissions.</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "422",
+            "description": "<p>Not an image file</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "NotLoggedIn:",
+          "content": "HTTP/1.1 401 Unauthorized\n    {\n        \"error\": \"UnauthorizedError: Invalid or missing JWT token.\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "MissingFile:",
+          "content": "HTTP/1.1 400 Bad Request\n    {\n        \"error\": \"Missing file to upload\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "BadPermissions:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"Insufficient permissions\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "NotOwner:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"User is not authorized to access resource\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "UnprocessableEntity:",
+          "content": "HTTP/1.1 422 Unprocessable Entity\n    {\n        \"error\": \"Invalid Mime Type, only JPEG and PNG\"\n    }",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "_api_doc/_user_api_doc.js",
+    "groupTitle": "User",
+    "sampleRequest": [
+      {
+        "url": "http://localhost:3000/api/users/:userId/avatar"
+      }
+    ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code></p>"
+          }
+        ]
+      }
+    }
   }
 ] });

@@ -1,5 +1,5 @@
 import UserTest from './user.test';
 import AuthTest from './auth.test';
 
-UserTest()
-AuthTest();
+//describe('Auth Tests',AuthTest)
+describe('User Tests',UserTest)

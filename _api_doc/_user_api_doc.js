@@ -136,3 +136,57 @@
         }
  * 
  */
+
+ /**
+ * @api {post} /api/users/:userId/avatar Update Profile Photo
+ * @apiDescription Updates the user's profile photo by storing it in AWS S3 bucket.
+ * @apiName PostApiUsersUserIdAvatar
+ * @apiGroup User
+ * @apiVersion 0.1.0
+ * @apiUse LoginHeader
+ * @apiPermission LoginRequired
+ * @apiPermission OwnershipRequired
+ * @apiPermission UserEditContent
+ * @apiParam    (Form Data)  {File}        image        Profile image to upload
+ * @apiSuccess (200) {String} message      Successfully uploaded user profile photo
+ * @apiSuccessExample Response (example):
+ *     HTTP/1.1 200 OK
+    {
+        "message" :  Successfully uploaded user profile photo
+    }
+ * @apiError (4xx) 401 Invalid or missing token in Authorization header (Authorization: bearer <token>)
+ * @apiErrorExample NotLoggedIn:
+ *     HTTP/1.1 401 Unauthorized
+        {
+            "error": "UnauthorizedError: Invalid or missing JWT token."
+        }
+ * 
+ * @apiError (4xx) 400 No file selected
+ * @apiErrorExample MissingFile:
+ *     HTTP/1.1 400 Bad Request
+        {
+            "error": "Missing file to upload"
+        }
+ * 
+ * @apiError (4xx) 403 Insufficient permissions.
+ * @apiErrorExample BadPermissions:
+ *     HTTP/1.1 403 Forbidden
+        {
+            "error": "Insufficient permissions"
+        }
+ * 
+  * @apiError (4xx) 403 Not owner
+ * @apiErrorExample NotOwner:
+ *     HTTP/1.1 403 Forbidden
+        {
+            "error": "User is not authorized to access resource"
+        }
+ * 
+   * @apiError (4xx) 422 Not an image file
+ * @apiErrorExample UnprocessableEntity:
+ *     HTTP/1.1 422 Unprocessable Entity
+        {
+            "error": "Invalid Mime Type, only JPEG and PNG"
+        }
+ * 
+ */

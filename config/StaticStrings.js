@@ -62,8 +62,8 @@ const StaticStrings = {
     },
     SignedUpSuccess: "Successfully signed up!",
     LoggedOutSuccess: "Logged out",
-    UploadProfilePhotoSuccess: "Successfully uploaded user profile photo.",
-    RemoveProfilePhotoSuccess: "Successfully removed profile photo.",
+    UploadProfilePhotoSuccess: "Successfully uploaded user profile photo",
+    RemoveProfilePhotoSuccess: "Successfully removed profile photo",
 };
 
 export default StaticStrings;
