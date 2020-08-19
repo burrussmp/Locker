@@ -139,7 +139,7 @@ const avatar_test = () => {
                     });
                 });
             })
-            it("Check permissions (should fail)", async()=>{
+            it("Invalid permissions (should fail)", async()=>{
                 await User.findOneAndUpdate({'username':user.username},{'permissions':["user:read"]},{new:true});
                 return agent.post('/auth/login').send(login_user).then((res) => {
                     res.body.should.have.property('token');
@@ -239,8 +239,8 @@ const avatar_test = () => {
                         })
                     })
                 });
-            })
-        }).timeout(3000);
+            }).timeout(3000);
+        })
         describe("GET /api/users/:userId/avatar", ()=>{
             let id0,id1;
             let agent = chai.request.agent(app);
@@ -310,7 +310,7 @@ const avatar_test = () => {
                     });
                 });
             })
-            it("Check permissions (should fail)", async()=>{
+            it("Invalid permissions (should fail)", async()=>{
                 await User.findOneAndUpdate({'username':user.username},{'permissions':["user:edit_content"]},{new:true});
                 return agent.post('/auth/login').send(login_user).then((res) => {
                     res.body.should.have.property('token');
@@ -443,7 +443,7 @@ const avatar_test = () => {
                         res.body.error.should.eql(StaticStrings.UserNotFoundError)
                     });
             });
-            it("Check permissions (should fail)", async()=>{
+            it("Invalid permissions (should fail)", async()=>{
                 await User.findOneAndUpdate({'username':user.username},{'permissions':["user:read"]},{new:true});
                 let id = id0;
                 let m_token = token;
