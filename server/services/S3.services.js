@@ -35,24 +35,18 @@ const ImageFilter = (req, file, next) => {
 /**
   * @desc (Middleware) Delete a specific file from S3 and the reference in MongoDB
   * @param String key - S3 file identifier
-  * @param Function next - callback
+  * @return Returns a promise
 */
-const deleteImageS3 = async (key,next) =>{
+const deleteImageS3 = async (key) =>{
   let params = {
       Bucket: process.env.BUCKET_NAME,
       Key: key
   }
   try {
     await Image.deleteOne({'key':key});
-    s3.deleteObject(params, function(err, data) {
-      if (err) {
-        next(err);
-      } else {
-        next();
-      }
-    });
+    return s3.deleteObject(params).promise()
   } catch (err) {
-    next(err)
+    throw err;
   }
 }
 
@@ -81,7 +75,7 @@ const uploadImageS3 = (req,res,meta,next) => {
     })
   });
   const upload = image_upload.single('image'); // Parse req and upload image to S3
-  return upload(req, res, async function (err) {
+  upload(req, res, async function (err) {
       if (err instanceof multer.MulterError) {
           return res.status(500).send({error:StaticStrings.S3ServiceErrors.BadRequestWrongKey})
       } else if (err) {
@@ -98,63 +92,63 @@ const uploadImageS3 = (req,res,meta,next) => {
         await image.save();
         next(req,res,image);
       } catch (err) {
-        deleteImageS3(meta.key,(err2)=>{
-          if(err){
-            res.status(500).json({error: err.message+' and ' +errorHandler.getErrorMessage(err2)})
-          } else {
+        deleteImageS3(meta.key)
+          .then(()=>{
             res.status(400).json({error: StaticStrings.S3ServiceErrors.BadImageUploadSuccessfulDelete + err.message})
-          }
-        });
+          }).catch((err)=>{
+            res.status(500).json({error: err.message+' and ' +errorHandler.getErrorMessage(err2)})
+          })
       }
   })
 }
 
 /**
   * @desc Retrieves contents from S3 bucket
-  * @param {Function} next - callback? : (err: Object, data : Object)
+  * @return Returns a promise where the resolve contains the list of files in S3 and the
+  * meta data of the bucket and reject contains the error
  */
-const listObjectsS3 = (next) => {
+const listObjectsS3 = () => {
   let params = {
     Bucket: process.env.BUCKET_NAME,
   }
-  s3.listObjectsV2(params, function(err,data){
-    next(err,data)
-  });
+  s3.listObjectsV2(params).promise();
 };
 
 /**
   * @desc Send image from S3 in HTTP response
-  * @param Object req - HTTP request
-  * @param Object res - HTTP response
   * @param Mongoose.schema.model.Image image - MongoDB image object
+  * @return Returns a promise where the resolve contains the image data and reject
+  * contains the error
 */
-const sendImageS3 = (req,res,image) => {
+const getImageS3 = (image) => {
   let params = {
     Bucket: process.env.BUCKET_NAME,
     Key: image.key
   }
-  s3.getObject(params,function(err,data){
-    if (err){
-      res.status(404).json({message:err.message})
-    } else {
-      try {
-        res.setHeader('Content-Length', data.ContentLength);
-        res.setHeader('Content-Type', image.mimetype);
-        res.write(data.Body)
-        res.end(null);
-      } catch {
-        res.status(500).json({message:StaticStrings.S3ServiceErrors.UploadServerError})
-      }
-    }
-  });
+  return s3.getObject(params).promise()
+}
+
+/**
+  * @desc Send image from S3 in HTTP response
+  * @param String key     - S3 object key
+  * @return Returns a promise where the resolve contains the image meta data
+  * and the reject contains an error
+*/
+const fileExistsS3 = async (key) => {
+  let params = {
+    Bucket: process.env.BUCKET_NAME,
+    Key: key
+  }
+  return s3.headObject(params).promise();
 }
 
 
 export default {
     uploadImageS3,
     deleteImageS3,
-    sendImageS3,
+    getImageS3,
     listObjectsS3,
+    fileExistsS3
 }
 
 // Missing secret

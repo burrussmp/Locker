@@ -109,7 +109,7 @@ const Authorize = (req,res,next) => {
                 case 'GET':
                     required_permissions.push(User_Permissions.Read);
                     break;
-                case 'PUT':
+                case 'POST':
                     required_permissions.push(User_Permissions.EditContent)
                     break;
                 case 'DELETE':

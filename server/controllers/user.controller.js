@@ -179,7 +179,19 @@ const remove = async (req, res) => {
 const getProfilePhoto = (req, res) => {
   if (req.profile.profile_photo && req.profile.profile_photo.key){
     let profile_photo = req.profile.profile_photo;
-    S3_Services.sendImageS3(req,res,profile_photo);
+    S3_Services.getImageS3(profile_photo)
+      .catch((err)=>{
+        res.status(404).json({message:err.message})
+      }).then((data)=>{
+        try {
+          res.setHeader('Content-Length', data.ContentLength);
+          res.setHeader('Content-Type', image.mimetype);
+          res.write(data.Body)
+          res.end(null);
+        } catch {
+          res.status(500).json({message:StaticStrings.S3ServiceErrors.UploadServerError})
+        }
+      });
   } else {
     fs.createReadStream(DefaultProfilePhoto).pipe(res)
   }
@@ -203,25 +215,21 @@ const uploadProfilePhoto = (req, res) => {
         .populate('profile_photo','key')
         .exec();
       if (user.profile_photo) {
-        S3_Services.deleteImageS3(user.profile_photo.key, (err)=>{
-          if (err){
-            res.status(500).json({error:err.message})
-          } else {
-            res.status(200).json({message: StaticStrings.UploadProfilePhotoSuccess})
-          }
-        });
+        S3_Services.deleteImageS3(user.profile_photo.key).then(()=>{
+          res.status(200).json({message: StaticStrings.UploadProfilePhotoSuccess})
+        }).catch(err=>{
+          res.status(500).json({error:err.message})
+        })
       } else {
         res.status(200).json({message:StaticStrings.UploadProfilePhotoSuccess})
       }
     } catch (err) {
       if (req.file) {
-        S3_Services.deleteImageS3(req.file.key,(err)=>{
-          if (err){
-            res.status(500).json({error:StaticStrings.S3ServiceErrors.DeleteServerError + ' and ' + err.message})
-          } else {
-            res.status(500).json({error:StaticStrings.UserControllerErrors.BadUploadSuccessfulDelete})
-          }
-        });
+        S3_Services.deleteImageS3(req.file.key).then(()=>{
+          res.status(500).json({error:StaticStrings.UserControllerErrors.BadUploadSuccessfulDelete})
+        }).catch((err)=>{
+          res.status(500).json({error:StaticStrings.S3ServiceErrors.DeleteServerError + ' and ' + err.message})
+        })
       } else {
         res.status(400).json({error: errorHandler.getErrorMessage(err)})
       }
@@ -242,13 +250,11 @@ const removeProfilePhoto = async (req, res) => {
       .populate('profile_photo','key')
       .exec();
     if (user.profile_photo && user.profile_photo.key) {
-      S3_Services.deleteImageS3(user.profile_photo.key,(err)=>{
-        if (err){
-          res.status(500).json({error: err.message})
-        } else {
-          res.status(200).json({message:StaticStrings.RemoveProfilePhotoSuccess})
-        }
-      });
+      S3_Services.deleteImageS3(user.profile_photo.key).then(()=>{
+        res.status(200).json({message:StaticStrings.RemoveProfilePhotoSuccess})
+      }).catch(err=>{
+        res.status(500).json({error: err.message})
+      })
     } else {
       res.status(404).json({error:StaticStrings.UserControllerErrors.ProfilePhotoNotFound});
     }

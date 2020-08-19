@@ -1,6 +1,6 @@
 /**
- * @api {get} /api/users List all users
- * @apiDescription List all Locker users
+ * @api {get} /api/users List All Users
+ * @apiDescription Fetch a list of Locker users
  * @apiName GetApiUsers
  * @apiGroup User
  * @apiVersion 0.1.0
@@ -27,7 +27,7 @@
  *        "created": "2020-08-12T23:58:20.137Z"
  *      },
  *     ]
- * @apiError (5xx) InternalServerError Unable to retrieve users from database (e.g. unable to connect or overloaded)
+ * @apiError (5xx) 500 Unable to retrieve users from database (e.g. unable to connect or overloaded)
  * @apiErrorExample Error-Response:
  *     HTTP/1.1 500 Internal Server Error
  *     {
@@ -37,7 +37,7 @@
  */
 
  /**
- * @api {post} /api/users Create new user
+ * @api {post} /api/users Sign Up
  * @apiDescription Sign in a new user to Locker
  * @apiName PostApiUsers
  * @apiGroup User
@@ -51,7 +51,7 @@
  * @apiParam    (Request body)  {String}      password        <code>Required</code> Password (at least 7 characters; at least 1 number; at least one of @, !, #, $, % or ^; at least 1 uppercase letter)
  * @apiParam    (Request body)  {Date}        [date_of_birth] Date of birth
  * @apiParam    (Request body)  {String}      [gender]        Gender
- * @apiParam    (Request body)  {String}      [about]         Description of user
+ * @apiParam    (Request body)  {String}      [about]         Description of user (Cannot exceed 120 characters)
  * @apiParamExample {json} Request-Example:
  * {
  *  "first_name"    : "John",
@@ -68,7 +68,7 @@
  *      {
  *        "message": "Successfully signed up!"
  *      }
- * @apiError (4xx) BadRequest Missing required fields, invalid fields, non-unique username/email/phone number, etc.
+ * @apiError (4xx) 400 Missing required fields, invalid fields, non-unique username/email/phone number, etc.
  * @apiErrorExample Invalid username:
  *     HTTP/1.1 400 Internal Server Error
  *     {
@@ -87,14 +87,16 @@
  */
 
  /**
- * @api {get} /api/users/:userId Read specific user's data
- * @apiDescription Retrieve data from a specific user queried by ObjectID
+ * @api {get} /api/users/:userId Read Specific User
+ * @apiDescription Retrieve data from a specific user queried by :userId path parameter in URL
  * @apiName GetApiUsersbyID
  * @apiGroup User
  * @apiVersion 0.1.0
  * @apiUse LoginHeader
  * @apiPermission LoginRequired
- * @apiPermission UserRead 
+ * @apiUse LoginError
+ * @apiPermission UserRead
+ * @apiUse PermissionError
  * @apiSuccess (200) {ObjectId}     _id                 MongoDB ID
  * @apiSuccess (200) {String}       about               About the user
  * @apiSuccess (200) {String}       first_name          First name of user
@@ -121,32 +123,21 @@
         "createdAt": "2020-08-17T17:50:49.777Z",
         "updatedAt": "2020-08-17T17:50:49.777Z"
     }
- * @apiError (401) NotAuthorized Invalid or missing token in Authorization header (Authorization: bearer <token>)
- * @apiErrorExample Error-Response:
- *     HTTP/1.1 401 Unauthorized
-        {
-            "error": "UnauthorizedError: Invalid or missing JWT token."
-        }
- * 
- * @apiError (403) Forbidden Insufficient permissions.
- * @apiErrorExample Error-Response:
- *     HTTP/1.1 403 Forbidden
-        {
-            "error": "Insufficient permissions"
-        }
- * 
  */
 
  /**
  * @api {post} /api/users/:userId/avatar Update Profile Photo
- * @apiDescription Updates the user's profile photo by storing it in AWS S3 bucket.
+ * @apiDescription Updates the user's profile photo by storing it in an AWS S3 bucket.
  * @apiName PostApiUsersUserIdAvatar
  * @apiGroup User
  * @apiVersion 0.1.0
  * @apiUse LoginHeader
  * @apiPermission LoginRequired
+ * @apiUse LoginError
  * @apiPermission OwnershipRequired
+ * @apiUse OwnershipError
  * @apiPermission UserEditContent
+ * @apiUse PermissionError
  * @apiParam    (Form Data)  {File}        image        Profile image to upload
  * @apiSuccess (200) {String} message      Successfully uploaded user profile photo
  * @apiSuccessExample Response (example):
@@ -154,13 +145,7 @@
     {
         "message" :  Successfully uploaded user profile photo
     }
- * @apiError (4xx) 401 Invalid or missing token in Authorization header (Authorization: bearer <token>)
- * @apiErrorExample NotLoggedIn:
- *     HTTP/1.1 401 Unauthorized
-        {
-            "error": "UnauthorizedError: Invalid or missing JWT token."
-        }
- * 
+ 
  * @apiError (4xx) 400 No file selected
  * @apiErrorExample MissingFile:
  *     HTTP/1.1 400 Bad Request
@@ -168,21 +153,7 @@
             "error": "Missing file to upload"
         }
  * 
- * @apiError (4xx) 403 Insufficient permissions.
- * @apiErrorExample BadPermissions:
- *     HTTP/1.1 403 Forbidden
-        {
-            "error": "Insufficient permissions"
-        }
- * 
-  * @apiError (4xx) 403 Not owner
- * @apiErrorExample NotOwner:
- *     HTTP/1.1 403 Forbidden
-        {
-            "error": "User is not authorized to access resource"
-        }
- * 
-   * @apiError (4xx) 422 Not an image file
+ * @apiError (4xx) 422 Not an image file
  * @apiErrorExample UnprocessableEntity:
  *     HTTP/1.1 422 Unprocessable Entity
         {

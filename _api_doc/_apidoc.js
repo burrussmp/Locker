@@ -12,19 +12,41 @@
 // ------------------------------------------------------------------------------------------
 
 /**
- * @apiDefine CreateUserError
- * @apiVersion 0.2.0
+ * @apiDefine LoginError
+ * @apiVersion 0.1.0
  *
- * @apiError NoAccessRight Only authenticated Admins can access the data.
- * @apiError UserNameTooShort Minimum of 5 characters required.
- *
- * @apiErrorExample  Response (example):
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "error": "UserNameTooShort"
- *     }
+ * @apiError (4xx) 401 Invalid or missing token in Authorization header (Authorization: bearer <token>)
+ * @apiErrorExample NotLoggedIn:
+ *     HTTP/1.1 401 Unauthorized
+        {
+            "error": "UnauthorizedError: Invalid or missing JWT token."
+        }
+ * 
  */
 
+/**
+ * @apiDefine PermissionError
+ * @apiVersion 0.1.0
+ *
+ * @apiError (4xx) 403 Unauthorized
+ * @apiErrorExample BadPermissions:
+ *     HTTP/1.1 403 Forbidden
+        {
+            "error": "Insufficient permissions"
+        }
+ */
+
+ /**
+ * @apiDefine OwnershipError
+ * @apiVersion 0.1.0
+ *
+ * @apiError (4xx) 403 Unauthorized
+ * @apiErrorExample NotOwner:
+ *     HTTP/1.1 403 Forbidden
+        {
+            "error": "User is not authorized to access resource"
+        }
+ */
 
 // ------------------------------------------------------------------------------------------
 // Current Permissions.

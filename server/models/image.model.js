@@ -40,4 +40,14 @@ const ImageSchema = new mongoose.Schema({
     }
   })
 
+ImageSchema.pre("remove",function(next){
+  if (this.key){
+    S3_Services.deleteImageS3(this.key)
+      .catch((err)=>{
+        console.log(err);
+      })
+  }
+  next();
+});
+
 export default mongoose.model('Image', ImageSchema)

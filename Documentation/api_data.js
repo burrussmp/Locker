@@ -44,7 +44,7 @@ define({ "api": [
     "type": "post",
     "url": "/auth/login",
     "title": "Login",
-    "description": "<p>Log into an existing Locker account</p>",
+    "description": "<p>Login to Locker account</p>",
     "name": "PostAuthLogin",
     "group": "Auth",
     "version": "0.1.0",
@@ -130,41 +130,31 @@ define({ "api": [
     },
     "error": {
       "fields": {
-        "400": [
+        "4xx": [
           {
-            "group": "400",
+            "group": "4xx",
             "optional": false,
-            "field": "MissingLoginInfo",
+            "field": "400",
             "description": "<p>Missing username, phone number, email.</p>"
           },
           {
-            "group": "400",
+            "group": "4xx",
             "optional": false,
-            "field": "MissingPassword",
-            "description": "<p>Missing password</p>"
-          }
-        ],
-        "401": [
-          {
-            "group": "401",
-            "optional": false,
-            "field": "InvalidPassword",
+            "field": "401",
             "description": "<p>Invalid password</p>"
-          }
-        ],
-        "404": [
+          },
           {
-            "group": "404",
+            "group": "4xx",
             "optional": false,
-            "field": "UserNotFound",
+            "field": "404",
             "description": "<p>User not found</p>"
           }
         ],
-        "500": [
+        "5xx": [
           {
-            "group": "500",
+            "group": "5xx",
             "optional": false,
-            "field": "ServerError",
+            "field": "500",
             "description": "<p>Server unable to login user</p>"
           }
         ]
@@ -208,8 +198,8 @@ define({ "api": [
   {
     "type": "get",
     "url": "/api/users",
-    "title": "List all users",
-    "description": "<p>List all Locker users</p>",
+    "title": "List All Users",
+    "description": "<p>Fetch a list of Locker users</p>",
     "name": "GetApiUsers",
     "group": "User",
     "version": "0.1.0",
@@ -272,7 +262,7 @@ define({ "api": [
           {
             "group": "5xx",
             "optional": false,
-            "field": "InternalServerError",
+            "field": "500",
             "description": "<p>Unable to retrieve users from database (e.g. unable to connect or overloaded)</p>"
           }
         ]
@@ -296,8 +286,8 @@ define({ "api": [
   {
     "type": "get",
     "url": "/api/users/:userId",
-    "title": "Read specific user's data",
-    "description": "<p>Retrieve data from a specific user queried by ObjectID</p>",
+    "title": "Read Specific User",
+    "description": "<p>Retrieve data from a specific user queried by :userId path parameter in URL</p>",
     "name": "GetApiUsersbyID",
     "group": "User",
     "version": "0.1.0",
@@ -417,38 +407,6 @@ define({ "api": [
         }
       ]
     },
-    "error": {
-      "fields": {
-        "401": [
-          {
-            "group": "401",
-            "optional": false,
-            "field": "NotAuthorized",
-            "description": "<p>Invalid or missing token in Authorization header (Authorization: bearer <token>)</p>"
-          }
-        ],
-        "403": [
-          {
-            "group": "403",
-            "optional": false,
-            "field": "Forbidden",
-            "description": "<p>Insufficient permissions.</p>"
-          }
-        ]
-      },
-      "examples": [
-        {
-          "title": "Error-Response:",
-          "content": "HTTP/1.1 401 Unauthorized\n    {\n        \"error\": \"UnauthorizedError: Invalid or missing JWT token.\"\n    }",
-          "type": "json"
-        },
-        {
-          "title": "Error-Response:",
-          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"Insufficient permissions\"\n    }",
-          "type": "json"
-        }
-      ]
-    },
     "filename": "_api_doc/_user_api_doc.js",
     "groupTitle": "User",
     "sampleRequest": [
@@ -468,12 +426,42 @@ define({ "api": [
           }
         ]
       }
+    },
+    "error": {
+      "fields": {
+        "4xx": [
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "401",
+            "description": "<p>Invalid or missing token in Authorization header (Authorization: bearer <token>)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Unauthorized</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "NotLoggedIn:",
+          "content": "HTTP/1.1 401 Unauthorized\n    {\n        \"error\": \"UnauthorizedError: Invalid or missing JWT token.\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "BadPermissions:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"Insufficient permissions\"\n    }",
+          "type": "json"
+        }
+      ]
     }
   },
   {
     "type": "post",
     "url": "/api/users",
-    "title": "Create new user",
+    "title": "Sign Up",
     "description": "<p>Sign in a new user to Locker</p>",
     "name": "PostApiUsers",
     "group": "User",
@@ -547,7 +535,7 @@ define({ "api": [
             "type": "String",
             "optional": true,
             "field": "about",
-            "description": "<p>Description of user</p>"
+            "description": "<p>Description of user (Cannot exceed 120 characters)</p>"
           }
         ]
       },
@@ -585,7 +573,7 @@ define({ "api": [
           {
             "group": "4xx",
             "optional": false,
-            "field": "BadRequest",
+            "field": "400",
             "description": "<p>Missing required fields, invalid fields, non-unique username/email/phone number, etc.</p>"
           }
         ]
@@ -620,7 +608,7 @@ define({ "api": [
     "type": "post",
     "url": "/api/users/:userId/avatar",
     "title": "Update Profile Photo",
-    "description": "<p>Updates the user's profile photo by storing it in AWS S3 bucket.</p>",
+    "description": "<p>Updates the user's profile photo by storing it in an AWS S3 bucket.</p>",
     "name": "PostApiUsersUserIdAvatar",
     "group": "User",
     "version": "0.1.0",
@@ -680,43 +668,43 @@ define({ "api": [
           {
             "group": "4xx",
             "optional": false,
-            "field": "401",
-            "description": "<p>Invalid or missing token in Authorization header (Authorization: bearer <token>)</p>"
-          },
-          {
-            "group": "4xx",
-            "optional": false,
             "field": "400",
             "description": "<p>No file selected</p>"
           },
           {
             "group": "4xx",
             "optional": false,
-            "field": "403",
-            "description": "<p>Insufficient permissions.</p>"
+            "field": "422",
+            "description": "<p>Not an image file</p>"
           },
           {
             "group": "4xx",
             "optional": false,
-            "field": "422",
-            "description": "<p>Not an image file</p>"
+            "field": "401",
+            "description": "<p>Invalid or missing token in Authorization header (Authorization: bearer <token>)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Unauthorized</p>"
           }
         ]
       },
       "examples": [
-        {
-          "title": "NotLoggedIn:",
-          "content": "HTTP/1.1 401 Unauthorized\n    {\n        \"error\": \"UnauthorizedError: Invalid or missing JWT token.\"\n    }",
-          "type": "json"
-        },
         {
           "title": "MissingFile:",
           "content": "HTTP/1.1 400 Bad Request\n    {\n        \"error\": \"Missing file to upload\"\n    }",
           "type": "json"
         },
         {
-          "title": "BadPermissions:",
-          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"Insufficient permissions\"\n    }",
+          "title": "UnprocessableEntity:",
+          "content": "HTTP/1.1 422 Unprocessable Entity\n    {\n        \"error\": \"Invalid Mime Type, only JPEG and PNG\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "NotLoggedIn:",
+          "content": "HTTP/1.1 401 Unauthorized\n    {\n        \"error\": \"UnauthorizedError: Invalid or missing JWT token.\"\n    }",
           "type": "json"
         },
         {
@@ -725,8 +713,8 @@ define({ "api": [
           "type": "json"
         },
         {
-          "title": "UnprocessableEntity:",
-          "content": "HTTP/1.1 422 Unprocessable Entity\n    {\n        \"error\": \"Invalid Mime Type, only JPEG and PNG\"\n    }",
+          "title": "BadPermissions:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"Insufficient permissions\"\n    }",
           "type": "json"
         }
       ]

@@ -1,6 +1,6 @@
 /**
  * @api {post} /auth/login Login
- * @apiDescription Log into an existing Locker account
+ * @apiDescription Login to Locker account
  * @apiName PostAuthLogin
  * @apiGroup Auth
  * @apiVersion 0.1.0
@@ -28,11 +28,11 @@
  *           "email" : "johndoe@gmail.com",
  *       }
  *     }
- * @apiError (400) MissingLoginInfo Missing username, phone number, email.
- * @apiError (400) MissingPassword Missing password
- * @apiError (401) InvalidPassword Invalid password
- * @apiError (404) UserNotFound User not found
- * @apiError (500) ServerError Server unable to login user
+ * @apiError (4xx) 400 Missing username, phone number, email.
+ * @apiError (4xx) 400 Missing password
+ * @apiError (4xx) 401 Invalid password
+ * @apiError (4xx) 404 User not found
+ * @apiError (5xx) 500 Server unable to login user
  * @apiErrorExample MissingLoginInfo:
  *     HTTP/1.1 400 Bad Request
  *     {

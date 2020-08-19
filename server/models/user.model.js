@@ -130,10 +130,9 @@ UserSchema.pre("save", function(next){
 
 UserSchema.pre("remove",function(next){
   if (this.profile_photo && this.profile_photo.key){
-    S3_Services.deleteImageS3(this.profile_photo.key, (err)=>{
-      if (err){
+    S3_Services.deleteImageS3(this.profile_photo.key)
+      .catch((err)=>{
         console.log(err);
-      }
     });
   }
   next();
