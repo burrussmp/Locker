@@ -1,35 +1,37 @@
 import mongoose from 'mongoose'
+import StaticStrings from '../../config/StaticStrings';
 
 const ImageSchema = new mongoose.Schema({
   key: {
     type: String,
-    required: 'The S3 file key is required',
-    unique: [true,'Key must be unique']
+    required: StaticStrings.ImageModelErrors.KeyRequired,
+    unique: [true,StaticStrings.ImageModelErrors.KeyAlreadyExists]
   },
   type: {
       type: String,
-      required: "The type of the image must be specified",
+      required: StaticStrings.ImageModelErrors.TypeRequired,
       enum: {
         values: ['profile_photo'],
-        mesage: 'ServerError: Image must be of an acceptable type'
+        mesage: StaticStrings.ImageModelErrors.UnacceptableType
       }
   },
   mimetype: {
     type: String,
-    required: 'The image mimetype is required'
+    required: StaticStrings.ImageModelErrors.MimeTypeRequired
   },
   originalName: {
       type: String,
-      required: "The image must be named"
+      required: StaticStrings.ImageModelErrors.OriginalNameRequired
   },
   description: {
       type: String,
-      default: ""
+      default: "",
+      maxlength : [180,]
   },
   uploadedBy: {
       type: mongoose.Schema.ObjectId, 
       ref: 'User',
-      required: 'The ObjectID of who uploaded the image is required'
+      required: StaticStrings.ImageModelErrors.UploadedByRequired
   },
 },{
     timestamps : {

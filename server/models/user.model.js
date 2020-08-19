@@ -10,36 +10,36 @@ const UserSchema = new mongoose.Schema({
   first_name: {
     type: String,
     trim: true,
-    required: 'First name is required'
+    required: StaticStrings.UserModelErrors.FirstNameRequired
   },
   phone_number: {
     type: String,
     trim: true,
-    required: 'Phone number is required',
+    required: StaticStrings.UserModelErrors.PhoneNumberRequired,
     unique: true
   },
   last_name: {
     type: String,
     trim: true,
-    required: 'Last name is required',
+    required: StaticStrings.UserModelErrors.LastNameRequired,
   },
   username: {
     type: String,
     trim: true,
     unique: true,
-    required: 'Username is required',
-    maxlength: [32,'Username must be less than 32 characters']
+    required: StaticStrings.UserModelErrors.UsernameRequired,
+    maxlength: [32,StaticStrings.UserModelErrors.UsernameExceedLength]
   },
   email: {
     type: String,
     trim: true,
     lowercase: true,
     unique: true,
-    required: 'Email is required'
+    required: StaticStrings.UserModelErrors.EmailRequired
   },
   hashed_password: {
     type: String,
-    required: "Password is required",
+    required: StaticStrings.UserModelErrors.PasswordRequired,
   },
   salt: String,
   permissions: {
@@ -55,14 +55,14 @@ const UserSchema = new mongoose.Schema({
     trim: true,
     enum: {
       values: ['male','female','other',''],
-      message: 'Valid gender required'
+      message: StaticStrings.UserModelErrors.InvalidGender
     },
     default: ""
   },
   about: {
     type: String,
     default: "",
-    maxlength: [120,'About cannot exceed 120 characters']
+    maxlength: [120,'Bio cannot exceed 120 characters']
   },
   profile_photo: {type: mongoose.Schema.ObjectId, ref: 'Image'},
   following: [{type: mongoose.Schema.ObjectId, ref: 'User'}],
@@ -97,18 +97,18 @@ UserSchema.path('email').validate(async function (value) {
   const count = await mongoose.models.User.countDocuments({email: value });
   let isUnique = this ? count == 0 || !this.isModified('email') : count == 0;
   if (!isUnique)
-    throw create_validation_error('Email already exists');
+    throw create_validation_error(StaticStrings.UserModelErrors.EmailAlreadyExists);
   if (!isValidEmail(value))
-    throw create_validation_error('Valid email is required');
+    throw create_validation_error(StaticStrings.UserModelErrors.InvalidEmail);
 }, null);
 
 UserSchema.path('phone_number').validate(async function (value){
   const count = await mongoose.models.User.countDocuments({phone_number: value });
   let isUnique = this ? count == 0 || !this.isModified('phone_number') : count == 0;
   if (!isUnique) 
-    throw create_validation_error('Phone number already exists');
+    throw create_validation_error(StaticStrings.UserModelErrors.PhoneNumberAlreadyExists);
   if (!isValidPhoneNumber(value))
-    throw create_validation_error('Valid phone number is required');
+    throw create_validation_error(StaticStrings.UserModelErrors.InvalidPhoneNumber);
 }, null);
 
 
@@ -116,9 +116,9 @@ UserSchema.path('username').validate(async function (value) {
   const count = await mongoose.models.User.countDocuments({username: value });
   let isUnique = this ? count == 0 || !this.isModified('username') : count == 0;
   if (!isUnique)
-    throw create_validation_error('Username already exists')
+    throw create_validation_error(StaticStrings.UserModelErrors.UsernameAlreadyExists)
   if (!isValidUsername(value)) 
-    throw create_validation_error('Valid alphanumeric username (underscores allowed) required');
+    throw create_validation_error(StaticStrings.UserModelErrors.InvalidUsername);
 }, null);
 
 UserSchema.pre("save", function(next){

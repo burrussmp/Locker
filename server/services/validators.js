@@ -1,5 +1,7 @@
 "use strict";
 
+import StaticStrings from '../../config/StaticStrings';
+
 const isValidEmail = (str) => {
     return str.match(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/i);
 };
@@ -14,19 +16,19 @@ const isValidUsername = (str) => {
 
 const isValidPassword = (password,isNew) => {
     if (!password && isNew){
-      return 'Password is required';
+      return StaticStrings.UserModelErrors.PasswordRequired;
     } else if (!password && !isNew){
       return undefined; // no update and not new
     } else if (password.length < 8) {
-      return "Password length must be > 7";
+      return StaticStrings.UserModelErrors.PasswordTooShort;
     } else if (!password.match(/[0-9]/i)) {
-      return `Password must contain at least one numeric character`;
+      return StaticStrings.UserModelErrors.PasswordNoNumbers;
     } else if (!password.match(/[a-z]/)) {
-      return `Password must contain at least one lowercase character`;
+      return StaticStrings.UserModelErrors.PasswordNoLowercase;
     } else if (!password.match(/\@|\!|\#|\$|\%|\^/i)) {
-      return `Password must contain at least one of: @, !, #, $, % or ^`;
+      return StaticStrings.UserModelErrors.PasswordNoSpecial;
     } else if (!password.match(/[A-Z]/)) {
-      return `Password must contain at least one uppercase character`
+      return StaticStrings.UserModelErrors.PasswordNoUppercase
     }
     return undefined;
   };

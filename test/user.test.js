@@ -113,10 +113,9 @@ function main(){
                 });
                 describe('Check unique fields', () => {
                     let unique_fields = ['username','email','phone_number'];
-                    let unique_response = ['Username','Email','Phone number']
+                    let unique_response = ['Username','Email','PhoneNumber']
                     for (let i = 0; i < unique_fields.length;++i){
                         let field = unique_fields[i];
-                        let resp = unique_response[i];
                         let userC = JSON.parse(JSON.stringify(userB))
                         userC[field] = userA[field];
                         it(`CREATE a user w/ same ${field} (should fail)`, (done) => {
@@ -128,7 +127,7 @@ function main(){
                                     console.log(err);
                                 }
                                 res.should.have.status(400);
-                                res.body.error.should.eql(`${resp} already exists`);
+                                res.body.error.should.eql(StaticStrings.UserModelErrors[`${unique_response[i]}AlreadyExists`]);
                                 done();
                                 });
                         });
@@ -136,7 +135,7 @@ function main(){
                 });
                 describe('Check required fields', () => {
                     let required_fields = ['username','email','first_name','last_name','password','phone_number'];
-                    let suspected_error = ['Username','Email','First name','Last name','Password','Phone number']
+                    let suspected_error = ['Username','Email','FirstName','LastName','Password','PhoneNumber']
                     for (let i = 0; i < required_fields.length; ++i){
                         let required_field = required_fields[i];
                         let userE = JSON.parse(JSON.stringify(userB))
@@ -150,7 +149,7 @@ function main(){
                                     console.log(err);
                                 }
                                 res.should.have.status(400);
-                                res.body.error.should.eql(`${suspected_error[i]} is required`);
+                                res.body.error.should.eql(StaticStrings.UserModelErrors[`${suspected_error[i]}Required`]);
                                 done();
                             });
                         });            
@@ -159,8 +158,18 @@ function main(){
             });
             describe('Check username validation', () => {
                 let userB = UserData[1];
-                let invalid_usernames = ['thisusernameisnottoolongyetbutifikeepaddinglettersitwillbe','','  ','hello&'];
-                let invalid_reasons = ['Username must be less than 32 characters','Username is required','Username is required','Valid alphanumeric username (underscores allowed) required']
+                let invalid_usernames = [
+                    'thisusernameisnottoolongyetbutifikeepaddinglettersitwillbe',
+                    '',
+                    '  ',
+                    'hello&'
+                ];
+                let invalid_reasons = [
+                    StaticStrings.UserModelErrors.UsernameExceedLength,
+                    StaticStrings.UserModelErrors.UsernameRequired,
+                    StaticStrings.UserModelErrors.UsernameRequired,
+                    StaticStrings.UserModelErrors.InvalidUsername
+                ]
                 let valid_usernames = ['short','with_underscore','with_number_31','1hasthecorrectnumberofcharacters']
                 for (let i = 0; i < invalid_usernames.length; ++i){
                     let invalid_username = invalid_usernames[i];
@@ -213,8 +222,19 @@ function main(){
             });
             describe('Check email validation', () => {
                 let userB = UserData[1];
-                let invalid = ['withoutatsign','without@dotcom','',' ','@nothingbefore.com'];
-                let reasons = ['Valid email is required','Valid email is required','Email is required','Email is required','Valid email is required']
+                let invalid = [
+                    'withoutatsign',
+                    'without@dotcom',
+                    '',
+                    ' ',
+                    '@nothingbefore.com'
+                ];
+                let reasons = [StaticStrings.UserModelErrors.InvalidEmail,
+                    StaticStrings.UserModelErrors.InvalidEmail,
+                    'Email is required',
+                    'Email is required',
+                    StaticStrings.UserModelErrors.InvalidEmail
+                ]
                 let valid = ['me@gmail.com','123mpb@gmail.com','other@mail.com','someone@domain-my.com']
                 for (let i = 0; i < invalid.length; ++i){
                     let inv = invalid[i];
@@ -269,7 +289,12 @@ function main(){
             describe('Check phone number validation', () => {
                 let userB = UserData[1];
                 let invalid = ['502689128a22','fafs','3421','############',''];
-                let reasons = ['Valid phone number is required','Valid phone number is required','Valid phone number is required','Valid phone number is required','Phone number is required']
+                let reasons = [StaticStrings.UserModelErrors.InvalidPhoneNumber,
+                    StaticStrings.UserModelErrors.InvalidPhoneNumber,
+                    StaticStrings.UserModelErrors.InvalidPhoneNumber,
+                    StaticStrings.UserModelErrors.InvalidPhoneNumber,
+                    StaticStrings.UserModelErrors.PhoneNumberRequired
+                ]
                 let valid = ['502-689-1243','605-232-2342','533-343-1342']
                 for (let i = 0; i < invalid.length; ++i){
                     let inv = invalid[i];
@@ -324,19 +349,25 @@ function main(){
                 let userB = UserData[1];
                 let invalid = [ 'less7',
                                 'NoNumeric$',
-                                'NoSpecialSymbol123',
+                                'NoSpecialSymbol123;',
                                 'NOLOWERCASE123#',
                                 'asd421434143#',
                                 ' ',
                                 ''];
-                let reasons = [ 'Password length must be > 7',
-                                'Password must contain at least one numeric character',
-                                'Password must contain at least one of: @, !, #, $, % or ^',
-                                'Password must contain at least one lowercase character',
-                                'Password must contain at least one uppercase character',
-                                "Password is required",
-                                "Password is required"]
-                let valid = ['AValidPassword123#','1#tValid']
+                let reasons = [ StaticStrings.UserModelErrors.PasswordTooShort,
+                                StaticStrings.UserModelErrors.PasswordNoNumbers,
+                                StaticStrings.UserModelErrors.PasswordNoSpecial,
+                                StaticStrings.UserModelErrors.PasswordNoLowercase,
+                                StaticStrings.UserModelErrors.PasswordNoUppercase,
+                                StaticStrings.UserModelErrors.PasswordRequired,
+                                StaticStrings.UserModelErrors.PasswordRequired,]
+                let valid = ['AValidPassword123#',
+                    '1#tValid',
+                    '1@tValid',
+                    '1!tValid',
+                    '1$tValid',
+                    '1%tValid',
+                    '1^tValid']
                 for (let i = 0; i < invalid.length; ++i){
                     let inv = invalid[i];
                     let userC = JSON.parse(JSON.stringify(userB))
@@ -618,7 +649,7 @@ function main(){
                             .set('Authorization',`Bearer ${res.body.token}`)
                             .then((res)=>{
                                 res.status.should.eql(400);
-                                res.body.error.should.eql('Username already exists');
+                                res.body.error.should.eql(StaticStrings.UserModelErrors.UsernameAlreadyExists);
                             });
                     });
                 });
@@ -638,7 +669,7 @@ function main(){
                             .send({'email':'error'})
                             .set('Authorization',`Bearer ${res.body.token}`)
                             .then((res)=>{
-                                res.body.error.should.eql('Valid email is required');
+                                res.body.error.should.eql(StaticStrings.UserModelErrors.InvalidEmail);
                                 res.status.should.eql(400);
                             });
                     });
@@ -701,7 +732,7 @@ function main(){
                             .send({'password':'error','old_password':UserData[1].password})
                             .set('Authorization',`Bearer ${res.body.token}`)
                             .then((res)=>{
-                                res.body.error.should.eql('Password length must be > 7');
+                                res.body.error.should.eql(StaticStrings.UserModelErrors.PasswordTooShort);
                                 res.status.should.eql(400);
                             });
                     });
@@ -743,7 +774,7 @@ function main(){
                     });
                 });
             });
-            it("/PUT all possible mutable fields (except password and photo)", async ()=>{
+            it("/PUT all possible mutable fields (except password and photo)", (done)=>{
                 let data = {
                     'first_name': 'test',
                     'last_name' : 'test',
@@ -754,13 +785,13 @@ function main(){
                     'about':'test',
                     'phone_number': '345-323-3421'
                 }
-                return agent.get('/api/users')
+                agent.get('/api/users')
                     .then(res=>{
                     res.body.length.should.eql(1);
-                    return agent.post('/auth/login')
+                    agent.post('/auth/login')
                         .send(login_user)
                         .then((res) => {
-                        return agent.put(`/api/users/${res.body.user._id}`)
+                        agent.put(`/api/users/${res.body.user._id}`)
                             .send(data)
                             .set('Authorization',`Bearer ${res.body.token}`)
                             .then(async (res)=>{
@@ -769,36 +800,35 @@ function main(){
                                     info[key].should.eql(data[key]);
                                 }
                                 res.status.should.eql(200);
+                                done()
                             });
                     });
                 });
             });
-            it("/PUT all possible mutable fields (except password and photo)", async ()=>{
+            it("/PUT all possible mutable fields (except password and photo), but invalid gender", (done)=>{
                 let data = {
                     'first_name': 'test',
                     'last_name' : 'test',
                     'username' : 'test',
-                    'gender' : 'male',
+                    'gender' : 'fdafas',
                     'email' : 'new@mail.com',
                     'date_of_birth' : new Date(2006,6,18,18,7),
                     'about':'test',
                     'phone_number': '345-323-3421'
                 }
-                return agent.get('/api/users')
+                agent.get('/api/users')
                     .then(res=>{
                     res.body.length.should.eql(1);
-                    return agent.post('/auth/login')
+                    agent.post('/auth/login')
                         .send(login_user)
                         .then((res) => {
-                        return agent.put(`/api/users/${res.body.user._id}`)
+                        agent.put(`/api/users/${res.body.user._id}`)
                             .send(data)
                             .set('Authorization',`Bearer ${res.body.token}`)
                             .then(async (res)=>{
-                                let info = await User.findOne({'username':'test'}).select(Object.keys(data));
-                                for (let key of Object.keys(data)){
-                                    info[key].should.eql(data[key]);
-                                }
-                                res.status.should.eql(200);
+                                res.status.should.eql(400);
+                                res.body.error.should.eql(StaticStrings.UserModelErrors.InvalidGender)
+                                done()
                             });
                     });
                 });
