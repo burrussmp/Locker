@@ -1,13 +1,15 @@
+// imports
 import express from 'express'
 import userCtrl from '../controllers/user.controller';
 import permission from '../permissions'
-import file_upload from '../services/S3.services';
 
+// create new router
 const router = express.Router()
-// Path parameter middleware handlers
-router.param('userId', userCtrl.userByID)
-// Check permissions (path parameter is now populated so we have to re-check)
 
+// handle path parameters
+router.param('userId', userCtrl.userByID)
+
+// User API
 router.route('/api/users')
   .get(permission.Authorize,userCtrl.list)
   .post(permission.Authorize,userCtrl.create);
