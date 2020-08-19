@@ -20,30 +20,30 @@ const findUserLogin = async (req) => {
 /**
   * @desc Login controller: If successful, provides user a JWT token
   * used for permissions, authorization, authentication, and to stay logged in
-  * @param Object req - Contains login info
+  * @param Object req - HTTP request
   * @param Object res - HTTP response
 */
 const login = async (req, res) => {
   try {
     if (!req.body.login){
       return res.status('400').json({
-        error: StaticStrings.ErrorsLogin.MissingLogin
+        error: StaticStrings.LoginErrors.MissingLogin
       })
     }
     if (!req.body.password){
       return res.status('400').json({
-        error: StaticStrings.ErrorsLogin.MissingPassword
+        error: StaticStrings.LoginErrors.MissingPassword
       })
     }
     let user = await findUserLogin(req);
     if (!user)
       return res.status('404').json({
-        error: StaticStrings.ErrorsLogin.UserNotFound
+        error: StaticStrings.LoginErrors.UserNotFound
       })
 
     if (!user.authenticate(req.body.password)) {
       return res.status('401').send({
-        error: StaticStrings.ErrorsLogin.InvalidPassword
+        error: StaticStrings.LoginErrors.InvalidPassword
       })
     }
     const token = jwt.sign({
@@ -64,7 +64,7 @@ const login = async (req, res) => {
     })
   } catch (err) {
     return res.status('500').json({
-      error: StaticStrings.ErrorsLogin.ServerError
+      error: StaticStrings.LoginErrors.ServerError
     })
 
   }
@@ -72,19 +72,19 @@ const login = async (req, res) => {
 
 /**
   * @desc Logout controller: Removes JWT token from cookies
-  * @param Object req - Contains login info
+  * @param Object req - HTTP request
   * @param Object res - HTTP response
 */
 const logout = (req, res) => {
   res.clearCookie("t")
   return res.status('200').json({
-    message: StaticStrings.SuccessLoggedOut
+    message: StaticStrings.LoggedOutSuccess
   })
 }
 
 /**
   * @desc Checks to see if the request is an admin (requires secret)
-  * @param Object req - Contains login info
+  * @param Object req - HTTP request
   * @param Object res - HTTP response
 */
 const isAdmin = (req) => {
@@ -97,9 +97,9 @@ const isAdmin = (req) => {
 
 /**
   * @desc Checks to see if logged in (decrypt the JWT token)
-  * @param Object req - Contains login info
+  * @param Object req - HTTP request
   * @param Object res - HTTP response
-  * @param Function next - Go to next middleware
+  * @param Function next - call back function (next middleware)
 */
 const isLoggedIn = expressJwt({
   secret: process.env.JWT_SECRET,
@@ -109,16 +109,16 @@ const isLoggedIn = expressJwt({
 
 /**
   * @desc Middleware to check if permissions of request match what is necessary for API call
-  * @param Object req - Contains login info
+  * @param Object req - HTTP request
   * @param Object res - res.locals.permissions contains necessary permissions
-  * @param Function next - Go to next middleware
+  * @param Function next - call back function (next middleware)
 */
 const checkPermissions = (req,res,next) => {
   if (!isAdmin(req) && res.locals.permissions.length != 0){
     let authorized = req.auth && _.difference(res.locals.permissions,req.auth.permissions).length == 0;
     if (!authorized) {
       return res.status(403).json({
-        error: StaticStrings.ErrorInsufficientPermissions
+        error: StaticStrings.InsufficientPermissionsError
       })
     }
   }
@@ -127,9 +127,9 @@ const checkPermissions = (req,res,next) => {
 
 /**
   * @desc Middleware to ensure logged in if necessary
-  * @param Object req - Contains login info
+  * @param Object req - HTTP request
   * @param Object res - res.locals.require_login determines if login necessary
-  * @param Function next - Go to next middleware
+  * @param Function next - call back function (next middleware)
 */
 const checkLogin = (req,res,next) => {
   if(!isAdmin(req) && res.locals.require_login){

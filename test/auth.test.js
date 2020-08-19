@@ -59,7 +59,7 @@ function main(){
                         console.log(err);
                     }
                     res.should.have.status(200);
-                    res.body.message.should.eql(StaticStrings.SuccessSignedUp);
+                    res.body.message.should.eql(StaticStrings.SignedUpSuccess);
                     done();
                 });
         });
@@ -138,7 +138,7 @@ function main(){
                             console.log(err);
                         }
                         res.should.have.status(400);
-                        res.body.error.should.be.eql(StaticStrings.ErrorsLogin.MissingLogin);
+                        res.body.error.should.be.eql(StaticStrings.LoginErrors.MissingLogin);
                         done();
                     });
             });
@@ -156,7 +156,7 @@ function main(){
                             console.log(err);
                         }
                         res.should.have.status(400);
-                        res.body.error.should.be.eql(StaticStrings.ErrorsLogin.MissingPassword);
+                        res.body.error.should.be.eql(StaticStrings.LoginErrors.MissingPassword);
                         done();
                     });
             });
@@ -175,7 +175,7 @@ function main(){
                             console.log(err);
                         }
                         res.should.have.status(404);
-                        res.body.error.should.be.eql(StaticStrings.ErrorsLogin.UserNotFound);
+                        res.body.error.should.be.eql(StaticStrings.LoginErrors.UserNotFound);
                         done();
                     });
             });
@@ -194,7 +194,7 @@ function main(){
                             console.log(err);
                         }
                         res.should.have.status(404);
-                        res.body.error.should.be.eql(StaticStrings.ErrorsLogin.UserNotFound);
+                        res.body.error.should.be.eql(StaticStrings.LoginErrors.UserNotFound);
                         done();
                     });
             });
@@ -213,7 +213,7 @@ function main(){
                             console.log(err);
                         }
                         res.should.have.status(404);
-                        res.body.error.should.be.eql(StaticStrings.ErrorsLogin.UserNotFound);
+                        res.body.error.should.be.eql(StaticStrings.LoginErrors.UserNotFound);
                         done();
                     });
             });
@@ -232,7 +232,7 @@ function main(){
                             console.log(err);
                         }
                         res.should.have.status(401);
-                        res.body.error.should.be.eql(StaticStrings.ErrorsLogin.InvalidPassword);
+                        res.body.error.should.be.eql(StaticStrings.LoginErrors.InvalidPassword);
                         done();
                     });
             });
@@ -246,7 +246,7 @@ function main(){
                             console.log(err);
                         }
                         res.should.have.status(200);
-                        res.body.message.should.be.eql(StaticStrings.SuccessLoggedOut);
+                        res.body.message.should.be.eql(StaticStrings.LoggedOutSuccess);
                         await drop_database();
                         done();
                     });

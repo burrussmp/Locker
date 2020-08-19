@@ -8,8 +8,6 @@ Very Short Term
 9. Write unit tests to cover the various privileges and the roles
 10. What happens if reference gets deleted? Like if a User deletes and they have a comment?
 11. Write tests for update a specific field
-12. Include permissions in API calls
-13. Include permissions in API documentation
 14. Update the API call to list all users to include permission to do so.
 15. Change followers and following
 16. Create the product, order, ContentPost, and AssortmentPost schema
@@ -29,7 +27,7 @@ Very Short Term
 Tests to add
 1. Valid gender required test
 2. All tests for avatar
-3. R
+3. Admin tests
 
 Medium Term
 1. Allow login with phone number without hyphens

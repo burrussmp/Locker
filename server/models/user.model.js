@@ -4,7 +4,7 @@ import crypto from 'crypto'
 import {isValidEmail,isValidUsername,isValidPhoneNumber,isValidPassword} from '../services/validators';
 import permissionCtrl from '../permissions';
 import StaticStrings from '../../config/StaticStrings';
-import file_upload from '../services/S3.services';
+import S3_Services from '../services/S3.services';
 
 const UserSchema = new mongoose.Schema({
   first_name: {
@@ -16,7 +16,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     trim: true,
     required: 'Phone number is required',
-    index: { unique: true },
+    unique: true
   },
   last_name: {
     type: String,
@@ -26,7 +26,7 @@ const UserSchema = new mongoose.Schema({
   username: {
     type: String,
     trim: true,
-    index: { unique: true },
+    unique: true,
     required: 'Username is required',
     maxlength: [32,'Username must be less than 32 characters']
   },
@@ -34,7 +34,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     trim: true,
     lowercase: true,
-    index: { unique: true },
+    unique: true,
     required: 'Email is required'
   },
   hashed_password: {
@@ -52,6 +52,7 @@ const UserSchema = new mongoose.Schema({
   },
   gender: {
     type: String,
+    trim: true,
     enum: {
       values: ['male','female','other',''],
       message: 'Valid gender required'
@@ -60,7 +61,8 @@ const UserSchema = new mongoose.Schema({
   },
   about: {
     type: String,
-    default: ""
+    default: "",
+    maxlength: [120,'About cannot exceed 120 characters']
   },
   profile_photo: {type: mongoose.Schema.ObjectId, ref: 'Image'},
   following: [{type: mongoose.Schema.ObjectId, ref: 'User'}],
@@ -128,7 +130,11 @@ UserSchema.pre("save", function(next){
 
 UserSchema.pre("remove",function(next){
   if (this.profile_photo && this.profile_photo.key){
-    file_upload.deleteFileS3(this.profile_photo.key);
+    S3_Services.deleteImageS3(this.profile_photo.key, (err)=>{
+      if (err){
+        console.log(err);
+      }
+    });
   }
   next();
 });
@@ -139,7 +145,7 @@ UserSchema.pre("findOneAndUpdate", async function(){
   if (!update) return // no updates
   let doc = await this.model.findOne(this.getQuery());
   if (!doc) return // nothing to update
-  // if no update, don't bother
+  // if update doesn't change document, then don't bother
   for (let key of Object.keys(update)){
     if (update[key] == doc[key]){
       delete update[key]
@@ -156,13 +162,13 @@ UserSchema.pre("findOneAndUpdate", async function(){
   // update password
   if (update.password && !update.old_password){
     let ValidationError = new mongoose.Error.ValidationError(null);
-    ValidationError.addError('hashed_password',create_validation_error(StaticStrings.ErrorPasswordUpdateMissing));
+    ValidationError.addError('hashed_password',create_validation_error(StaticStrings.PasswordUpdateMissingError));
     throw ValidationError;
   } else if (update.password && update.old_password){
     // add doc here later
     if (!doc.authenticate(update.old_password)){
       let ValidationError = new mongoose.Error.ValidationError(null);
-      ValidationError.addError('password',create_validation_error(StaticStrings.ErrorPasswordUpdateIncorrect));
+      ValidationError.addError('password',create_validation_error(StaticStrings.PasswordUpdateIncorrectError));
       throw ValidationError;
     }
     let err = isValidPassword(update.password,false);

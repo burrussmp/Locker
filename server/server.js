@@ -21,7 +21,7 @@ if (config.env == 'development'){
 // Catch unauthorized errors
 app.use(function (err, req, res, next) {
   if (err.name === 'UnauthorizedError') {
-    res.status(err.status).json({"error" : StaticStrings.ErrorUnauthorizedMissingToken})
+    res.status(err.status).json({"error" : StaticStrings.UnauthorizedMissingTokenError})
   }else if (err) {
     res.status(400).json({"error" : err.message})
   }

@@ -423,7 +423,7 @@ function main(){
                     agent.get(`/api/users/${id}`)
                     .end((err,res) => {
                         res.should.have.status(401);
-                        res.body.error.should.be.eql(StaticStrings.ErrorUnauthorizedMissingToken);
+                        res.body.error.should.be.eql(StaticStrings.UnauthorizedMissingTokenError);
                         done();
                     });
                 });
@@ -443,7 +443,7 @@ function main(){
                             .set('Authorization',`Bearer ${res.body.token}`)
                             .then((res)=>{
                                 res.should.have.status(404);
-                                res.body.error.should.be.eql(StaticStrings.ErrorUserNotFound);
+                                res.body.error.should.be.eql(StaticStrings.UserNotFoundError);
                                 done()
                             })
                     });
@@ -465,7 +465,7 @@ function main(){
                             .set('Authorization',`Bearer ${res.body.token}`)
                             .then((res)=>{
                                 res.should.have.status(403);
-                                res.body.error.should.be.eql(StaticStrings.ErrorInsufficientPermissions);
+                                res.body.error.should.be.eql(StaticStrings.InsufficientPermissionsError);
                             })
                     });
             });
@@ -591,7 +591,7 @@ function main(){
                             .send({'password':'error','old_password':'old'})
                             .set('Authorization',`Bearer ${res.body.token}`)
                             .then((res)=>{
-                                res.body.error.should.eql(StaticStrings.ErrorPasswordUpdateIncorrect);
+                                res.body.error.should.eql(StaticStrings.PasswordUpdateIncorrectError);
                                 res.status.should.eql(400);
                             });
                     });
@@ -612,7 +612,7 @@ function main(){
                             .send({'password':'error'})
                             .set('Authorization',`Bearer ${res.body.token}`)
                             .then((res)=>{
-                                res.body.error.should.eql(StaticStrings.ErrorPasswordUpdateMissing);
+                                res.body.error.should.eql(StaticStrings.PasswordUpdateMissingError);
                                 res.status.should.eql(400);
                             });
                     });
@@ -650,7 +650,7 @@ function main(){
                             .send({'hashed_password':'myNewPassword12$','bad_key':123,'old_password':UserData[1].password})
                             .set('Authorization',`Bearer ${res.body.token}`)
                             .then(async (res)=>{
-                                res.body.error.should.be.eql("Bad request: The following are invalid fields 'hashed_password,bad_key'")
+                                res.body.error.should.be.eql(`${StaticStrings.UserControllerErrors.BadRequestInvalidFields} 'hashed_password,bad_key'`)
                                 res.status.should.eql(400);
                             });
                     });
