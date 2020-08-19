@@ -409,12 +409,14 @@ function main(){
                 let userA = UserData[1];
                 let user = new User(userA);
                 user = await user.save();
+                let user2 = new User(UserData[0]);
+                user2 = await user2.save()
             });
             after(async () =>{
                 await drop_database();
             })
             let agent = chai.request.agent(app);
-            it("Attempt w/out login", (done)=>{
+            it("/GET Attempt w/out login", (done)=>{
                 agent.get('/api/users')
                 .then((res) => {
                     res.body.length.should.be.at.least(1);
@@ -428,7 +430,7 @@ function main(){
                     });
                 });
             });
-            it("Attempt w/ incorrect id", (done)=>{
+            it("/GET Attempt w/ incorrect login", (done)=>{
                 let user = UserData[1];
                 let login_user = {
                     login: user.email,
@@ -448,7 +450,52 @@ function main(){
                             })
                     });
             });
-            it("Attempt w/ incorrect privileges", async ()=>{
+            it("/PUT Attempt to modify resource not owned", (done)=>{
+                let user = UserData[1];
+                let login_user = {
+                    login: user.email,
+                    password: user.password
+                };
+                User.findOne({"username":UserData[0].username},(err,doc) =>{
+                    agent.post('/auth/login')
+                        .send(login_user)
+                        .then((res) => {
+                            res.should.have.status(200);
+                            res.body.should.have.property('token');
+                            agent.put(`/api/users/${doc._id}`)
+                                .set('Authorization',`Bearer ${res.body.token}`)
+                                .send({first_name:'new_first_name'})
+                                .then((res)=>{
+                                    res.should.have.status(403);
+                                    res.body.error.should.be.eql(StaticStrings.NotOwnerError);
+                                    done();
+                                })
+                        });
+                })
+            });
+            it("/DELETE Attempt to delete resource not owned", (done)=>{
+                let user = UserData[1];
+                let login_user = {
+                    login: user.email,
+                    password: user.password
+                };
+                User.findOne({"username":UserData[0].username},(err,doc) =>{
+                    agent.post('/auth/login')
+                        .send(login_user)
+                        .then((res) => {
+                            res.should.have.status(200);
+                            res.body.should.have.property('token');
+                            agent.delete(`/api/users/${doc._id}`)
+                                .set('Authorization',`Bearer ${res.body.token}`)
+                                .then((res)=>{
+                                    res.should.have.status(403);
+                                    res.body.error.should.be.eql(StaticStrings.NotOwnerError);
+                                    done();
+                                })
+                        });
+                })
+            });
+            it("/GET Attempt w/ incorrect privileges (none)", async ()=>{
                 let user = UserData[1];
                 let login_user = {
                     login: user.email,
@@ -462,6 +509,27 @@ function main(){
                         res.body.should.have.property('token');
                         res.body.user.should.have.property('_id');
                         return agent.get(`/api/users/${res.body.user._id}`)
+                            .set('Authorization',`Bearer ${res.body.token}`)
+                            .then((res)=>{
+                                res.should.have.status(403);
+                                res.body.error.should.be.eql(StaticStrings.InsufficientPermissionsError);
+                            })
+                    });
+            });
+            it("/PUT Attempt w/ incorrect privileges (user:read)", async ()=>{
+                let user = UserData[1];
+                let login_user = {
+                    login: user.email,
+                    password: user.password
+                };
+                await User.findOneAndUpdate({'username':user.username},{'permissions':["user:read"]},{new:true});
+                return agent.post('/auth/login')
+                    .send(login_user)
+                    .then((res) => {
+                        res.should.have.status(200);
+                        res.body.should.have.property('token');
+                        res.body.user.should.have.property('_id');
+                        return agent.delete(`/api/users/${res.body.user._id}`)
                             .set('Authorization',`Bearer ${res.body.token}`)
                             .then((res)=>{
                                 res.should.have.status(403);

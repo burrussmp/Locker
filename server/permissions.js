@@ -100,6 +100,8 @@ const Authorize = (req,res,next) => {
                 case 'PUT':
                     required_permissions.push(User_Permissions.EditContent)
                     break;
+                case 'DELETE':
+                    required_permissions.push(User_Permissions.Delete)
             }
             break;
     }

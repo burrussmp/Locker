@@ -250,7 +250,7 @@ const removeProfilePhoto = async (req, res) => {
         }
       });
     } else {
-      res.status(200).json({message:StaticStrings.NoProfilePhotoToRemove});
+      res.status(404).json({error:StaticStrings.UserControllerErrors.ProfilePhotoNotFound});
     }
   } catch (err) {
     res.status(400).json({error: errorHandler.getErrorMessage(err)})
