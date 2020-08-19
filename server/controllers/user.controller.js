@@ -185,11 +185,12 @@ const getProfilePhoto = (req, res) => {
       }).then((data)=>{
         try {
           res.setHeader('Content-Length', data.ContentLength);
-          res.setHeader('Content-Type', image.mimetype);
+          res.setHeader('Content-Type', profile_photo.mimetype);
           res.write(data.Body)
           res.end(null);
-        } catch {
-          res.status(500).json({message:StaticStrings.S3ServiceErrors.UploadServerError})
+        } catch(err) {
+          console.log(err);
+          res.status(500).json({message:StaticStrings.S3ServiceErrors.RetrieveServerError})
         }
       });
   } else {

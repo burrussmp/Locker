@@ -48,7 +48,7 @@ const login = async (req, res) => {
     }
     const token = jwt.sign({
       _id: user._id,
-      permissions: user.permissions
+      collection: "User"
     }, process.env.JWT_SECRET,
     { algorithm: 'HS256'})
     res.cookie("t", token, {
@@ -113,14 +113,25 @@ const isLoggedIn = expressJwt({
   * @param Object res - res.locals.permissions contains necessary permissions
   * @param Function next - call back function (next middleware)
 */
-const checkPermissions = (req,res,next) => {
+const checkPermissions = async (req,res,next) => {
   if (!isAdmin(req) && res.locals.permissions.length != 0){
-    let authorized = req.auth && _.difference(res.locals.permissions,req.auth.permissions).length == 0;
-    if (!authorized) {
-      return res.status(403).json({
-        error: StaticStrings.InsufficientPermissionsError
-      })
+    if (req.auth && req.auth.collection && req.auth._id){
+      let permissions;
+      if (req.auth.collection === "User"){
+        let doc = await User.findById({'_id':req.auth._id}).select('permissions -_id');
+        permissions = doc.permissions;
+      }
+      if (!permissions){
+        return res.status(403).json({error: StaticStrings.InvalidTokenNotCollection});
+      }
+      let authorized = req.auth && _.difference(res.locals.permissions,permissions).length == 0;
+      if (!authorized) {
+        return res.status(403).json({error: StaticStrings.InsufficientPermissionsError});
+      }
+    } else {
+      return res.status(500).json({error: StaticStrings.ServerErrorTokenNotDecrypted});
     }
+
   }
   next()
 }

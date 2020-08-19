@@ -18,8 +18,8 @@ import ProfileTest from './UserTests/profile.test';
 import BaseTest from './UserTests/base.test';
 import AvatarTest from './UserTests/avatar.test';
 const user_tests = () => {
-    //describe("PATH: '/api/users/'", BaseTest);
-    //describe("PATH: '/api/users/:userId'", ProfileTest);
+    describe("PATH: '/api/users/'", BaseTest);
+    describe("PATH: '/api/users/:userId'", ProfileTest);
     describe("PATH /api/users/:userId/avatar",AvatarTest)
 }
 

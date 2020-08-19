@@ -9,6 +9,8 @@ const StaticStrings = {
     PasswordUpdateMissingError: 'Must include the old password',
     CannotUpdateHashedPasswordError: 'Updating hashed password not allowed',
     EmptyUpdateError : 'Update object empty',
+    ServerErrorTokenNotDecrypted: "ServerError: Token unable to be decrypted properly or missing appropriate fields",
+    InvalidTokenNotCollection: "ServerError: Incorrect collection attached to token, not valid",
     LoginErrors : {
         MissingLogin: "Missing username, phone number, or email",
         MissingPassword: "Missing password",
@@ -21,6 +23,7 @@ const StaticStrings = {
         BadRequestWrongKey: "Bad request: Form-day incorrect. Should be 'image'",
         UploadServerError: 'ServerError: Unable to upload file',
         DeleteServerError: 'ServerError: Unable to delete file',
+        RetrieveServerError : 'ServerError: Unable to retrieve file',
         BadImageUploadSuccessfulDelete: 'ServerError: Unable to upload image but clean up S3 worked.',
         BadRequestMissingFile: 'Missing file to upload'
     },

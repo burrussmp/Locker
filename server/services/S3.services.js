@@ -66,7 +66,7 @@ const uploadImageS3 = (req,res,meta,next) => {
       metadata: function (req, file, next) {
         next(null, {
             'type':meta.type,
-            'user_id':meta.uploadedBy
+            'user_id':meta.uploadedBy,
         });
       },
       key: function (req, file, next) {
