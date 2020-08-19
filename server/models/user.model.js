@@ -121,6 +121,7 @@ UserSchema.path('username').validate(async function (value) {
     throw create_validation_error(StaticStrings.UserModelErrors.InvalidUsername);
 }, null);
 
+
 UserSchema.pre("save", function(next){
   // sanitize
   this.last_name = this.last_name.replace(/<(?:.|\n)*?>/gm, "");

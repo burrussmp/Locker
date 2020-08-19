@@ -134,8 +134,11 @@ const checkPermissions = (req,res,next) => {
 const checkLogin = (req,res,next) => {
   if(!isAdmin(req) && res.locals.require_login){
     isLoggedIn(req,res,(err)=>{
-      if (err) next(err);
-      checkPermissions(req,res,next);
+      if (err) {
+        next(err);
+      } else {
+        checkPermissions(req,res,next);
+      }
     });
   } else {
     checkPermissions(req,res,next)
