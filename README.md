@@ -12,10 +12,10 @@ Add the following to .env
 ```
 # MongoDB Dev Environment
 MONGO_DEV_PASSWORD = YOUR_PASSWORD_FROM_ATLAS # talk to Matthew
-MONGO_DEV_DB_NAME = DevOpenMarketDB
+MONGO_DEV_DB_NAME = DevLockerDB
 
 # MongoDB Test Environment
-MONGO_TEST_DB_NAME = TestOpenMarketDB
+MONGO_TEST_DB_NAME = TestLockerDB
 ```
 
 Create the directory for local MongoDB inside project base folder
@@ -66,9 +66,9 @@ kill -9 <PID>
 mongo <URI>
 ```
 
-Example: "mongo mongodb://localhost:27017/TestOpenMarketDB"
+Example: "mongo mongodb://localhost:27017/TestLockerDB"
 
-The development database can be found here `https://cloud.mongodb.com/v2/5f33f3f7f345b67f0eccb772#clusters/detail/DevOpenMarket`
+The development database can be found here `https://cloud.mongodb.com/v2/5f33f3f7f345b67f0eccb772#clusters/detail/DevLocker`
 
 ### Show all dbs
 

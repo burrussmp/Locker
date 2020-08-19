@@ -1,7 +1,7 @@
 {
-  "name": "OpenMarket",
+  "name": "Locker",
   "version": "0.0.0",
-  "description": "OpenMarket",
+  "description": "Locker",
   "author": "Matthew Burruss",
   "license": "MIT",
   "keywords": [
@@ -13,9 +13,9 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/burrussmp/OpenMarket.git"
+    "url": "https://github.com/burrussmp/Locker.git"
   },
-  "homepage": "https://github.com/burrussmp/OpenMarket.git",
+  "homepage": "https://github.com/burrussmp/Locker.git",
   "main": "./dist/server.generated.js",
   "scripts": {
     "test": "NODE_ENV=test mocha ./test/mochacfg.js --require @babel/register ./test/index.js",
