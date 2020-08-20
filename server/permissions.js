@@ -24,6 +24,15 @@ const Post_Permissions = {
     RemoveOwner: "post:remove_owner", // remove owner to post
 };
 
+// all permissions associated with Comment collection
+const Comment_Permissions = {
+    Create: 'comment:create', // Create comment
+    Read: "comment:read", // Read comment
+    Delete: "comment:delete", // Delete comment
+    EditContent: "comment:edit_content", // Edit only editable content 
+    Interact: "comment:interact", // includes liking
+};
+
 // all permissions associated with User
 const User_Permissions = {
     Create: 'user:create', // Create User
@@ -36,27 +45,16 @@ const User_Permissions = {
     ChangePassword: "user:change_password" // able to change password
 };
 
-const MutableMongooseFields = {
-    User: [
-        'first_name',
-        'phone_number',
-        'last_name',
-        'username',
-        'gender',
-        'email',
-        'date_of_birth',
-        'about',
-        'password',
-        'old_password'
-    ]
-}
 
 const get_permission_array = (type) => {
-    let post_permissions,user_permissions;
+    let post_permissions,user_permissions,comment_permissions;
     if (type == 'user'){
         post_permissions = [
             Post_Permissions.Read,
             Post_Permissions.Interact,
+            Post_Permissions.Create,
+            Post_Permissions.EditContent,
+            Post_Permissions.Delete
         ]
         user_permissions = [
             User_Permissions.EditContent,
@@ -64,9 +62,16 @@ const get_permission_array = (type) => {
             User_Permissions.Read,
             User_Permissions.ChangePassword
         ]
+        comment_permissions = [
+            Comment_Permissions.Create,
+            Comment_Permissions.EditContent,
+            Comment_Permissions.Read,
+            Comment_Permissions.Delete
+        ]
     }
     return [...post_permissions,
-            ...user_permissions];        
+            ...user_permissions,
+            ...comment_permissions];        
 };
 
 const User_Role = {
@@ -81,13 +86,15 @@ const Authorize = (req,res,next) => {
     let method = req.method;
     let require_login = true;
     switch(path){
-        case '/api/users': // public
+        // Auth API
+        case '/auth/login':
             require_login = false;
             break;
-        case '/auth/login': // public
+        case '/auth/logout':
             require_login = false;
             break;
-        case '/auth/logout': // public
+        // User API
+        case '/api/users':
             require_login = false;
             break;
         case `/api/users/:userId`:
@@ -131,6 +138,113 @@ const Authorize = (req,res,next) => {
                         required_permissions.push(User_Permissions.EditContent);
                         break;
                 }
+            break
+        case `/api/posts`:
+            switch(method){
+                case 'GET':
+                    required_permissions.push(Post_Permissions.Read);
+                    break;
+                case 'POST':
+                    required_permissions.push(Post_Permissions.Create)
+                    break;
+            }
+        break
+        // Post API 
+        case `/api/posts`:
+            switch(method){
+                case 'GET':
+                    required_permissions.push(Post_Permissions.Read);
+                    break;
+                case 'POST':
+                    required_permissions.push(Post_Permissions.Create)
+                    break;
+            }
+        break
+        case `/api/posts/:postId`:
+            switch(method){
+                case 'GET':
+                    required_permissions.push(Post_Permissions.Read);
+                    break;
+                case 'DELETE':
+                    required_permissions.push(Post_Permissions.Delete)
+                    break;
+                case 'PUT':
+                    required_permissions.push(Post_Permissions.EditContent)
+                    break;
+            }
+        break
+        case `/api/posts/:postId/comments`:
+            switch(method){
+                case 'GET':
+                    required_permissions.push(Post_Permissions.Read);
+                    required_permissions.push(Comment_Permissions.Read);
+                    break;
+                case 'POST':
+                    required_permissions.push(Post_Permissions.EditContent);
+                    required_permissions.push(Comment_Permissions.Create)
+                    break;
+            }
+        break
+        case `/api/posts/:postId/comments/:commentId`:
+            switch(method){
+                case 'GET':
+                    required_permissions.push(Post_Permissions.Read);
+                    required_permissions.push(Comment_Permissions.Read);
+                    break;
+                case 'DELETE':
+                    required_permissions.push(Post_Permissions.EditContent);
+                    required_permissions.push(Comment_Permissions.Delete)
+                    break;
+                case 'PUT':
+                    required_permissions.push(Post_Permissions.EditContent);
+                    required_permissions.push(Comment_Permissions.EditContent)
+                    break;
+            }
+        break
+        case `/api/posts/:postId/reactions`:
+            switch(method){
+                case 'GET':
+                    required_permissions.push(Post_Permissions.Read);
+                    break;
+                case 'DELETE':
+                    required_permissions.push(Post_Permissions.EditContent);
+                    required_permissions.push(Post_Permissions.Interact)
+                    break;
+                case 'PUT':
+                    required_permissions.push(Post_Permissions.EditContent);
+                    required_permissions.push(Post_Permissions.Interact)
+                    break;
+            }
+        break
+        // Comment API
+        case `/api/:commentId/replies`:
+            switch(method){
+                case 'GET':
+                    required_permissions.push(Post_Permissions.Read);
+                    required_permissions.push(Comment_Permissions.Read);
+                    break;
+                case 'POST':
+                    required_permissions.push(Post_Permissions.EditContent);
+                    required_permissions.push(Comment_Permissions.EditContent)
+                    break;
+            }
+        break
+        case `/api/:commentId/replies/:replyId`:
+            switch(method){
+                case 'GET':
+                    required_permissions.push(Post_Permissions.Read);
+                    required_permissions.push(Comment_Permissions.Read);
+                    break;
+                case 'PUT':
+                    required_permissions.push(Post_Permissions.EditContent);
+                    required_permissions.push(Comment_Permissions.EditContent)
+                    break;
+                case 'DELETE':
+                    required_permissions.push(Post_Permissions.EditContent);
+                    required_permissions.push(Comment_Permissions.Delete)
+                    break;
+            }
+        break
     }
     res.locals.require_login = require_login;
     res.locals.permissions = required_permissions;

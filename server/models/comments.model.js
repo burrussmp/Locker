@@ -5,11 +5,12 @@ const ReplySchema = new mongoose.Schema({
     text: {
         type: String,
         trim: true,
-        default: "",
+        required: true,
         maxlength: [120, StaticStrings.CommentModelErrors.MaxCommentSizeError]
     },
     postedBy: {
         type: mongoose.Schema.ObjectId,
+        required: true,
         ref: 'User'
     },
     likes: [{
@@ -27,11 +28,12 @@ const CommentSchema = new mongoose.Schema({
     text: {
         type: String,
         trim: true,
-        default: "",
+        required: true,
         maxlength: [120, StaticStrings.CommentModelErrors.MaxCommentSizeError]
     },
     postedBy: {
         type: mongoose.Schema.ObjectId,
+        required: true,
         ref: 'User'
     },
     likes: [{

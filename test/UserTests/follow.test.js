@@ -351,7 +351,7 @@ const follow_test = () => {
                     token0 = res.body.token;
                 });
             });
-            it("Circular references properly removed", async()=>{
+            it("Should fail", async()=>{
                 return agent.delete(`/api/users/${id0}?access_token=${token0}`)
                 .then(res=>{
                     res.status.should.eql(200);

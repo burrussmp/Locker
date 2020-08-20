@@ -1,6 +1,7 @@
 // imports
 import express from 'express'
 import userCtrl from '../controllers/user.controller';
+import authCtrl from '../controllers/auth.controller';
 import permission from '../permissions'
 
 // create new router
@@ -20,16 +21,16 @@ router.route('/api/users')
 
 router.route('/api/users/:userId')
   .get(permission.Authorize,userCtrl.read)
-  .put(permission.Authorize,userCtrl.requireOwnership,userCtrl.update)
-  .delete(permission.Authorize,userCtrl.requireOwnership,userCtrl.remove);
+  .put(permission.Authorize,authCtrl.requireOwnership,userCtrl.update)
+  .delete(permission.Authorize,authCtrl.requireOwnership,userCtrl.remove);
 
 router.route('/api/users/:userId/avatar')
   .get(permission.Authorize,userCtrl.getProfilePhoto)
-  .post(permission.Authorize,userCtrl.requireOwnership,userCtrl.uploadProfilePhoto)
-  .delete(permission.Authorize,userCtrl.requireOwnership,userCtrl.removeProfilePhoto);
+  .post(permission.Authorize,authCtrl.requireOwnership,userCtrl.uploadProfilePhoto)
+  .delete(permission.Authorize,authCtrl.requireOwnership,userCtrl.removeProfilePhoto);
 
 router.route('/api/users/:userId/password')
-  .put(permission.Authorize,userCtrl.requireOwnership,userCtrl.changePassword);
+  .put(permission.Authorize,authCtrl.requireOwnership,userCtrl.changePassword);
 
 router.route('/api/users/:userId/follow')
     .get(permission.Authorize,userCtrl.listFollow)

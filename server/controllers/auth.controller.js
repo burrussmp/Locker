@@ -96,6 +96,21 @@ const isAdmin = (req) => {
 }
 
 /**
+  * @desc (Middleware) Ensure resource that is being acquired is owned by requester
+  * @param Object req - HTTP request object
+  * @param Object res - HTTP response object
+  * @param Function next - HTTP Next callback
+*/ 
+const requireOwnership = (req, res, next) => {
+  let authorized =  isAdmin(req) || (req.owner && req.auth && req.owner === req.auth._id)
+  if (!authorized) {
+    return res.status('403').json({error:StaticStrings.NotOwnerError});
+  } else {
+    next()
+  }
+}
+
+/**
   * @desc Checks to see if logged in (decrypt the JWT token)
   * @param Object req - HTTP request
   * @param Object res - HTTP response
@@ -167,5 +182,6 @@ export default {
   login,
   logout,
   checkLogin,
-  isAdmin
+  isAdmin,
+  requireOwnership
 }

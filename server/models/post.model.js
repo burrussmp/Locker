@@ -1,21 +1,33 @@
 import mongoose from 'mongoose'
 import StaticStrings from '../../config/StaticStrings';
-import {isAlphabetical} from '../services/validators';
 
 const ContentPostSchema = new mongoose.Schema({
-  media: {type: mongoose.Schema.ObjectId, ref: 'Image'}
+  type : {
+    type: String,
+    default: "ContentPost"
+  },
+  media: {
+    type: mongoose.Schema.ObjectId, 
+    required: true,
+    ref: 'Image'
+  }
 });
 
-const Reaction = new mongoose.Schema({
+const ReactionSchema = new mongoose.Schema({
   type: {
     type : String,
+    required: true,
     trim: true,
     enum: {
       values: ['like','love','laugh','surprise','mad','sad'],
       message: StaticStrings.PostModelErrors.BadReactionType
     },
   },
-  postedBy: {type: mongoose.Schema.ObjectId, ref: 'User'},
+  postedBy: {
+    type: mongoose.Schema.ObjectId,
+    required: true,
+    ref: 'User',
+  },
 },{
   timestamps : {
     createdAt:'createdAt',
@@ -24,17 +36,10 @@ const Reaction = new mongoose.Schema({
 });
 
 const PostSchema = new mongoose.Schema({
-  type: {
-    type: String,
-    enum: {
-      values: ['content','style'],
-      message: StaticStrings.PostModelErrors.IncorrectType
-    }
-  },
   content :{ 
     type: mongoose.Schema.Types.ObjectId,
+    refPath: 'content',
     required: StaticStrings.PostModelErrors.MissingContent,
-    refPath: 'content'
   },
   postedBy: {
     type: mongoose.Schema.ObjectId,
@@ -47,7 +52,7 @@ const PostSchema = new mongoose.Schema({
     default : "",
     maxlength: [180,StaticStrings.PostModelErrors.MaxDescriptionSizeError]
   },
-  reactions: [Reaction],
+  reactions: [ReactionSchema],
   comments: [{ type: mongoose.Schema.ObjectId, ref: 'Comment'}],
   tags: [{
     type : String,
@@ -63,4 +68,5 @@ const PostSchema = new mongoose.Schema({
   }
 })
 
+mongoose.model('ContentPost',ContentPostSchema)
 export default mongoose.model('Post', PostSchema)

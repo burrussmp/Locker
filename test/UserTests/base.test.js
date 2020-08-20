@@ -179,14 +179,12 @@ const base_test = () => {
                     '',
                     '  ',
                     'hello&',
-                    'invalid32'
                 ];
                 let invalid_reasons = [
                     StaticStrings.UserModelErrors.UsernameExceedLength,
                     StaticStrings.UserModelErrors.UsernameRequired,
                     StaticStrings.UserModelErrors.UsernameRequired,
                     StaticStrings.UserModelErrors.InvalidUsername,
-                    StaticStrings.UserModelErrors.InvalidUsername
                 ]
                 let valid_usernames = ['short','with_underscore','with_number_31','1hasthecorrectnumberofcharacters']
                 for (let i = 0; i < invalid_usernames.length; ++i){

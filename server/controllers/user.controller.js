@@ -11,21 +11,6 @@ import fs from 'fs';
 const DefaultProfilePhoto = process.cwd() + "/client/assets/images/profile-pic.png"
 
 /**
-  * @desc (Middleware) Ensure resource that is being acquired is owned by requester
-  * @param Object req - HTTP request object
-  * @param Object res - HTTP response object
-  * @param Function next - HTTP Next callback
-*/ 
-const requireOwnership = (req, res, next) => {
-  let authorized =  authCtrl.isAdmin(req) || (req.profile && req.auth && req.profile._id == req.auth._id)
-  if (!authorized) {
-    return res.status('403').json({error:StaticStrings.NotOwnerError});
-  } else {
-    next()
-  }
-}
-
-/**
   * @desc Filter user for data
   * @param Object User query result
 */ 
@@ -92,6 +77,7 @@ const userByID = async (req, res, next, id) => {
         error: StaticStrings.UserNotFoundError
       })
     req.profile = user
+    req.owner = id;
     next()
   } catch (err) {
     return res.status('404').json({error: StaticStrings.UserNotFoundError})
@@ -395,7 +381,6 @@ export default {
   getProfilePhoto,
   uploadProfilePhoto,
   removeProfilePhoto,
-  requireOwnership,
   changePassword,
   listFollow,
   Follow,

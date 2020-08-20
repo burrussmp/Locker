@@ -25,7 +25,7 @@ const isValidPhoneNumber = (str) => {
   * @return true if valid else false
 */ 
 const isValidUsername = (str) => {
-    return str.match(/^[a-zA-Z_]+$/)
+    return str.match(/^\w+$/i)
 }
 
 /**
