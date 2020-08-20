@@ -11,17 +11,17 @@
     "GetApiUsersUserIdFollow",
     "GetApiUsers",
     "GetApiUsersbyID",
-    "DeleteApiUsersUserId",
     "PutApiUsersUserId",
     "GetApiUsersUserIdAvatar",
     "PostApiUsersUserIdAvatar",
-    "DeleteApiUsersUserIdAvatar"
+    "DeleteApiUsersUserIdAvatar",
+    "DeleteApiUsersUserId"
   ],
   "defaultVersion": "0.0.0",
   "apidoc": "0.3.0",
   "generator": {
     "name": "apidoc",
-    "time": "2020-08-20T06:31:17.090Z",
+    "time": "2020-08-20T06:37:23.561Z",
     "url": "https://apidocjs.com",
     "version": "0.25.0"
   }

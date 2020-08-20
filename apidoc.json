@@ -11,10 +11,10 @@
         "GetApiUsersUserIdFollow",
         "GetApiUsers",
         "GetApiUsersbyID",
-        "DeleteApiUsersUserId",
         "PutApiUsersUserId",
         "GetApiUsersUserIdAvatar",
         "PostApiUsersUserIdAvatar",
-        "DeleteApiUsersUserIdAvatar"
+        "DeleteApiUsersUserIdAvatar",
+        "DeleteApiUsersUserId"
       ]
 }

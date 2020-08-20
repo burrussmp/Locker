@@ -1220,7 +1220,7 @@
   {
     "type": "put",
     "url": "/api/users/:userId/?access_token=YOUR_ACCESS_TOKEN",
-    "title": "Update Profile",
+    "title": "Update Profile Information",
     "description": "<p>Update profile of a specific user and returns the updated profile to that user.</p>",
     "name": "PutApiUsersUserId",
     "group": "User",

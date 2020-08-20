@@ -36,8 +36,4 @@ router.route('/api/users/:userId/follow')
     .put(permission.Authorize,userCtrl.Follow)
     .delete(permission.Authorize,userCtrl.Unfollow)
 
-
-// router.route('/api/users/findpeople/:userId')
-//    .get(permission.Authorize,userCtrl.findPeople)
-
 export default router

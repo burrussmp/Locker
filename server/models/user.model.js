@@ -67,7 +67,6 @@ const UserSchema = new mongoose.Schema({
   profile_photo: {type: mongoose.Schema.ObjectId, ref: 'Image'},
   following: [{type: mongoose.Schema.ObjectId, ref: 'User'}],
   followers: [{type: mongoose.Schema.ObjectId, ref: 'User'}],
-
 },{
   timestamps : {
     createdAt:'createdAt',

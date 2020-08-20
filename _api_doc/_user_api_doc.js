@@ -246,7 +246,7 @@
  */
 
    /**
- * @api {put} /api/users/:userId/?access_token=YOUR_ACCESS_TOKEN Update Profile
+ * @api {put} /api/users/:userId/?access_token=YOUR_ACCESS_TOKEN Update Profile Information
  * @apiDescription Update profile of a specific user and returns the updated profile to that user.
  * @apiName PutApiUsersUserId
  * @apiGroup User

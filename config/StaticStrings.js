@@ -68,6 +68,20 @@ const StaticStrings = {
         PasswordUpdateIncorrectError: 'Old password is incorrect',
         PasswordUpdateSame : "Cannot update with the same old password",
     },
+    CommentModelErrors: {
+        MaxCommentSizeError: "Comment must be less than 120 characters"
+    },
+    PostModelErrors: {
+        MaxDescriptionSizeError: "Descriptions must be less than 180 characters",
+        BadReactionType: "Unsupported reaction",
+        MissingPoster: "A specific user must post",
+        MaxLengthTag: "A tag cannot exceed 20 characters",
+        TagMustBeAlphabetical: "The tag can only contain uppercase and lowercase letters",
+        IncorrectType: "This type of post is not supported",
+        MissingContent: "This post is missing content",
+        
+
+    },
     SignedUpSuccess: "Successfully signed up!",
     LoggedOutSuccess: "Logged out",
     UploadProfilePhotoSuccess: "Successfully uploaded user profile photo",

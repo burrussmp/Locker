@@ -19,7 +19,7 @@ const UserData = [{
         password: 'Admin124$',
     },
     {
-        username: 'paulsullivan123',
+        username: 'paulsullivan',
         first_name: 'Paul',
         phone_number: '502-682-7341',
         last_name: 'Sullivan',
