@@ -5,6 +5,7 @@
     "sampleUrl" : "http://localhost:3000",
     "order": [
         "PostApiUsers",
+        "PutApiUsersUserIdPassword",
         "GetApiUsers",
         "GetApiUsersbyID",
         "DeleteApiUsersUserId",

@@ -5,6 +5,7 @@ define({
   "sampleUrl": "http://localhost:3000",
   "order": [
     "PostApiUsers",
+    "PutApiUsersUserIdPassword",
     "GetApiUsers",
     "GetApiUsersbyID",
     "DeleteApiUsersUserId",
@@ -17,7 +18,7 @@ define({
   "apidoc": "0.3.0",
   "generator": {
     "name": "apidoc",
-    "time": "2020-08-20T03:03:49.914Z",
+    "time": "2020-08-20T03:15:53.096Z",
     "url": "https://apidocjs.com",
     "version": "0.25.0"
   }

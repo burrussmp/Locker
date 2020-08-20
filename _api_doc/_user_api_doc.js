@@ -211,7 +211,7 @@
  * @apiUse LoginError
  * @apiPermission OwnershipRequired
  * @apiUse OwnershipError
- * @apiPermission UserEditContent
+ * @apiPermission UserDelete
  * @apiUse PermissionError
  * @apiSuccess (200) {Object} DeletedUser The user that has been deleted.
  * @apiSuccessExample Response (example):
@@ -291,4 +291,32 @@
             "error": "(Bad request) The following are invalid fields..."
         }
  * @apiError (5xx) 400 Invalid update. The fields are likely not correct (see parameter requirements).
+ */
+
+   /**
+ * @api {put} /api/users/:userId/password?access_token=YOUR_ACCESS_TOKEN Update Password
+ * @apiDescription Update profile of a specific user and returns the updated profile to that user.
+ * @apiName PutApiUsersUserIdPassword
+ * @apiGroup User
+ * @apiVersion 0.1.0
+ * @apiUse LoginError
+ * @apiPermission OwnershipRequired
+ * @apiUse OwnershipError
+ * @apiPermission UserChangePassword
+ * @apiUse PermissionError
+ * @apiParam    (Request body)  {String}      password        <code>Required</code> Password (at least 7 characters; at least 1 number; at least one of @, !, #, $, % or ^; at least 1 uppercase letter)
+ * @apiParam    (Request body)  {String}      old_password    <code>Required</code> Must match old password
+ * @apiSuccess (200) {String} message "Successfully updated password"
+ * @apiSuccessExample Response (example):
+ *     HTTP/1.1 200 OK
+{
+    "message": "Successfully updated password"
+}
+ * @apiError (4xx) 422 Invalid Fields: Either missing required fields or including additional.
+ * @apiErrorExample UnprocessableEntity: 
+ *     HTTP/1.1 422 Unprocessable Entity
+        {
+            "error": "(Bad request) The following are fields are required old_password"
+        }
+ * @apiError (4xx) 400 Bad Request: New password is too short, the same as the old password, old_password doesn't match the current password, etc.
  */

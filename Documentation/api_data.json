@@ -210,8 +210,8 @@
         "description": "<p>Must own the resource you are requesting</p>"
       },
       {
-        "name": "UserEditContent",
-        "title": "Require scope \"user:edit_content\"",
+        "name": "UserDelete",
+        "title": "Require scope \"user:delete\"",
         "description": "<p>Assigned to all Users by default</p>"
       }
     ],
@@ -1138,6 +1138,126 @@
     "sampleRequest": [
       {
         "url": "http://localhost:3000/api/users/:userId/?access_token=YOUR_ACCESS_TOKEN"
+      }
+    ]
+  },
+  {
+    "type": "put",
+    "url": "/api/users/:userId/password?access_token=YOUR_ACCESS_TOKEN",
+    "title": "Update Password",
+    "description": "<p>Update profile of a specific user and returns the updated profile to that user.</p>",
+    "name": "PutApiUsersUserIdPassword",
+    "group": "User",
+    "version": "0.1.0",
+    "permission": [
+      {
+        "name": "OwnershipRequired",
+        "title": "Require Ownership",
+        "description": "<p>Must own the resource you are requesting</p>"
+      },
+      {
+        "name": "UserChangePassword",
+        "title": "Require scope \"user:change_password\"",
+        "description": "<p>Assigned to all Users by default</p>"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Request body": [
+          {
+            "group": "Request body",
+            "type": "String",
+            "optional": false,
+            "field": "password",
+            "description": "<p><code>Required</code> Password (at least 7 characters; at least 1 number; at least one of @, !, #, $, % or ^; at least 1 uppercase letter)</p>"
+          },
+          {
+            "group": "Request body",
+            "type": "String",
+            "optional": false,
+            "field": "old_password",
+            "description": "<p><code>Required</code> Must match old password</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "200": [
+          {
+            "group": "200",
+            "type": "String",
+            "optional": false,
+            "field": "message",
+            "description": "<p>&quot;Successfully updated password&quot;</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Response (example):",
+          "content": "    HTTP/1.1 200 OK\n{\n    \"message\": \"Successfully updated password\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "4xx": [
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "422",
+            "description": "<p>Invalid Fields: Either missing required fields or including additional.</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "400",
+            "description": "<p>Bad Request: New password is too short, the same as the old password, old_password doesn't match the current password, etc.</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "401",
+            "description": "<p>Invalid or missing token in Authorization header (Authorization: bearer <token>)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Unauthorized</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "UnprocessableEntity: ",
+          "content": "HTTP/1.1 422 Unprocessable Entity\n    {\n        \"error\": \"(Bad request) The following are fields are required old_password\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "NotLoggedIn:",
+          "content": "HTTP/1.1 401 Unauthorized\n    {\n        \"error\": \"UnauthorizedError: Invalid or missing JWT token.\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "NotOwner:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"User is not authorized to access resource\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "BadPermissions:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"Insufficient permissions\"\n    }",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "_api_doc/_user_api_doc.js",
+    "groupTitle": "User",
+    "sampleRequest": [
+      {
+        "url": "http://localhost:3000/api/users/:userId/password?access_token=YOUR_ACCESS_TOKEN"
       }
     ]
   }

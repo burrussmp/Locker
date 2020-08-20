@@ -84,6 +84,22 @@
  * @apiVersion 0.1.0
  */
 
+  /**
+ * @apiDefine UserDelete Require scope "user:delete"
+ * 
+ * Assigned to all Users by default
+ *
+ * @apiVersion 0.1.0
+ */
+
+/**
+ * @apiDefine UserChangePassword Require scope "user:change_password"
+ * 
+ * Assigned to all Users by default
+ *
+ * @apiVersion 0.1.0
+ */
+
 
 // ------------------------------------------------------------------------------------------
 // History.
