@@ -320,3 +320,26 @@
         }
  * @apiError (4xx) 400 Bad Request: New password is too short, the same as the old password, old_password doesn't match the current password, etc.
  */
+
+/**
+ * @api {get} /api/users/:userId/follow?access_token=YOUR_ACCESS_TOKEN Update Password
+ * @apiDescription Retrieve a list of :userId's followers and following.
+ * @apiName GetApiUsersUserIdFollow
+ * @apiGroup User
+ * @apiVersion 0.1.0
+ * @apiUse LoginError
+ * @apiPermission UserRead
+ * @apiUse PermissionError
+ * @apiSuccess (200) {Object[]}     following           Array of who user followers
+ * @apiSuccess (200) {ObjectID}     following._id       MongoDB ID of user following
+ * @apiSuccess (200) {String}       following._username Username of user following 
+ * @apiSuccess (200) {Object[]}     followers           Array of followers of user
+ * @apiSuccess (200) {ObjectID}     followers._id       MongoDB ID of follower
+ * @apiSuccess (200) {String}       followers._username Username of follower 
+ * @apiSuccessExample Response (example):
+ *     HTTP/1.1 200 OK
+{
+    "message": "Successfully updated password"
+}
+ * @apiError (4xx) 422 Bad Request: Unable to fetch list of followers/following
+ */

@@ -44,6 +44,7 @@ Medium Term
     - Map the roles to <resource><scope>
     - Create function to append a role's permission to a User
 
+
 Types of roles
 1. admin
 2. business
@@ -53,3 +54,6 @@ Types of roles
 
 Long Term
 1. Create insights for organizations (visualizations to track engagement)
+2. Add rate limits on the API
+3. For API calls like list users or list followers, eventually we will have to put a limit
+or query where only a certain amount can be retrieved at a given time.

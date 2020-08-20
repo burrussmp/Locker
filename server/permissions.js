@@ -119,6 +119,18 @@ const Authorize = (req,res,next) => {
         case `/api/users/:userId/password`:
             required_permissions.push(User_Permissions.ChangePassword);
             break;
+        case `/api/users/:userId/follow`:
+                switch(method){
+                    case 'GET':
+                        required_permissions.push(User_Permissions.Read);
+                        break;
+                    case 'PUT':
+                        required_permissions.push(User_Permissions.EditContent)
+                        break;
+                    case 'DELETE':
+                        required_permissions.push(User_Permissions.EditContent);
+                        break;
+                }
     }
     res.locals.require_login = require_login;
     res.locals.permissions = required_permissions;

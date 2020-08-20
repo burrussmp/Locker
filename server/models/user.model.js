@@ -129,14 +129,16 @@ UserSchema.pre("save", function(next){
   next();
 })
 
-UserSchema.pre("remove",function(next){
+UserSchema.pre("remove",async function(){
   if (this.profile_photo && this.profile_photo.key){
     S3_Services.deleteImageS3(this.profile_photo.key)
       .catch((err)=>{
         console.log(err);
     });
   }
-  next();
+  for (let followingID of this.following){
+    await mongoose.models.User.findOneAndUpdate({'_id' : followingID}, {$pull: {followers: this._id}})
+  }
 });
 
 UserSchema.pre("findOneAndUpdate", async function(){

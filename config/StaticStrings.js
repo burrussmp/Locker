@@ -11,6 +11,7 @@ const StaticStrings = {
     InvalidTokenNotCollection: "ServerError: Incorrect collection attached to token, not valid",
     BadRequestFieldsNeeded: "The following fields are needed",
     BadRequestInvalidFields: "(Bad request) The following are invalid fields",
+    TokenIsNotValid: "This token is not valid (possible user no longer exists)",
     LoginErrors : {
         MissingLogin: "Missing username, phone number, or email",
         MissingPassword: "Missing password",
@@ -30,6 +31,9 @@ const StaticStrings = {
     UserControllerErrors : {
         BadUploadSuccessfulDelete: "ServerError: Unable to update profile picture but clean up S3 worked.",
         ProfilePhotoNotFound: "Profile photo not found",
+        FollowSelfError: "Cannot follow yourself",
+        UnfollowSelfError: "Cannot unfollow yourself",
+        FollowingMissingID: "Missing either ID of follower or following. This is actually a server error."
     },
     ImageModelErrors : {
         KeyRequired: "S3 file key is required",
@@ -68,7 +72,9 @@ const StaticStrings = {
     LoggedOutSuccess: "Logged out",
     UploadProfilePhotoSuccess: "Successfully uploaded user profile photo",
     RemoveProfilePhotoSuccess: "Successfully removed profile photo",
-    UpdatedPasswordSuccess: "Successfully updated password"
+    UpdatedPasswordSuccess: "Successfully updated password",
+    AddedFollowerSuccess : "Successfully added a follower",
+    RemovedFollowerSuccess : "Successfully removed a follower"
 };
 
 export default StaticStrings;

@@ -31,13 +31,13 @@ router.route('/api/users/:userId/avatar')
 router.route('/api/users/:userId/password')
   .put(permission.Authorize,userCtrl.requireOwnership,userCtrl.changePassword);
 
-router.route('/api/users/follow')
-    .put(permission.Authorize,userCtrl.addFollowing, userCtrl.addFollower)
+router.route('/api/users/:userId/follow')
+    .get(permission.Authorize,userCtrl.listFollow)
+    .put(permission.Authorize,userCtrl.Follow)
+    .delete(permission.Authorize,userCtrl.Unfollow)
 
-router.route('/api/users/unfollow')
-    .put(permission.Authorize,userCtrl.removeFollowing, userCtrl.removeFollower)
 
-router.route('/api/users/findpeople/:userId')
-   .get(permission.Authorize,userCtrl.findPeople)
+// router.route('/api/users/findpeople/:userId')
+//    .get(permission.Authorize,userCtrl.findPeople)
 
 export default router

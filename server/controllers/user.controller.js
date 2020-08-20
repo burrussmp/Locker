@@ -167,6 +167,7 @@ const remove = async (req, res) => {
     deletedUser.salt = undefined
     return res.json(deletedUser)
   } catch (err) {
+    console.log(err);
     return res.status(500).json({error: errorHandler.getErrorMessage(err)});
   }
 }
@@ -299,6 +300,53 @@ const removeProfilePhoto = async (req, res) => {
 
 }
 
+/**
+  * @desc Get list of followers and following of :userId
+  * @param Object req - HTTP request object
+  * @param Object res - HTTP response object
+*/ 
+const listFollow = async (req,res) => {
+  try {
+    let query = {'_id':req.params.userId};
+    let user = await User.findById(query)
+      .populate('following','_id username')
+      .populate('followers','_id username')
+      .exec();
+    let response = {
+      'following' : user.following,
+      'followers' : user.followers
+    };
+    return res.status(200).json(response);
+  } catch(err){
+    console.log(err);
+    return res.status(400).json({error: errorHandler.getErrorMessage(err)})
+  }
+};
+
+/**
+  * @desc The requester is asking to follow :userId
+  * @param Object req - HTTP request object
+  * @param Object res - HTTP response object
+*/ 
+const addFollower = async (req,res) => {
+  let myID = req.auth._id;
+  let theirID = req.params.userId;
+  if (!myID || !theirID){
+    return res.status(400).json({error:StaticStrings.UserControllerErrors.FollowingMissingID});
+  }
+  if (req.params.userId === myID){
+    return res.status(422).json({error: StaticStrings.UserControllerErrors.FollowSelfError}) // cannot follow self
+  } else {
+    try {
+      await User.findOneAndUpdate({'_id' : theirID}, {$addToSet: {followers: myID}})
+      await User.findOneAndUpdate({'_id' : myID}, {$addToSet: {following: theirID}})
+      return res.status(200).json({message:StaticStrings.AddedFollowerSuccess});
+    } catch(err){
+      return res.status(500).json({error: errorHandler.getErrorMessage(err)}) 
+    }
+  }
+}
+
 const addFollowing = async (req, res, next) => {
   try{
     await User.findByIdAndUpdate(req.body.userId, {$push: {following: req.body.followId}}) 
@@ -310,42 +358,51 @@ const addFollowing = async (req, res, next) => {
   }
 }
 
-const addFollower = async (req, res) => {
-  try{
-    let result = await User.findByIdAndUpdate(req.body.followId, {$push: {followers: req.body.userId}}, {new: true})
-                            .populate('following', '_id name')
-                            .populate('followers', '_id name')
-                            .exec();
-      result.hashed_password = undefined
-      result.salt = undefined
-      res.json(result)
-    }catch(err) {
-      return res.status(400).json({error: errorHandler.getErrorMessage(err)})
-    }  
-}
-
-const removeFollowing = async (req, res, next) => {
-  try{
-    await User.findByIdAndUpdate(req.body.userId, {$pull: {following: req.body.unfollowId}}) 
-    next()
-  }catch(err) {
-    return res.status(400).json({
-      error: errorHandler.getErrorMessage(err)
-    })
+/**
+  * @desc The requester is asking to follow :userId
+  * @param Object req - HTTP request object
+  * @param Object res - HTTP response object
+*/ 
+const Follow = async (req,res) => {
+  let myID = req.auth._id;
+  let theirID = req.params.userId;
+  if (!myID || !theirID){
+    return res.status(400).json({error:StaticStrings.UserControllerErrors.FollowingMissingID});
+  }
+  if (req.params.userId === myID){
+    return res.status(422).json({error: StaticStrings.UserControllerErrors.FollowSelfError}) // cannot follow self
+  } else {
+    try {
+      await User.findOneAndUpdate({'_id' : theirID}, {$addToSet: {followers: myID}})
+      await User.findOneAndUpdate({'_id' : myID}, {$addToSet: {following: theirID}})
+      return res.status(200).json({message:StaticStrings.AddedFollowerSuccess});
+    } catch(err){
+      return res.status(500).json({error: errorHandler.getErrorMessage(err)}) 
+    }
   }
 }
-const removeFollower = async (req, res) => {
-  try{
-    let result = await User.findByIdAndUpdate(req.body.unfollowId, {$pull: {followers: req.body.userId}}, {new: true})
-                            .populate('following', '_id name')
-                            .populate('followers', '_id name')
-                            .exec().select();
-    
-    res.json(result)
-  }catch(err){
-      return res.status(400).json({
-        error: errorHandler.getErrorMessage(err)
-      })
+
+/**
+  * @desc The requester is asking to unfollow :userId
+  * @param Object req - HTTP request object
+  * @param Object res - HTTP response object
+*/ 
+const Unfollow = async (req, res) => {
+  let myID = req.auth._id;
+  let theirID = req.params.userId;
+  if (!myID || !theirID){
+    return res.status(400).json({error:StaticStrings.UserControllerErrors.FollowingMissingID});
+  }
+  if (req.params.userId === myID){
+    return res.status(422).json({error: StaticStrings.UserControllerErrors.UnfollowSelfError}) // cannot follow self
+  } else {
+    try {
+      await User.findOneAndUpdate({'_id' : theirID}, {$pull: {followers: myID}})
+      await User.findOneAndUpdate({'_id' : myID}, {$pull: {following: theirID}})
+      return res.status(200).json({message:StaticStrings.AddedFollowerSuccess});
+    } catch(err){
+      return res.status(500).json({error: errorHandler.getErrorMessage(err)}) 
+    }
   }
 }
 
@@ -375,9 +432,10 @@ export default {
   removeProfilePhoto,
   addFollowing,
   addFollower,
-  removeFollowing,
-  removeFollower,
   findPeople,
   requireOwnership,
-  changePassword
+  changePassword,
+  listFollow,
+  Follow,
+  Unfollow
 }

@@ -119,6 +119,9 @@ const checkPermissions = async (req,res,next) => {
       let permissions;
       if (req.auth.collection === "User"){
         let doc = await User.findById({'_id':req.auth._id}).select('permissions -_id');
+        if (!doc){
+          return res.status(400).json({error:StaticStrings.TokenIsNotValid})
+        }
         permissions = doc.permissions;
       }
       if (!permissions){
