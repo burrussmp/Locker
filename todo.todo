@@ -30,9 +30,8 @@ Very Short Term
 28. Check security practices
 
 Tests to add
-1. Valid gender required test
-2. All tests for avatar
-3. Admin tests
+1. tests for the /api/image query
+2. tests for public/private
 
 Medium Term
 1. Allow login with phone number without hyphens
