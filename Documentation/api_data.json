@@ -285,7 +285,7 @@
   },
   {
     "type": "get",
-    "url": "/api/users/:userId",
+    "url": "/api/users/:userId?access_token=YOUR_ACCESS_TOKEN",
     "title": "Read Specific User",
     "description": "<p>Retrieve data from a specific user queried by :userId path parameter in URL</p>",
     "name": "GetApiUsersbyID",
@@ -411,22 +411,9 @@
     "groupTitle": "User",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/users/:userId"
+        "url": "http://localhost:3000/api/users/:userId?access_token=YOUR_ACCESS_TOKEN"
       }
     ],
-    "header": {
-      "fields": {
-        "Header": [
-          {
-            "group": "Header",
-            "type": "String",
-            "optional": false,
-            "field": "Authorization",
-            "description": "<p>Bearer <code>JWT token</code></p>"
-          }
-        ]
-      }
-    },
     "error": {
       "fields": {
         "4xx": [
@@ -606,18 +593,13 @@
   },
   {
     "type": "post",
-    "url": "/api/users/:userId/avatar",
+    "url": "/api/users/:userId/avatar?access_token=YOUR_ACCESS_TOKEN",
     "title": "Update Profile Photo",
     "description": "<p>Updates the user's profile photo by storing it in an AWS S3 bucket.</p>",
     "name": "PostApiUsersUserIdAvatar",
     "group": "User",
     "version": "0.1.0",
     "permission": [
-      {
-        "name": "LoginRequired",
-        "title": "Require login",
-        "description": ""
-      },
       {
         "name": "OwnershipRequired",
         "title": "Require Ownership",
@@ -723,21 +705,8 @@
     "groupTitle": "User",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/users/:userId/avatar"
+        "url": "http://localhost:3000/api/users/:userId/avatar?access_token=YOUR_ACCESS_TOKEN"
       }
-    ],
-    "header": {
-      "fields": {
-        "Header": [
-          {
-            "group": "Header",
-            "type": "String",
-            "optional": false,
-            "field": "Authorization",
-            "description": "<p>Bearer <code>JWT token</code></p>"
-          }
-        ]
-      }
-    }
+    ]
   }
 ]

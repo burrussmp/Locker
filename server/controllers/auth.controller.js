@@ -144,6 +144,10 @@ const checkPermissions = async (req,res,next) => {
 */
 const checkLogin = (req,res,next) => {
   if(!isAdmin(req) && res.locals.require_login){
+    let access_token = req.query.access_token;
+    if (access_token && !req.headers['authorization']){
+      req.headers['authorization'] = `bearer ${access_token}`;
+    }
     isLoggedIn(req,res,(err)=>{
       if (err) {
         next(err);

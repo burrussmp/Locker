@@ -16,6 +16,12 @@ const auth_tests = () => {
         before(async () =>{
             await drop_database();
         });
+        after(async () =>{
+            let user = new User(UserData[0]);
+            await user.save();
+            user = new User(UserData[1]);
+            await user.save()
+        });
         it(`Check if User Collection Empty`, (done) => {
             chai.request(app)
                 .get('/api/users')

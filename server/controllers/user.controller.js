@@ -281,14 +281,12 @@ const addFollower = async (req, res) => {
     let result = await User.findByIdAndUpdate(req.body.followId, {$push: {followers: req.body.userId}}, {new: true})
                             .populate('following', '_id name')
                             .populate('followers', '_id name')
-                            .exec()
+                            .exec();
       result.hashed_password = undefined
       result.salt = undefined
       res.json(result)
     }catch(err) {
-      return res.status(400).json({
-        error: errorHandler.getErrorMessage(err)
-      })
+      return res.status(400).json({error: errorHandler.getErrorMessage(err)})
     }  
 }
 
@@ -307,9 +305,8 @@ const removeFollower = async (req, res) => {
     let result = await User.findByIdAndUpdate(req.body.unfollowId, {$pull: {followers: req.body.userId}}, {new: true})
                             .populate('following', '_id name')
                             .populate('followers', '_id name')
-                            .exec() 
-    result.hashed_password = undefined
-    result.salt = undefined
+                            .exec().select();
+    
     res.json(result)
   }catch(err){
       return res.status(400).json({

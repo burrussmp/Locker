@@ -87,12 +87,11 @@
  */
 
  /**
- * @api {get} /api/users/:userId Read Specific User
+ * @api {get} /api/users/:userId?access_token=YOUR_ACCESS_TOKEN Read Specific User
  * @apiDescription Retrieve data from a specific user queried by :userId path parameter in URL
  * @apiName GetApiUsersbyID
  * @apiGroup User
  * @apiVersion 0.1.0
- * @apiUse LoginHeader
  * @apiPermission LoginRequired
  * @apiUse LoginError
  * @apiPermission UserRead
@@ -126,13 +125,11 @@
  */
 
  /**
- * @api {post} /api/users/:userId/avatar Update Profile Photo
+ * @api {post} /api/users/:userId/avatar?access_token=YOUR_ACCESS_TOKEN Update Profile Photo
  * @apiDescription Updates the user's profile photo by storing it in an AWS S3 bucket.
  * @apiName PostApiUsersUserIdAvatar
  * @apiGroup User
  * @apiVersion 0.1.0
- * @apiUse LoginHeader
- * @apiPermission LoginRequired
  * @apiUse LoginError
  * @apiPermission OwnershipRequired
  * @apiUse OwnershipError

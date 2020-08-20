@@ -9,7 +9,10 @@ const router = express.Router()
 // handle path parameters
 router.param('userId', userCtrl.userByID)
 
-// User API
+/*
+  * -------------- User API ------------------
+*/
+
 router.route('/api/users')
   .get(permission.Authorize,userCtrl.list)
   .post(permission.Authorize,userCtrl.create);
