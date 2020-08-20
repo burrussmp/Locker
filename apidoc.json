@@ -6,6 +6,9 @@
     "order": [
         "PostApiUsers",
         "PutApiUsersUserIdPassword",
+        "PutApiUsersUserIdFollow",
+        "DeleteApiUsersUserIdUnFollow",
+        "GetApiUsersUserIdFollow",
         "GetApiUsers",
         "GetApiUsersbyID",
         "DeleteApiUsersUserId",

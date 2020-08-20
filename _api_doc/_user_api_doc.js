@@ -130,6 +130,7 @@
  * @apiName PostApiUsersUserIdAvatar
  * @apiGroup User
  * @apiVersion 0.1.0
+ * @apiPermission LoginRequired
  * @apiUse LoginError
  * @apiPermission OwnershipRequired
  * @apiUse OwnershipError
@@ -165,6 +166,7 @@
  * @apiName DeleteApiUsersUserIdAvatar
  * @apiGroup User
  * @apiVersion 0.1.0
+ * @apiPermission LoginRequired
  * @apiUse LoginError
  * @apiPermission OwnershipRequired
  * @apiUse OwnershipError
@@ -193,6 +195,7 @@
  * @apiName GetApiUsersUserIdAvatar
  * @apiGroup User
  * @apiVersion 0.1.0
+ * @apiPermission LoginRequired
  * @apiUse LoginError
  * @apiPermission UserRead
  * @apiUse PermissionError
@@ -208,6 +211,7 @@
  * @apiName DeleteApiUsersUserId
  * @apiGroup User
  * @apiVersion 0.1.0
+ * @apiPermission LoginRequired
  * @apiUse LoginError
  * @apiPermission OwnershipRequired
  * @apiUse OwnershipError
@@ -247,6 +251,7 @@
  * @apiName PutApiUsersUserId
  * @apiGroup User
  * @apiVersion 0.1.0
+ * @apiPermission LoginRequired
  * @apiUse LoginError
  * @apiPermission OwnershipRequired
  * @apiUse OwnershipError
@@ -299,6 +304,7 @@
  * @apiName PutApiUsersUserIdPassword
  * @apiGroup User
  * @apiVersion 0.1.0
+ * @apiPermission LoginRequired
  * @apiUse LoginError
  * @apiPermission OwnershipRequired
  * @apiUse OwnershipError
@@ -327,6 +333,7 @@
  * @apiName GetApiUsersUserIdFollow
  * @apiGroup User
  * @apiVersion 0.1.0
+ * @apiPermission LoginRequired
  * @apiUse LoginError
  * @apiPermission UserRead
  * @apiUse PermissionError
@@ -338,9 +345,20 @@
  * @apiSuccess (200) {String}       followers._username Username of follower 
  * @apiSuccessExample Response (example):
  *     HTTP/1.1 200 OK
-{
-    "message": "Successfully updated password"
-}
+        {
+            "following": [
+                {
+                    "_id": "5f3e184ad4df2d2ab0d5f91b",
+                    "username": "new_user"
+                }
+            ],
+            "followers": [
+                {
+                    "_id": "5f3e183dd4df2d2ab0d5f919",
+                    "username": "John"
+                },
+            ]
+        }
  * @apiError (4xx) 422 Bad Request: Unable to fetch list of followers/following
  */
 
@@ -350,6 +368,7 @@
  * @apiName PutApiUsersUserIdFollow
  * @apiGroup User
  * @apiVersion 0.1.0
+ * @apiPermission LoginRequired
  * @apiUse LoginError
  * @apiPermission UserEditContent
  * @apiUse PermissionError
@@ -369,6 +388,7 @@
  * @apiName DeleteApiUsersUserIdUnFollow
  * @apiGroup User
  * @apiVersion 0.1.0
+ * @apiPermission LoginRequired
  * @apiUse LoginError
  * @apiPermission UserEditContent
  * @apiUse PermissionError
