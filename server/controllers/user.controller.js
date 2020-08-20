@@ -143,14 +143,16 @@ const update = async (req, res) => {
     let update_fields = Object.keys(req.body);
     let invalid_fields = _.difference(update_fields,mutable_fields);
     if(invalid_fields.length != 0){
-      return res.status(400).json({error:`${StaticStrings.UserControllerErrors.BadRequestInvalidFields} '${invalid_fields}'`})
+      return res.status(422).json({error:`${StaticStrings.UserControllerErrors.BadRequestInvalidFields} '${invalid_fields}'`})
     }
     try {
       let query = {'_id' : req.params.userId};
       let user = await User.findOneAndUpdate(query, req.body,{new:true,runValidators:true});
+      res.hashed_password = undefined;
+      res.salt = undefined;
       return res.status(200).json(user)
     } catch (err) {
-      return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+      return res.status(500).json({error: errorHandler.getErrorMessage(err)});
     }
 }
 
@@ -167,7 +169,7 @@ const remove = async (req, res) => {
     deletedUser.salt = undefined
     return res.json(deletedUser)
   } catch (err) {
-    return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+    return res.status(500).json({error: errorHandler.getErrorMessage(err)});
   }
 }
 
@@ -181,7 +183,7 @@ const getProfilePhoto = (req, res) => {
     let profile_photo = req.profile.profile_photo;
     S3_Services.getImageS3(profile_photo)
       .catch((err)=>{
-        res.status(404).json({message:err.message})
+        res.status(404).json({error:err.message})
       }).then((data)=>{
         try {
           res.setHeader('Content-Length', data.ContentLength);
@@ -189,7 +191,6 @@ const getProfilePhoto = (req, res) => {
           res.write(data.Body)
           res.end(null);
         } catch(err) {
-          console.log(err);
           res.status(500).json({message:StaticStrings.S3ServiceErrors.RetrieveServerError})
         }
       });
@@ -254,13 +255,13 @@ const removeProfilePhoto = async (req, res) => {
       S3_Services.deleteImageS3(user.profile_photo.key).then(()=>{
         res.status(200).json({message:StaticStrings.RemoveProfilePhotoSuccess})
       }).catch(err=>{
-        res.status(500).json({error: err.message})
+        res.status(503).json({error: err.message})
       })
     } else {
       res.status(404).json({error:StaticStrings.UserControllerErrors.ProfilePhotoNotFound});
     }
   } catch (err) {
-    res.status(400).json({error: errorHandler.getErrorMessage(err)})
+    res.status(500).json({error: errorHandler.getErrorMessage(err)})
   }
 
 }

@@ -196,6 +196,205 @@
     ]
   },
   {
+    "type": "delete",
+    "url": "/api/users/:userId/?access_token=YOUR_ACCESS_TOKEN",
+    "title": "Delete User",
+    "description": "<p>Permanently removes a user and all their information (i.e. profile photo form S3, any followers/followings)</p>",
+    "name": "DeleteApiUsersUserId",
+    "group": "User",
+    "version": "0.1.0",
+    "permission": [
+      {
+        "name": "OwnershipRequired",
+        "title": "Require Ownership",
+        "description": "<p>Must own the resource you are requesting</p>"
+      },
+      {
+        "name": "UserEditContent",
+        "title": "Require scope \"user:edit_content\"",
+        "description": "<p>Assigned to all Users by default</p>"
+      }
+    ],
+    "success": {
+      "fields": {
+        "200": [
+          {
+            "group": "200",
+            "type": "Object",
+            "optional": false,
+            "field": "DeletedUser",
+            "description": "<p>The user that has been deleted.</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Response (example):",
+          "content": "    HTTP/1.1 200 OK\n {\n    \"permissions\": [\n        \"post:read\",\n        \"post:interact\",\n        \"user:edit_content\",\n        \"user:delete\",\n        \"user:read\"\n    ],\n    \"gender\": \"\",\n    \"about\": \"\",\n    \"following\": [],\n    \"followers\": [],\n    \"_id\": \"5f3dcd97832746181006b1eb\",\n    \"username\": \"JohnDoe\",\n    \"phone_number\": \"000-111-2222\",\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\",\n    \"email\": \"a@mail.com\",\n    \"createdAt\": \"2020-08-20T01:10:47.626Z\",\n    \"updatedAt\": \"2020-08-20T01:10:47.626Z\",\n    \"__v\": 0\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "5xx": [
+          {
+            "group": "5xx",
+            "optional": false,
+            "field": "500",
+            "description": "<p>Unable to remove user</p>"
+          }
+        ],
+        "4xx": [
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "401",
+            "description": "<p>Invalid or missing token in Authorization header (Authorization: bearer <token>)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Unauthorized</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "NotLoggedIn:",
+          "content": "HTTP/1.1 401 Unauthorized\n    {\n        \"error\": \"UnauthorizedError: Invalid or missing JWT token.\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "NotOwner:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"User is not authorized to access resource\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "BadPermissions:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"Insufficient permissions\"\n    }",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "_api_doc/_user_api_doc.js",
+    "groupTitle": "User",
+    "sampleRequest": [
+      {
+        "url": "http://localhost:3000/api/users/:userId/?access_token=YOUR_ACCESS_TOKEN"
+      }
+    ]
+  },
+  {
+    "type": "delete",
+    "url": "/api/users/:userId/avatar?access_token=YOUR_ACCESS_TOKEN",
+    "title": "Delete Profile Photo",
+    "description": "<p>Permanently removes user profile photo</p>",
+    "name": "DeleteApiUsersUserIdAvatar",
+    "group": "User",
+    "version": "0.1.0",
+    "permission": [
+      {
+        "name": "OwnershipRequired",
+        "title": "Require Ownership",
+        "description": "<p>Must own the resource you are requesting</p>"
+      },
+      {
+        "name": "UserEditContent",
+        "title": "Require scope \"user:edit_content\"",
+        "description": "<p>Assigned to all Users by default</p>"
+      }
+    ],
+    "success": {
+      "fields": {
+        "200": [
+          {
+            "group": "200",
+            "type": "String",
+            "optional": false,
+            "field": "message",
+            "description": "<p>Successfully removed profile photo</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Response (example):",
+          "content": "HTTP/1.1 200 OK\n{\n    \"message\" :  \"Successfully removed profile photo\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "4xx": [
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "404",
+            "description": "<p>No profile photo to delete</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "401",
+            "description": "<p>Invalid or missing token in Authorization header (Authorization: bearer <token>)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Unauthorized</p>"
+          }
+        ],
+        "5xx": [
+          {
+            "group": "5xx",
+            "optional": false,
+            "field": "503",
+            "description": "<p>Unable to remove image from S3 bucket</p>"
+          },
+          {
+            "group": "5xx",
+            "optional": false,
+            "field": "500",
+            "description": "<p>Unable to query DB for user.</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "ResourceNotFound:",
+          "content": "HTTP/1.1 404 Resource Not Found\n    {\n        \"error\": \"Profile photo not found\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "NotLoggedIn:",
+          "content": "HTTP/1.1 401 Unauthorized\n    {\n        \"error\": \"UnauthorizedError: Invalid or missing JWT token.\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "NotOwner:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"User is not authorized to access resource\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "BadPermissions:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"Insufficient permissions\"\n    }",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "_api_doc/_user_api_doc.js",
+    "groupTitle": "User",
+    "sampleRequest": [
+      {
+        "url": "http://localhost:3000/api/users/:userId/avatar?access_token=YOUR_ACCESS_TOKEN"
+      }
+    ]
+  },
+  {
     "type": "get",
     "url": "/api/users",
     "title": "List All Users",
@@ -285,8 +484,88 @@
   },
   {
     "type": "get",
+    "url": "/api/users/:userId/avatar?access_token=YOUR_ACCESS_TOKEN",
+    "title": "Get Profile Photo",
+    "description": "<p>Retrieve the profile photo from AWS S3 bucket</p>",
+    "name": "GetApiUsersUserIdAvatar",
+    "group": "User",
+    "version": "0.1.0",
+    "permission": [
+      {
+        "name": "UserRead",
+        "title": "Require scope \"user:read\"",
+        "description": "<p>Assigned to all Users by default</p>"
+      }
+    ],
+    "success": {
+      "fields": {
+        "200": [
+          {
+            "group": "200",
+            "type": "Stream",
+            "optional": false,
+            "field": "Image",
+            "description": "<p>The profile photo is streamed in the HTTP response.</p>"
+          }
+        ]
+      }
+    },
+    "error": {
+      "fields": {
+        "4xx": [
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "404",
+            "description": "<p>Profile not found in S3.</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "401",
+            "description": "<p>Invalid or missing token in Authorization header (Authorization: bearer <token>)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Unauthorized</p>"
+          }
+        ],
+        "5xx": [
+          {
+            "group": "5xx",
+            "optional": false,
+            "field": "500",
+            "description": "<p>ServerError: Unable to send file, but it exists in S3</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "NotLoggedIn:",
+          "content": "HTTP/1.1 401 Unauthorized\n    {\n        \"error\": \"UnauthorizedError: Invalid or missing JWT token.\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "BadPermissions:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"Insufficient permissions\"\n    }",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "_api_doc/_user_api_doc.js",
+    "groupTitle": "User",
+    "sampleRequest": [
+      {
+        "url": "http://localhost:3000/api/users/:userId/avatar?access_token=YOUR_ACCESS_TOKEN"
+      }
+    ]
+  },
+  {
+    "type": "get",
     "url": "/api/users/:userId?access_token=YOUR_ACCESS_TOKEN",
-    "title": "Read Specific User",
+    "title": "Get Specific User Info",
     "description": "<p>Retrieve data from a specific user queried by :userId path parameter in URL</p>",
     "name": "GetApiUsersbyID",
     "group": "User",
@@ -639,7 +918,7 @@
       "examples": [
         {
           "title": "Response (example):",
-          "content": "HTTP/1.1 200 OK\n{\n    \"message\" :  Successfully uploaded user profile photo\n}",
+          "content": "HTTP/1.1 200 OK\n{\n    \"message\" :  \"Successfully uploaded user profile photo\"\n}",
           "type": "json"
         }
       ]
@@ -706,6 +985,159 @@
     "sampleRequest": [
       {
         "url": "http://localhost:3000/api/users/:userId/avatar?access_token=YOUR_ACCESS_TOKEN"
+      }
+    ]
+  },
+  {
+    "type": "put",
+    "url": "/api/users/:userId/?access_token=YOUR_ACCESS_TOKEN",
+    "title": "Update Profile",
+    "description": "<p>Update profile of a specific user and returns the updated profile to that user.</p>",
+    "name": "PutApiUsersUserId",
+    "group": "User",
+    "version": "0.1.0",
+    "permission": [
+      {
+        "name": "OwnershipRequired",
+        "title": "Require Ownership",
+        "description": "<p>Must own the resource you are requesting</p>"
+      },
+      {
+        "name": "UserEditContent",
+        "title": "Require scope \"user:edit_content\"",
+        "description": "<p>Assigned to all Users by default</p>"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Request body": [
+          {
+            "group": "Request body",
+            "type": "String",
+            "optional": true,
+            "field": "username",
+            "description": "<p>Username (unique, alphanumeric (underscore allowed), at most 32 characters)</p>"
+          },
+          {
+            "group": "Request body",
+            "type": "String",
+            "optional": true,
+            "field": "email",
+            "description": "<p>Email unique, valid email address)</p>"
+          },
+          {
+            "group": "Request body",
+            "type": "String",
+            "optional": true,
+            "field": "phone_number",
+            "description": "<p>Phone number (unique, valid phone number)</p>"
+          },
+          {
+            "group": "Request body",
+            "type": "String",
+            "optional": true,
+            "field": "first_name",
+            "description": "<p>First name</p>"
+          },
+          {
+            "group": "Request body",
+            "type": "String",
+            "optional": true,
+            "field": "last_name",
+            "description": "<p>Last name</p>"
+          },
+          {
+            "group": "Request body",
+            "type": "Date",
+            "optional": true,
+            "field": "date_of_birth",
+            "description": "<p>Date of birth</p>"
+          },
+          {
+            "group": "Request body",
+            "type": "String",
+            "optional": true,
+            "field": "gender",
+            "description": "<p>Gender</p>"
+          },
+          {
+            "group": "Request body",
+            "type": "String",
+            "optional": true,
+            "field": "about",
+            "description": "<p>Description of user (Cannot exceed 120 characters) * @apiSuccess (200) {Object} DeletedUser The user that has been deleted.</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "examples": [
+        {
+          "title": "Response (example):",
+          "content": "    HTTP/1.1 200 OK\n{\n    \"permissions\": [\n        \"post:read\",\n        \"post:interact\",\n        \"user:edit_content\",\n        \"user:delete\",\n        \"user:read\"\n    ],\n    \"gender\": \"\",\n    \"about\": \"\",\n    \"following\": [],\n    \"followers\": [],\n    \"_id\": \"5f3dd0cf4a3c392049ed1ed8\",\n    \"username\": \"AnUpdatedUsername\",\n    \"phone_number\": \"000-111-2222\",\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\",\n    \"email\": \"a@mail.com\",\n    \"createdAt\": \"2020-08-20T01:24:31.076Z\",\n    \"updatedAt\": \"2020-08-20T01:25:08.140Z\",\n    \"__v\": 0\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "4xx": [
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "422",
+            "description": "<p>Invalid fields were provided.</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "401",
+            "description": "<p>Invalid or missing token in Authorization header (Authorization: bearer <token>)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Unauthorized</p>"
+          }
+        ],
+        "5xx": [
+          {
+            "group": "5xx",
+            "optional": false,
+            "field": "500",
+            "description": "<p>Unable to query DB and find user to update.</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "UnprocessableEntity: ",
+          "content": "HTTP/1.1 422 Unprocessable Entity\n    {\n        \"error\": \"(Bad request) The following are invalid fields...\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "NotLoggedIn:",
+          "content": "HTTP/1.1 401 Unauthorized\n    {\n        \"error\": \"UnauthorizedError: Invalid or missing JWT token.\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "NotOwner:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"User is not authorized to access resource\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "BadPermissions:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"Insufficient permissions\"\n    }",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "_api_doc/_user_api_doc.js",
+    "groupTitle": "User",
+    "sampleRequest": [
+      {
+        "url": "http://localhost:3000/api/users/:userId/?access_token=YOUR_ACCESS_TOKEN"
       }
     ]
   }

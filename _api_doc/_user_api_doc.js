@@ -87,7 +87,7 @@
  */
 
  /**
- * @api {get} /api/users/:userId?access_token=YOUR_ACCESS_TOKEN Read Specific User
+ * @api {get} /api/users/:userId?access_token=YOUR_ACCESS_TOKEN Get Specific User Info
  * @apiDescription Retrieve data from a specific user queried by :userId path parameter in URL
  * @apiName GetApiUsersbyID
  * @apiGroup User
@@ -140,7 +140,7 @@
  * @apiSuccessExample Response (example):
  *     HTTP/1.1 200 OK
     {
-        "message" :  Successfully uploaded user profile photo
+        "message" :  "Successfully uploaded user profile photo"
     }
  
  * @apiError (4xx) 400 No file selected
@@ -157,4 +157,138 @@
             "error": "Invalid Mime Type, only JPEG and PNG"
         }
  * 
+ */
+
+  /**
+ * @api {delete} /api/users/:userId/avatar?access_token=YOUR_ACCESS_TOKEN Delete Profile Photo
+ * @apiDescription Permanently removes user profile photo
+ * @apiName DeleteApiUsersUserIdAvatar
+ * @apiGroup User
+ * @apiVersion 0.1.0
+ * @apiUse LoginError
+ * @apiPermission OwnershipRequired
+ * @apiUse OwnershipError
+ * @apiPermission UserEditContent
+ * @apiUse PermissionError
+ * @apiSuccess (200) {String} message      Successfully removed profile photo
+ * @apiSuccessExample Response (example):
+ *     HTTP/1.1 200 OK
+    {
+        "message" :  "Successfully removed profile photo"
+    }
+ * @apiError (4xx) 404 No profile photo to delete
+ * @apiErrorExample ResourceNotFound:
+ *     HTTP/1.1 404 Resource Not Found
+        {
+            "error": "Profile photo not found"
+        }
+ * 
+ * @apiError (5xx) 503 Unable to remove image from S3 bucket 
+ * @apiError (5xx) 500 Unable to query DB for user. 
+ */
+
+  /**
+ * @api {get} /api/users/:userId/avatar?access_token=YOUR_ACCESS_TOKEN Get Profile Photo
+ * @apiDescription Retrieve the profile photo from AWS S3 bucket
+ * @apiName GetApiUsersUserIdAvatar
+ * @apiGroup User
+ * @apiVersion 0.1.0
+ * @apiUse LoginError
+ * @apiPermission UserRead
+ * @apiUse PermissionError
+ * @apiSuccess (200) {Stream} Image The profile photo is streamed in the HTTP response.
+ * @apiError (4xx) 404 Profile not found in S3.
+ * @apiError (5xx) 500 ServerError: Unable to send file, but it exists in S3
+ * @apiError (5xx) 500 Unable to query DB for user. 
+ */
+
+   /**
+ * @api {delete} /api/users/:userId/?access_token=YOUR_ACCESS_TOKEN Delete User
+ * @apiDescription Permanently removes a user and all their information (i.e. profile photo form S3, any followers/followings)
+ * @apiName DeleteApiUsersUserId
+ * @apiGroup User
+ * @apiVersion 0.1.0
+ * @apiUse LoginError
+ * @apiPermission OwnershipRequired
+ * @apiUse OwnershipError
+ * @apiPermission UserEditContent
+ * @apiUse PermissionError
+ * @apiSuccess (200) {Object} DeletedUser The user that has been deleted.
+ * @apiSuccessExample Response (example):
+ *     HTTP/1.1 200 OK
+ {
+    "permissions": [
+        "post:read",
+        "post:interact",
+        "user:edit_content",
+        "user:delete",
+        "user:read"
+    ],
+    "gender": "",
+    "about": "",
+    "following": [],
+    "followers": [],
+    "_id": "5f3dcd97832746181006b1eb",
+    "username": "JohnDoe",
+    "phone_number": "000-111-2222",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "a@mail.com",
+    "createdAt": "2020-08-20T01:10:47.626Z",
+    "updatedAt": "2020-08-20T01:10:47.626Z",
+    "__v": 0
+}
+ * @apiError (5xx) 500 Unable to remove user
+ */
+
+   /**
+ * @api {put} /api/users/:userId/?access_token=YOUR_ACCESS_TOKEN Update Profile
+ * @apiDescription Update profile of a specific user and returns the updated profile to that user.
+ * @apiName PutApiUsersUserId
+ * @apiGroup User
+ * @apiVersion 0.1.0
+ * @apiUse LoginError
+ * @apiPermission OwnershipRequired
+ * @apiUse OwnershipError
+ * @apiPermission UserEditContent
+ * @apiUse PermissionError
+ * @apiParam    (Request body)  {String}      [username]        Username (unique, alphanumeric (underscore allowed), at most 32 characters)
+ * @apiParam    (Request body)  {String}      [email]           Email unique, valid email address)
+ * @apiParam    (Request body)  {String}      [phone_number]    Phone number (unique, valid phone number)
+ * @apiParam    (Request body)  {String}      [first_name]      First name
+ * @apiParam    (Request body)  {String}      [last_name]       Last name
+ * @apiParam    (Request body)  {Date}        [date_of_birth] Date of birth
+ * @apiParam    (Request body)  {String}      [gender]        Gender
+ * @apiParam    (Request body)  {String}      [about]         Description of user (Cannot exceed 120 characters) * @apiSuccess (200) {Object} DeletedUser The user that has been deleted.
+ * @apiSuccessExample Response (example):
+ *     HTTP/1.1 200 OK
+{
+    "permissions": [
+        "post:read",
+        "post:interact",
+        "user:edit_content",
+        "user:delete",
+        "user:read"
+    ],
+    "gender": "",
+    "about": "",
+    "following": [],
+    "followers": [],
+    "_id": "5f3dd0cf4a3c392049ed1ed8",
+    "username": "AnUpdatedUsername",
+    "phone_number": "000-111-2222",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "a@mail.com",
+    "createdAt": "2020-08-20T01:24:31.076Z",
+    "updatedAt": "2020-08-20T01:25:08.140Z",
+    "__v": 0
+}
+ * @apiError (4xx) 422 Invalid fields were provided.
+ * @apiErrorExample UnprocessableEntity: 
+ *     HTTP/1.1 422 Unprocessable Entity
+        {
+            "error": "(Bad request) The following are invalid fields..."
+        }
+ * @apiError (5xx) 500 Unable to query DB and find user to update.
  */

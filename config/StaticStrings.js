@@ -23,7 +23,7 @@ const StaticStrings = {
         BadRequestWrongKey: "Bad request: Form-day incorrect. Should be 'image'",
         UploadServerError: 'ServerError: Unable to upload file',
         DeleteServerError: 'ServerError: Unable to delete file',
-        RetrieveServerError : 'ServerError: Unable to retrieve file',
+        RetrieveServerError : 'ServerError: Unable to send file, but it exists in S3',
         BadImageUploadSuccessfulDelete: 'ServerError: Unable to upload image but clean up S3 worked.',
         BadRequestMissingFile: 'Missing file to upload'
     },

@@ -2,5 +2,15 @@
     "name": "Locker",
     "version": "0.1.0",
     "description": "API Documentation",
-    "sampleUrl" : "http://localhost:3000"
+    "sampleUrl" : "http://localhost:3000",
+    "order": [
+        "PostApiUsers",
+        "GetApiUsers",
+        "GetApiUsersbyID",
+        "DeleteApiUsersUserId",
+        "PutApiUsersUserId",
+        "GetApiUsersUserIdAvatar",
+        "PostApiUsersUserIdAvatar",
+        "DeleteApiUsersUserIdAvatar"
+      ]
 }

@@ -43,8 +43,6 @@ Medium Term
     - Create a schema for the roles
     - Map the roles to <resource><scope>
     - Create function to append a role's permission to a User
-5. Allow query parameter "access_token" to replace any login token so that API access is easier.
-    - Go to /server/controllers/auth.controller.js and in checkLogin function 
 
 Types of roles
 1. admin

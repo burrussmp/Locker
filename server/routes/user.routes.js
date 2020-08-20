@@ -11,6 +11,7 @@ router.param('userId', userCtrl.userByID)
 
 /*
   * -------------- User API ------------------
+  * For specific documentation, please see /Documentation/index.html
 */
 
 router.route('/api/users')
