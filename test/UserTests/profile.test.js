@@ -10,7 +10,7 @@ chai.use(chaiHttp);
 chai.should();
 
 const profile_test = () => {
-    describe("PATH: '/api/users/:userId'", ()=>{
+    describe("Profile Tests'", ()=>{
         describe("Failure cases", ()=>{
             before( async () =>{
                 await drop_database();
@@ -252,105 +252,6 @@ const profile_test = () => {
                     });
                 });
             });
-            it("/PUT w/ old password doesn't match current password (should fail)", async ()=>{
-                let userA = UserData[2];
-                userA.username = 'new_username';
-                let user = new User(userA);
-                user = await user.save();                
-                return agent.get('/api/users')
-                    .then(res=>{
-                    res.body.length.should.eql(2);
-                    return agent.post('/auth/login')
-                        .send(login_user)
-                        .then((res) => {
-                        return agent.put(`/api/users/${res.body.user._id}`)
-                            .send({'password':'error','old_password':'old'})
-                            .set('Authorization',`Bearer ${res.body.token}`)
-                            .then((res)=>{
-                                res.body.error.should.eql(StaticStrings.PasswordUpdateIncorrectError);
-                                res.status.should.eql(400);
-                            });
-                    });
-                });
-            });
-            it("/PUT missing old password (should fail)", async ()=>{
-                let userA = UserData[2];
-                userA.username = 'new_username';
-                let user = new User(userA);
-                user = await user.save();                
-                return agent.get('/api/users')
-                    .then(res=>{
-                    res.body.length.should.eql(2);
-                    return agent.post('/auth/login')
-                        .send(login_user)
-                        .then((res) => {
-                        return agent.put(`/api/users/${res.body.user._id}`)
-                            .send({'password':'error'})
-                            .set('Authorization',`Bearer ${res.body.token}`)
-                            .then((res)=>{
-                                res.body.error.should.eql(StaticStrings.PasswordUpdateMissingError);
-                                res.status.should.eql(400);
-                            });
-                    });
-                });
-            });
-            it("/PUT new password is invalid (should fail)", async ()=>{
-                let userA = UserData[2];
-                userA.username = 'new_username';
-                let user = new User(userA);
-                user = await user.save();                
-                return agent.get('/api/users')
-                    .then(res=>{
-                    res.body.length.should.eql(2);
-                    return agent.post('/auth/login')
-                        .send(login_user)
-                        .then((res) => {
-                        return agent.put(`/api/users/${res.body.user._id}`)
-                            .send({'password':'error','old_password':UserData[1].password})
-                            .set('Authorization',`Bearer ${res.body.token}`)
-                            .then((res)=>{
-                                res.body.error.should.eql(StaticStrings.UserModelErrors.PasswordTooShort);
-                                res.status.should.eql(400);
-                            });
-                    });
-                });
-            });
-            it("/PUT not allowed to update hashed_password (should fail)", async ()=>{          
-                return agent.get('/api/users')
-                    .then(res=>{
-                    res.body.length.should.eql(1);
-                    return agent.post('/auth/login')
-                        .send(login_user)
-                        .then((res) => {
-                        return agent.put(`/api/users/${res.body.user._id}`)
-                            .send({'hashed_password':'myNewPassword12$','bad_key':123,'old_password':UserData[1].password})
-                            .set('Authorization',`Bearer ${res.body.token}`)
-                            .then(async (res)=>{
-                                res.body.error.should.be.eql(`${StaticStrings.UserControllerErrors.BadRequestInvalidFields} 'hashed_password,bad_key'`)
-                                res.status.should.eql(400);
-                            });
-                    });
-                });
-            });
-            it("/PUT new password is valid, old password is correct, so password should update", async ()=>{
-                let user_new_pass = await User.findOne({'username':UserData[1].username});
-                return agent.get('/api/users')
-                    .then(res=>{
-                    res.body.length.should.eql(1);
-                    return agent.post('/auth/login')
-                        .send(login_user)
-                        .then((res) => {
-                        return agent.put(`/api/users/${res.body.user._id}`)
-                            .send({'password':'myNewPassword12$','old_password':UserData[1].password})
-                            .set('Authorization',`Bearer ${res.body.token}`)
-                            .then(async (res)=>{
-                                user_new_pass = await User.findOne({'username':UserData[1].username});
-                                user_new_pass.authenticate('myNewPassword12$').should.be.true;
-                                res.status.should.eql(200);
-                            });
-                    });
-                });
-            });
             it("/PUT all possible mutable fields (except password and photo)", (done)=>{
                 let data = {
                     'first_name': 'test',
@@ -405,6 +306,35 @@ const profile_test = () => {
                             .then(async (res)=>{
                                 res.status.should.eql(400);
                                 res.body.error.should.eql(StaticStrings.UserModelErrors.InvalidGender)
+                                done()
+                            });
+                    });
+                });
+            });
+            it("/PUT with incorrect field (password) should fail", (done)=>{
+                let data = {
+                    'first_name': 'test',
+                    'last_name' : 'test',
+                    'username' : 'test',
+                    'email' : 'new@mail.com',
+                    'date_of_birth' : new Date(2006,6,18,18,7),
+                    'about':'test',
+                    'phone_number': '345-323-3421',
+                    'password' : 'MWAHAHAH'
+
+                }
+                agent.get('/api/users')
+                    .then(res=>{
+                    res.body.length.should.eql(1);
+                    agent.post('/auth/login')
+                        .send(login_user)
+                        .then((res) => {
+                        agent.put(`/api/users/${res.body.user._id}`)
+                            .send(data)
+                            .set('Authorization',`Bearer ${res.body.token}`)
+                            .then(async (res)=>{
+                                res.status.should.eql(422);
+                                res.body.error.should.eql(StaticStrings.BadRequestInvalidFields + ' password')
                                 done()
                             });
                     });

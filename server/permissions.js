@@ -29,11 +29,11 @@ const User_Permissions = {
     Create: 'user:create', // Create User
     ListAll: "user:list_all", // List all users
     Delete: "user:delete", // Delete user
-    Edit: "user:edit", // Edit any field of User document
     Read: "user:read", // Read information from user
     EditContent: "user:edit_content", // Edit only editable content (like caption, etc.)
     AddPermission: "user:add_permission", // able to add permission to a user,
-    RemovePermission: "user:remove_permission" // able to remove permission from user
+    RemovePermission: "user:remove_permission", // able to remove permission from user
+    ChangePassword: "user:change_password" // able to change password
 };
 
 const MutableMongooseFields = {
@@ -61,7 +61,8 @@ const get_permission_array = (type) => {
         user_permissions = [
             User_Permissions.EditContent,
             User_Permissions.Delete,
-            User_Permissions.Read
+            User_Permissions.Read,
+            User_Permissions.ChangePassword
         ]
     }
     return [...post_permissions,
@@ -76,12 +77,9 @@ const User_Role = {
 // express middleware to handle permissions
 const Authorize = (req,res,next) => {
     let required_permissions = [];
-    let path = req.originalUrl;
+    let path = req.route.path;
     let method = req.method;
     let require_login = true;
-    // get any path params
-    let userId = req.params.userId;
-    
     switch(path){
         case '/api/users': // public
             require_login = false;
@@ -92,7 +90,7 @@ const Authorize = (req,res,next) => {
         case '/auth/logout': // public
             require_login = false;
             break;
-        case `/api/users/${userId}`:
+        case `/api/users/:userId`:
             switch(method){
                 case 'GET':
                     required_permissions.push(User_Permissions.Read);
@@ -102,9 +100,10 @@ const Authorize = (req,res,next) => {
                     break;
                 case 'DELETE':
                     required_permissions.push(User_Permissions.Delete)
+                    break;
             }
             break;
-        case `/api/users/${userId}/avatar`:
+        case `/api/users/:userId/avatar`:
             switch(method){
                 case 'GET':
                     required_permissions.push(User_Permissions.Read);
@@ -113,8 +112,12 @@ const Authorize = (req,res,next) => {
                     required_permissions.push(User_Permissions.EditContent)
                     break;
                 case 'DELETE':
-                    required_permissions.push(User_Permissions.EditContent)
+                    required_permissions.push(User_Permissions.EditContent);
+                    break;
             }
+            break;
+        case `/api/users/:userId/password`:
+            required_permissions.push(User_Permissions.ChangePassword);
             break;
     }
     res.locals.require_login = require_login;

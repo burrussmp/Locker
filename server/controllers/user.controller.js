@@ -47,7 +47,7 @@ const filter_user = (user) => {
 */ 
 const create = async (req, res) => {
   // check if any invalid fields (bad request)
-  let mutable_fields = [
+  const fields_allowed = [
     'first_name',
     'phone_number',
     'last_name',
@@ -59,10 +59,10 @@ const create = async (req, res) => {
     'password',
   ]
   let update_fields = Object.keys(req.body);
-  let allowedToEdit = _.difference(update_fields,mutable_fields).length == 0;
+  let allowedToEdit = _.difference(update_fields,fields_allowed).length == 0;
   if(!allowedToEdit){
-    let invalid_fields = _.difference(update_fields,mutable_fields)
-    return res.status(400).json({error:`${StaticStrings.UserControllerErrors.BadRequestInvalidFields} '${invalid_fields}'`})
+    let invalid_fields = _.difference(update_fields,fields_allowed)
+    return res.status(422).json({error:`${StaticStrings.BadRequestInvalidFields} ${invalid_fields}`})
   }
   let user = new User(req.body);
   try {
@@ -128,7 +128,7 @@ const list = async (req, res) => {
   * @param Object res - HTTP response object
 */ 
 const update = async (req, res) => {
-    let mutable_fields = [
+    const fields_allowed = [
       'first_name',
       'phone_number',
       'last_name',
@@ -137,13 +137,11 @@ const update = async (req, res) => {
       'email',
       'date_of_birth',
       'about',
-      'password',
-      'old_password',
     ]
     let update_fields = Object.keys(req.body);
-    let invalid_fields = _.difference(update_fields,mutable_fields);
+    let invalid_fields = _.difference(update_fields,fields_allowed);
     if(invalid_fields.length != 0){
-      return res.status(422).json({error:`${StaticStrings.UserControllerErrors.BadRequestInvalidFields} '${invalid_fields}'`})
+      return res.status(422).json({error:`${StaticStrings.BadRequestInvalidFields} ${invalid_fields}`})
     }
     try {
       let query = {'_id' : req.params.userId};
@@ -152,7 +150,7 @@ const update = async (req, res) => {
       res.salt = undefined;
       return res.status(200).json(user)
     } catch (err) {
-      return res.status(500).json({error: errorHandler.getErrorMessage(err)});
+      return res.status(400).json({error: errorHandler.getErrorMessage(err)});
     }
 }
 
@@ -174,7 +172,42 @@ const remove = async (req, res) => {
 }
 
 /**
-  * @desc Controller to get profile photo (if not uploaded, default image is sent)
+  * @desc Change password handler
+  * @param Object req - HTTP request object
+  * @param Object res - HTTP response object
+*/ 
+const changePassword = async (req,res) => {
+  const fields_required = [
+    "password",
+    "old_password"
+  ]
+  // check to see if only contains proper fields
+  let update_fields = Object.keys(req.body);
+  let fields_needed = _.difference(fields_required,update_fields);
+  if(fields_needed.length != 0){
+    return res.status(422).json({error:`${StaticStrings.BadRequestFieldsNeeded} ${fields_needed}`})
+  }
+  // check to see if it has an extra fields
+  let fields_extra = _.difference(update_fields,fields_required);
+  if(fields_extra.length != 0){
+    return res.status(422).json({error:`${StaticStrings.BadRequestInvalidFields} ${fields_extra}`})
+  }
+  // to be safe
+  let update = {
+    'old_password' : req.body.old_password,
+    'password' : req.body.password
+  };
+  try {
+    let query = {'_id' : req.params.userId};
+    await User.findOneAndUpdate(query, update,{new:true,runValidators:true});
+    return res.status(200).json({message: StaticStrings.UpdatedPasswordSuccess});
+  } catch (err) {
+    return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+  }
+}
+
+/**
+  * @desc Get profile photo (if not uploaded, default image is sent)
   * @param Object req - HTTP request object
   * @param Object res - HTTP response object
 */ 
@@ -345,5 +378,6 @@ export default {
   removeFollowing,
   removeFollower,
   findPeople,
-  requireOwnership
+  requireOwnership,
+  changePassword
 }

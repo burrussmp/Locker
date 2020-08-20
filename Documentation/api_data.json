@@ -898,7 +898,7 @@
             "type": "File",
             "optional": false,
             "field": "image",
-            "description": "<p>Profile image to upload</p>"
+            "description": "<p><code>Required</code>Profile image to upload</p>"
           }
         ]
       }
@@ -1105,8 +1105,8 @@
           {
             "group": "5xx",
             "optional": false,
-            "field": "500",
-            "description": "<p>Unable to query DB and find user to update.</p>"
+            "field": "400",
+            "description": "<p>Invalid update. The fields are likely not correct (see parameter requirements).</p>"
           }
         ]
       },

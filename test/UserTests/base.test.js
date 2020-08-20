@@ -13,8 +13,11 @@ chai.use(chaiHttp);
 chai.should();
 
 const base_test = () => {
-    describe('PATH: /api/users',()=>{
+    describe('Create and list all users',()=>{
        describe('/GET /api/users', () => {
+            before(async()=>{
+                await drop_database()
+            })
             it(`Check if User Collection Empty`, (done) => {
                 chai.request(app)
                     .get('/api/users')
@@ -129,6 +132,22 @@ const base_test = () => {
                                 });
                         });
                     }
+                });
+                it("Create with incorrect field (EVIL) should fail", (done)=>{
+                    let user = UserData[0];
+                    user.evil = "MWAHAHAH"
+                    chai.request(app)
+                        .post('/api/users')
+                        .type('form')
+                        .send(user)
+                        .end((err, res) => {
+                            if (err){
+                                console.log(err);
+                            }
+                            res.should.have.status(422);
+                            res.body.error.should.be.a('string');
+                            done();
+                        });
                 });
                 describe('Check required fields', () => {
                     let required_fields = ['username','email','first_name','last_name','password','phone_number'];

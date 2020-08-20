@@ -135,7 +135,7 @@
  * @apiUse OwnershipError
  * @apiPermission UserEditContent
  * @apiUse PermissionError
- * @apiParam    (Form Data)  {File}        image        Profile image to upload
+ * @apiParam    (Form Data)  {File}        image        <code>Required</code>Profile image to upload
  * @apiSuccess (200) {String} message      Successfully uploaded user profile photo
  * @apiSuccessExample Response (example):
  *     HTTP/1.1 200 OK
@@ -290,5 +290,5 @@
         {
             "error": "(Bad request) The following are invalid fields..."
         }
- * @apiError (5xx) 500 Unable to query DB and find user to update.
+ * @apiError (5xx) 400 Invalid update. The fields are likely not correct (see parameter requirements).
  */

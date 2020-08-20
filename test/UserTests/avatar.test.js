@@ -17,7 +17,7 @@ chai.should();
 const default_profile_photo = '/client/assets/images/profile-pic.png'
 
 const avatar_test = () => {
-    describe("PATH: /api/users/:userId/avatar",()=>{
+    describe("Profile Photo",()=>{
         describe("POST /api/users/:userId/avatar", ()=>{
             let id0,id1;
             let agent = chai.request.agent(app);

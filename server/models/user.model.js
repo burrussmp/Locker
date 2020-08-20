@@ -160,15 +160,15 @@ UserSchema.pre("findOneAndUpdate", async function(){
   }
 
   // update password
-  if (update.password && !update.old_password){
-    let ValidationError = new mongoose.Error.ValidationError(null);
-    ValidationError.addError('hashed_password',create_validation_error(StaticStrings.PasswordUpdateMissingError));
-    throw ValidationError;
-  } else if (update.password && update.old_password){
-    // add doc here later
+  if (update.password && update.old_password){
     if (!doc.authenticate(update.old_password)){
       let ValidationError = new mongoose.Error.ValidationError(null);
-      ValidationError.addError('password',create_validation_error(StaticStrings.PasswordUpdateIncorrectError));
+      ValidationError.addError('password',create_validation_error(StaticStrings.UserModelErrors.PasswordUpdateIncorrectError));
+      throw ValidationError;
+    }
+    if (doc.authenticate(update.password)){
+      let ValidationError = new mongoose.Error.ValidationError(null);
+      ValidationError.addError('password',create_validation_error(StaticStrings.UserModelErrors.PasswordUpdateSame));
       throw ValidationError;
     }
     let err = isValidPassword(update.password,false);

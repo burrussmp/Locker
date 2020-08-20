@@ -27,7 +27,10 @@ router.route('/api/users/:userId/avatar')
   .get(permission.Authorize,userCtrl.getProfilePhoto)
   .post(permission.Authorize,userCtrl.requireOwnership,userCtrl.uploadProfilePhoto)
   .delete(permission.Authorize,userCtrl.requireOwnership,userCtrl.removeProfilePhoto);
-  
+
+router.route('/api/users/:userId/password')
+  .put(permission.Authorize,userCtrl.requireOwnership,userCtrl.changePassword);
+
 router.route('/api/users/follow')
     .put(permission.Authorize,userCtrl.addFollowing, userCtrl.addFollower)
 
