@@ -151,18 +151,3 @@ export default {
     fileExistsS3
 }
 
-// Missing secret
-// {
-//     "error": "The request signature we calculated does not match the signature you provided. Check your key and signing method."
-// }
-
-// Missing Access Key
-// {
-//     "error": "The AWS Access Key Id you provided does not exist in our records."
-// }
-
-// No bucket policy excusing the user making the call or role or whatever
-// {
-//     "error": "Access Denied: No access to S3 bucket. Check bucket policy."
-// }
-

@@ -1,5 +1,4 @@
 "use strict";
-
 const StaticStrings = {
     UnauthorizedMissingTokenError: 'UnauthorizedError: Invalid or missing JWT token.',
     UserNotFoundError: 'User not found',
@@ -12,6 +11,7 @@ const StaticStrings = {
     BadRequestFieldsNeeded: "The following fields are needed",
     BadRequestInvalidFields: "(Bad request) The following are invalid fields",
     TokenIsNotValid: "This token is not valid (possible user no longer exists)",
+    UnknownServerError: "ServerError: Unknown",
     LoginErrors : {
         MissingLogin: "Missing username, phone number, or email",
         MissingPassword: "Missing password",
@@ -73,8 +73,8 @@ const StaticStrings = {
     UploadProfilePhotoSuccess: "Successfully uploaded user profile photo",
     RemoveProfilePhotoSuccess: "Successfully removed profile photo",
     UpdatedPasswordSuccess: "Successfully updated password",
-    AddedFollowerSuccess : "Successfully added a follower",
-    RemovedFollowerSuccess : "Successfully removed a follower"
+    AddedFollowerSuccess : "Following someone new!",
+    RemovedFollowerSuccess : "Successfully unfollowed someone"
 };
 
 export default StaticStrings;

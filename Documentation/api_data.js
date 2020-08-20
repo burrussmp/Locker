@@ -564,6 +564,120 @@ define({ "api": [
   },
   {
     "type": "get",
+    "url": "/api/users/:userId/follow?access_token=YOUR_ACCESS_TOKEN",
+    "title": "Get Followers/Followings",
+    "description": "<p>Retrieve a list of :userId's followers and following.</p>",
+    "name": "GetApiUsersUserIdFollow",
+    "group": "User",
+    "version": "0.1.0",
+    "permission": [
+      {
+        "name": "UserRead",
+        "title": "Require scope \"user:read\"",
+        "description": "<p>Assigned to all Users by default</p>"
+      }
+    ],
+    "success": {
+      "fields": {
+        "200": [
+          {
+            "group": "200",
+            "type": "Object[]",
+            "optional": false,
+            "field": "following",
+            "description": "<p>Array of who user followers</p>"
+          },
+          {
+            "group": "200",
+            "type": "ObjectID",
+            "optional": false,
+            "field": "following._id",
+            "description": "<p>MongoDB ID of user following</p>"
+          },
+          {
+            "group": "200",
+            "type": "String",
+            "optional": false,
+            "field": "following._username",
+            "description": "<p>Username of user following</p>"
+          },
+          {
+            "group": "200",
+            "type": "Object[]",
+            "optional": false,
+            "field": "followers",
+            "description": "<p>Array of followers of user</p>"
+          },
+          {
+            "group": "200",
+            "type": "ObjectID",
+            "optional": false,
+            "field": "followers._id",
+            "description": "<p>MongoDB ID of follower</p>"
+          },
+          {
+            "group": "200",
+            "type": "String",
+            "optional": false,
+            "field": "followers._username",
+            "description": "<p>Username of follower</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Response (example):",
+          "content": "    HTTP/1.1 200 OK\n{\n    \"message\": \"Successfully updated password\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "4xx": [
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "422",
+            "description": "<p>Bad Request: Unable to fetch list of followers/following</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "401",
+            "description": "<p>Invalid or missing token in Authorization header (Authorization: bearer <token>)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Unauthorized</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "NotLoggedIn:",
+          "content": "HTTP/1.1 401 Unauthorized\n    {\n        \"error\": \"UnauthorizedError: Invalid or missing JWT token.\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "BadPermissions:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"Insufficient permissions\"\n    }",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "_api_doc/_user_api_doc.js",
+    "groupTitle": "User",
+    "sampleRequest": [
+      {
+        "url": "http://localhost:3000/api/users/:userId/follow?access_token=YOUR_ACCESS_TOKEN"
+      }
+    ]
+  },
+  {
+    "type": "get",
     "url": "/api/users/:userId?access_token=YOUR_ACCESS_TOKEN",
     "title": "Get Specific User Info",
     "description": "<p>Retrieve data from a specific user queried by :userId path parameter in URL</p>",
@@ -1143,6 +1257,91 @@ define({ "api": [
   },
   {
     "type": "put",
+    "url": "/api/users/:userId/follow?access_token=YOUR_ACCESS_TOKEN",
+    "title": "Follow Someone",
+    "description": "<p>The requester follows user with ID :userId</p>",
+    "name": "PutApiUsersUserIdFollow",
+    "group": "User",
+    "version": "0.1.0",
+    "permission": [
+      {
+        "name": "UserEditContent",
+        "title": "Require scope \"user:edit_content\"",
+        "description": "<p>Assigned to all Users by default</p>"
+      }
+    ],
+    "success": {
+      "fields": {
+        "200": [
+          {
+            "group": "200",
+            "type": "String",
+            "optional": false,
+            "field": "Message",
+            "description": "<p>&quot;Following someone new!&quot;</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Response (example):",
+          "content": "    HTTP/1.1 200 OK\n{\n    \"message\": \"Following someone new!\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "4xx": [
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "400",
+            "description": "<p>Bad Request: Missing ID (Really a Server error you should never see)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "422",
+            "description": "<p>Bad Request: Cannot follow self</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "401",
+            "description": "<p>Invalid or missing token in Authorization header (Authorization: bearer <token>)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Unauthorized</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "NotLoggedIn:",
+          "content": "HTTP/1.1 401 Unauthorized\n    {\n        \"error\": \"UnauthorizedError: Invalid or missing JWT token.\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "BadPermissions:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"Insufficient permissions\"\n    }",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "_api_doc/_user_api_doc.js",
+    "groupTitle": "User",
+    "sampleRequest": [
+      {
+        "url": "http://localhost:3000/api/users/:userId/follow?access_token=YOUR_ACCESS_TOKEN"
+      }
+    ]
+  },
+  {
+    "type": "put",
     "url": "/api/users/:userId/password?access_token=YOUR_ACCESS_TOKEN",
     "title": "Update Password",
     "description": "<p>Update profile of a specific user and returns the updated profile to that user.</p>",
@@ -1258,6 +1457,91 @@ define({ "api": [
     "sampleRequest": [
       {
         "url": "http://localhost:3000/api/users/:userId/password?access_token=YOUR_ACCESS_TOKEN"
+      }
+    ]
+  },
+  {
+    "type": "delete",
+    "url": "/api/users/:userId/follow?access_token=YOUR_ACCESS_TOKEN",
+    "title": "Unfollow Someone",
+    "description": "<p>The requester unfollows user with ID :userId</p>",
+    "name": "PutApiUsersUserIdUnFollow",
+    "group": "User",
+    "version": "0.1.0",
+    "permission": [
+      {
+        "name": "UserEditContent",
+        "title": "Require scope \"user:edit_content\"",
+        "description": "<p>Assigned to all Users by default</p>"
+      }
+    ],
+    "success": {
+      "fields": {
+        "200": [
+          {
+            "group": "200",
+            "type": "String",
+            "optional": false,
+            "field": "Message",
+            "description": "<p>&quot;Successfully unfollowed someone&quot;</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Response (example):",
+          "content": "    HTTP/1.1 200 OK\n{\n    \"message\": \"Successfully unfollowed someone\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "4xx": [
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "400",
+            "description": "<p>Bad Request: Missing ID (Really a Server error you should never see)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "422",
+            "description": "<p>Bad Request: Cannot unfollow self</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "401",
+            "description": "<p>Invalid or missing token in Authorization header (Authorization: bearer <token>)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Unauthorized</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "NotLoggedIn:",
+          "content": "HTTP/1.1 401 Unauthorized\n    {\n        \"error\": \"UnauthorizedError: Invalid or missing JWT token.\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "BadPermissions:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"Insufficient permissions\"\n    }",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "_api_doc/_user_api_doc.js",
+    "groupTitle": "User",
+    "sampleRequest": [
+      {
+        "url": "http://localhost:3000/api/users/:userId/follow?access_token=YOUR_ACCESS_TOKEN"
       }
     ]
   }

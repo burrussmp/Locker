@@ -322,7 +322,7 @@
  */
 
 /**
- * @api {get} /api/users/:userId/follow?access_token=YOUR_ACCESS_TOKEN Update Password
+ * @api {get} /api/users/:userId/follow?access_token=YOUR_ACCESS_TOKEN Get Followers/Followings
  * @apiDescription Retrieve a list of :userId's followers and following.
  * @apiName GetApiUsersUserIdFollow
  * @apiGroup User
@@ -342,4 +342,42 @@
     "message": "Successfully updated password"
 }
  * @apiError (4xx) 422 Bad Request: Unable to fetch list of followers/following
+ */
+
+ /**
+ * @api {put} /api/users/:userId/follow?access_token=YOUR_ACCESS_TOKEN Follow Someone
+ * @apiDescription The requester follows user with ID :userId
+ * @apiName PutApiUsersUserIdFollow
+ * @apiGroup User
+ * @apiVersion 0.1.0
+ * @apiUse LoginError
+ * @apiPermission UserEditContent
+ * @apiUse PermissionError
+ * @apiSuccess (200) {String} Message "Following someone new!"
+ * @apiSuccessExample Response (example):
+ *     HTTP/1.1 200 OK
+{
+    "message": "Following someone new!"
+}
+ * @apiError (4xx) 400 Bad Request: Missing ID (Really a Server error you should never see)
+ * @apiError (4xx) 422 Bad Request: Cannot follow self
+ */
+
+  /**
+ * @api {delete} /api/users/:userId/follow?access_token=YOUR_ACCESS_TOKEN Unfollow Someone
+ * @apiDescription The requester unfollows user with ID :userId
+ * @apiName DeleteApiUsersUserIdUnFollow
+ * @apiGroup User
+ * @apiVersion 0.1.0
+ * @apiUse LoginError
+ * @apiPermission UserEditContent
+ * @apiUse PermissionError
+ * @apiSuccess (200) {String} Message "Successfully unfollowed someone"
+ * @apiSuccessExample Response (example):
+ *     HTTP/1.1 200 OK
+{
+    "message": "Successfully unfollowed someone"
+}
+ * @apiError (4xx) 400 Bad Request: Missing ID (Really a Server error you should never see)
+ * @apiError (4xx) 422 Bad Request: Cannot unfollow self
  */

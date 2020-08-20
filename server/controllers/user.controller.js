@@ -146,6 +146,7 @@ const update = async (req, res) => {
     try {
       let query = {'_id' : req.params.userId};
       let user = await User.findOneAndUpdate(query, req.body,{new:true,runValidators:true});
+      if (!user) return res.status(500).json({error:StaticStrings.UnknownServerError}) // possibly unable to fetch
       res.hashed_password = undefined;
       res.salt = undefined;
       return res.status(200).json(user)
@@ -167,7 +168,6 @@ const remove = async (req, res) => {
     deletedUser.salt = undefined
     return res.json(deletedUser)
   } catch (err) {
-    console.log(err);
     return res.status(500).json({error: errorHandler.getErrorMessage(err)});
   }
 }
@@ -243,31 +243,32 @@ const uploadProfilePhoto = (req, res) => {
     'type': 'profile_photo',
     'uploadedBy' : req.params.userId
   };
-  S3_Services.uploadImageS3(req,res,meta, async (req,res,image)=>{
-    let query = {'_id' : req.params.userId};
+  S3_Services.uploadImageS3(req,res,meta, async (req,res,image)=>{ // upload to s3
+    let query = {'_id' : req.params.userId}; // at this point we have uploaded to S3 and just need to clean up
     let update = {$set:{'profile_photo' : image._id}};
     try {
-      let user = await User.findOneAndUpdate(query, update,{runValidators:true})
+      let user = await User.findOneAndUpdate(query, update,{runValidators:true}) // fetch user
         .populate('profile_photo','key')
         .exec();
-      if (user.profile_photo) {
-        S3_Services.deleteImageS3(user.profile_photo.key).then(()=>{
-          res.status(200).json({message: StaticStrings.UploadProfilePhotoSuccess})
+      if (!user) return res.status(500).json({error:StaticStrings.UnknownServerError}) // possibly unable to fetch
+      if (user.profile_photo) { 
+        S3_Services.deleteImageS3(user.profile_photo.key).then(()=>{ // delete the old profile photo if necessary
+          res.status(200).json({message: StaticStrings.UploadProfilePhotoSuccess}) // Success!
         }).catch(err=>{
-          res.status(500).json({error:err.message})
+          res.status(500).json({error:err.message}) // unable to delete old one sadly
         })
       } else {
-        res.status(200).json({message:StaticStrings.UploadProfilePhotoSuccess})
+        res.status(200).json({message:StaticStrings.UploadProfilePhotoSuccess}) // first upload, nothing to delete... Success!
       }
-    } catch (err) {
+    } catch (err) { 
       if (req.file) {
-        S3_Services.deleteImageS3(req.file.key).then(()=>{
-          res.status(500).json({error:StaticStrings.UserControllerErrors.BadUploadSuccessfulDelete})
+        S3_Services.deleteImageS3(req.file.key).then(()=>{ // somewhere along the way we messed up... time to clean up!
+          res.status(500).json({error:StaticStrings.UserControllerErrors.BadUploadSuccessfulDelete + ' the error that caused it' + err.message}) // cleaned Mongo and S3
         }).catch((err)=>{
-          res.status(500).json({error:StaticStrings.S3ServiceErrors.DeleteServerError + ' and ' + err.message})
+          res.status(500).json({error:StaticStrings.S3ServiceErrors.DeleteServerError + ' and ' + err.message}) // unable to clean mongo hmm
         })
       } else {
-        res.status(400).json({error: errorHandler.getErrorMessage(err)})
+        res.status(500).json({error: StaticStrings.UnknownServerError + ' and ' + err.message}) // should never see this... if we have req.file we parsed correctly
       }
     }
   })
@@ -285,17 +286,18 @@ const removeProfilePhoto = async (req, res) => {
     let user = await User.findOneAndUpdate(query, update)
       .populate('profile_photo','key')
       .exec();
+    if (!user)return res.status(500).json({error:StaticStrings.UnknownServerError});
     if (user.profile_photo && user.profile_photo.key) {
       S3_Services.deleteImageS3(user.profile_photo.key).then(()=>{
-        res.status(200).json({message:StaticStrings.RemoveProfilePhotoSuccess})
+        res.status(200).json({message:StaticStrings.RemoveProfilePhotoSuccess}) // Successfully removed photo
       }).catch(err=>{
-        res.status(503).json({error: err.message})
+        res.status(503).json({error: StaticStrings.UnknownServerError+err.message}) // error in removal
       })
     } else {
-      res.status(404).json({error:StaticStrings.UserControllerErrors.ProfilePhotoNotFound});
+      res.status(404).json({error:StaticStrings.UserControllerErrors.ProfilePhotoNotFound}); // no profile to remove
     }
   } catch (err) {
-    res.status(500).json({error: errorHandler.getErrorMessage(err)})
+    res.status(500).json({error: StaticStrings.UnknownServerError+err.message}) // some other error
   }
 
 }
@@ -312,6 +314,7 @@ const listFollow = async (req,res) => {
       .populate('following','_id username')
       .populate('followers','_id username')
       .exec();
+    if (!user)return res.status(500).json({error:StaticStrings.UnknownServerError});
     let response = {
       'following' : user.following,
       'followers' : user.followers
@@ -328,41 +331,6 @@ const listFollow = async (req,res) => {
   * @param Object req - HTTP request object
   * @param Object res - HTTP response object
 */ 
-const addFollower = async (req,res) => {
-  let myID = req.auth._id;
-  let theirID = req.params.userId;
-  if (!myID || !theirID){
-    return res.status(400).json({error:StaticStrings.UserControllerErrors.FollowingMissingID});
-  }
-  if (req.params.userId === myID){
-    return res.status(422).json({error: StaticStrings.UserControllerErrors.FollowSelfError}) // cannot follow self
-  } else {
-    try {
-      await User.findOneAndUpdate({'_id' : theirID}, {$addToSet: {followers: myID}})
-      await User.findOneAndUpdate({'_id' : myID}, {$addToSet: {following: theirID}})
-      return res.status(200).json({message:StaticStrings.AddedFollowerSuccess});
-    } catch(err){
-      return res.status(500).json({error: errorHandler.getErrorMessage(err)}) 
-    }
-  }
-}
-
-const addFollowing = async (req, res, next) => {
-  try{
-    await User.findByIdAndUpdate(req.body.userId, {$push: {following: req.body.followId}}) 
-    next()
-  }catch(err){
-    return res.status(400).json({
-      error: errorHandler.getErrorMessage(err)
-    })
-  }
-}
-
-/**
-  * @desc The requester is asking to follow :userId
-  * @param Object req - HTTP request object
-  * @param Object res - HTTP response object
-*/ 
 const Follow = async (req,res) => {
   let myID = req.auth._id;
   let theirID = req.params.userId;
@@ -373,11 +341,16 @@ const Follow = async (req,res) => {
     return res.status(422).json({error: StaticStrings.UserControllerErrors.FollowSelfError}) // cannot follow self
   } else {
     try {
-      await User.findOneAndUpdate({'_id' : theirID}, {$addToSet: {followers: myID}})
-      await User.findOneAndUpdate({'_id' : myID}, {$addToSet: {following: theirID}})
+      await User.findOneAndUpdate({'_id' : theirID}, {$addToSet: {followers: myID}}) // update their account
+      try {
+        await User.findOneAndUpdate({'_id' : myID}, {$addToSet: {following: theirID}}) // update our account
+      } catch(err){
+        await User.findOneAndUpdate({'_id' : theirID}, {$pull: {followers: myID}}) // if updating theirs succeeded, but ours didn't we have to undo ours
+        return res.status(500).json({error:StaticStrings.UnknownServerError+err.message}); // send the error
+      }
       return res.status(200).json({message:StaticStrings.AddedFollowerSuccess});
     } catch(err){
-      return res.status(500).json({error: errorHandler.getErrorMessage(err)}) 
+      return res.status(500).json({error: StaticStrings.UnknownServerError+err.message})  // no accounts were changed
     }
   }
 }
@@ -397,9 +370,14 @@ const Unfollow = async (req, res) => {
     return res.status(422).json({error: StaticStrings.UserControllerErrors.UnfollowSelfError}) // cannot follow self
   } else {
     try {
-      await User.findOneAndUpdate({'_id' : theirID}, {$pull: {followers: myID}})
-      await User.findOneAndUpdate({'_id' : myID}, {$pull: {following: theirID}})
-      return res.status(200).json({message:StaticStrings.AddedFollowerSuccess});
+      await User.findOneAndUpdate({'_id' : theirID}, {$pull: {followers: myID}}) // update their account
+      try {
+        await User.findOneAndUpdate({'_id' : myID}, {$pull: {following: theirID}}) // update our account
+      } catch(err){
+        await User.findOneAndUpdate({'_id' : theirID}, {$addToSet: {followers: myID}}) // if updating our's failed, reset theirs
+        return res.status(500).json({error:err.message});
+      }
+      return res.status(200).json({message:StaticStrings.RemovedFollowerSuccess}); // else all succeeded and we are good
     } catch(err){
       return res.status(500).json({error: errorHandler.getErrorMessage(err)}) 
     }
@@ -430,8 +408,6 @@ export default {
   getProfilePhoto,
   uploadProfilePhoto,
   removeProfilePhoto,
-  addFollowing,
-  addFollower,
   findPeople,
   requireOwnership,
   changePassword,

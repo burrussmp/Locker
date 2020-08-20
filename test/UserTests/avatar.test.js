@@ -416,6 +416,29 @@ const avatar_test = () => {
                     });
                 });
             });
+            it("Delete user and see if S3 gets cleaned up correctly",async ()=>{
+                let id = id0;
+                let m_token = token;
+                return agent.post(`/api/users/${id}/avatar`)
+                    .set('Authorization',`Bearer ${m_token}`)
+                    .attach('image', process.cwd()+'/test/resources/profile1.png', 'profile_photo')
+                    .then(async (res)=>{
+                        res.status.should.eql(200);
+                        res.body.message.should.eql(StaticStrings.UploadProfilePhotoSuccess)
+                        let image = await Image.findOne({uploadedBy:id});
+                        let key = image.key;
+                        return agent.delete(`/api/users/${id}`)
+                            .set('Authorization',`Bearer ${m_token}`)
+                            .then(async (res)=>{
+                                res.status.should.eql(200);
+                                return S3_Services.fileExistsS3(key).catch(async(err)=>{
+                                    err.statusCode.should.eql(404);
+                                    let image = await Image.findOne({'key':key});
+                                    (image == null || image == undefined).should.be.true;
+                                })
+                    });
+                });
+            });
             it("Not owner (should fail)",async ()=>{
                 let id = id0;
                 let m_token = token;
