@@ -2,14 +2,15 @@ import mongoose from 'mongoose'
 import StaticStrings from '../../config/StaticStrings';
 
 const ContentPostSchema = new mongoose.Schema({
-  type : {
-    type: String,
-    default: "ContentPost"
-  },
   media: {
     type: mongoose.Schema.ObjectId, 
     required: true,
     ref: 'Image'
+  },
+  price : {
+    type : Number,
+    require: StaticStrings.PostModelErrors.ContentPostErrors.PriceRequired,
+    min: [0,StaticStrings.PostModelErrors.PriceNotNonnegative]
   }
 });
 

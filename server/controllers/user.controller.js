@@ -201,7 +201,7 @@ const changePassword = async (req,res) => {
 const getProfilePhoto = (req, res) => {
   if (req.profile.profile_photo && req.profile.profile_photo.key){
     let profile_photo = req.profile.profile_photo;
-    S3_Services.getImageS3(profile_photo)
+    S3_Services.getImageS3(profile_photo.key)
       .catch((err)=>{
         res.status(404).json({error:err.message})
       }).then((data)=>{

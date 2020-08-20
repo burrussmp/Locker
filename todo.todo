@@ -43,7 +43,15 @@ Medium Term
     - Create a schema for the roles
     - Map the roles to <resource><scope>
     - Create function to append a role's permission to a User
-
+5. Add private/public settings
+    - On all resources, there will be a private and public setting
+    - This affects only get requests
+    - When requesting any resource, check who uploaded/posted it and if
+        it is public or you are a follower then you can get the item
+    - Perform in the middleware param functions
+    - For /api/image and /api/video you have to add a middleware to query the image
+    and video models respectively by ID, then query the user by ID, then see if you have access.
+    If you have access, then you can retrieve the image
 
 Types of roles
 1. admin
@@ -57,3 +65,4 @@ Long Term
 2. Add rate limits on the API
 3. For API calls like list users or list followers, eventually we will have to put a limit
 or query where only a certain amount can be retrieved at a given time.
+4. When someone adds a profile picture, also add a miniature version of it

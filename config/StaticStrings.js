@@ -12,6 +12,7 @@ const StaticStrings = {
     BadRequestInvalidFields: "(Bad request) The following are invalid fields",
     TokenIsNotValid: "This token is not valid (possible user no longer exists)",
     UnknownServerError: "ServerError: Unknown",
+    NotImplementedError: "Not Implemented",
     LoginErrors : {
         MissingLogin: "Missing username, phone number, or email",
         MissingPassword: "Missing password",
@@ -69,7 +70,8 @@ const StaticStrings = {
         PasswordUpdateSame : "Cannot update with the same old password",
     },
     CommentModelErrors: {
-        MaxCommentSizeError: "Comment must be less than 120 characters"
+        MaxCommentSizeError: "Comment must be less than 120 characters",
+        CommentNotFoundError: "Comment not found"
     },
     PostModelErrors: {
         MaxDescriptionSizeError: "Descriptions must be less than 180 characters",
@@ -79,8 +81,16 @@ const StaticStrings = {
         TagMustBeAlphabetical: "The tag can only contain uppercase and lowercase letters",
         IncorrectType: "This type of post is not supported",
         MissingContent: "This post is missing content",
-        
+        PostNotFoundError: "Post not found",
+        PriceNotNonnegative : "A price must be non-negative",
+        ContentPostErrors: {
+            PriceRequired: "Must specify the price of a content post"
+        },
+        CreateMissingType: "Missing 'type' in request body"
 
+    },
+    MediaControllerErrors: {
+        MediaNotFound: "Error requested media not found"
     },
     SignedUpSuccess: "Successfully signed up!",
     LoggedOutSuccess: "Logged out",

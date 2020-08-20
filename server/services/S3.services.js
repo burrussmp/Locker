@@ -120,10 +120,10 @@ const listObjectsS3 = () => {
   * @return Returns a promise where the resolve contains the image data and reject
   * contains the error
 */
-const getImageS3 = (image) => {
+const getImageS3 = (key) => {
   let params = {
     Bucket: process.env.BUCKET_NAME,
-    Key: image.key
+    Key: key
   }
   return s3.getObject(params).promise()
 }
