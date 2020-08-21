@@ -20,7 +20,7 @@ const commentByID = async (req, res, next, id) => {
             })
         }
         req.comment = comment
-        req.owner = comment.postedBy;
+        req.owner = comment.postedBy.toString();
         next()
     } catch (err) {
         return res.status(404).json({
@@ -40,12 +40,25 @@ const replyByID = async (req, res, next, id) => {
     if (!req.comment._id){
         return res.status(500).json({error:StaticStrings.UnknownServerError});
     }
-    req.owner = id;
-    next()
+    try {
+        let reply = await Comment.findOne({'_id':req.params.commentId,'replies._id':req.params.replyId});
+        if (!reply) {
+            return res.status('404').json({
+                error: StaticStrings.CommentModelErrors.ReplyNotFound
+            })
+        }
+        req.reply = reply;
+        req.owner = reply.postedBy.toString();
+        next();
+    } catch (err){
+        return res.status(404).json({
+            error: StaticStrings.CommentModelErrors.ReplyNotFound
+        })
+    }
 }
 
 /**
- * @desc List all the replies of a specific comment
+ * @desc Get the replies
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  * @return A list of replies for a particular comment. For each comment, there is
@@ -67,15 +80,14 @@ const listReplies = async (req,res) => {
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  */
-const getReply = (req,res) => {
+const getReply = async (req,res) => {
     try {
-        let replies = await Comment_Services.fetchReplies(req.params.commentId,req.auth._id);
-        return res.status(200).json({
-            data: replies
-        });
+        let replies = await Comment_Services.fetchReplies(req.params.commentId,req.auth._id,req.params.replyId);
+        return res.status(200).json(replies[0]);
     } catch (err) {
-        return res.status(500).json({error:err.message});
-    }}
+        return res.status(404).json({error: StaticStrings.CommentModelErrors.ReplyNotFound});
+    }
+}
 
 /**
  * @desc Posts a reply to a comment
@@ -89,8 +101,8 @@ const createReply = async (req,res) => {
         text : req.body.text,
     }
     try {
-        await Comment_Services.addReply(req.params.commentId,reply)
-        return res.status(200).json({message: StaticStrings.AddedReplySuccess});
+        let new_reply = await Comment_Services.addReply(req.params.commentId,reply);
+        return res.status(200).json({"id":new_reply._id});
     } catch (err) {
         if (errorHandler.getErrorMessage(err).includes(StaticStrings.CommentModelErrors.ReplyTextRequired))
             return res.status(400).json({error: StaticStrings.CommentModelErrors.ReplyTextRequired}) 
@@ -100,31 +112,80 @@ const createReply = async (req,res) => {
 }
 
 /**
- * @desc Edit a reply: can include text and likes
+ * @desc Edit a reply: Can only modify the text
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  * @return Ccan only edit the text
  */
-const editReply = (req,res) => {
-    return res.status(501).json({error:StaticStrings.NotImplementedError})
-}
+const editReply = async (req,res) => {
+    try {
+        if (!req.body.text){
+            return res.status(400).json({error:StaticStrings.ReplyControllerErrors.MissingTextField});
+        }
+        let reply = await Comment_Services.editReply(req.params.commentId,req.params.replyId,req.body.text);
+        return res.status(200).json(
+            {
+                'id' : reply._id,
+                'text':reply.text
+            }
+        );
+    } catch (err) {
+        if (errorHandler.getErrorMessage(err).includes(StaticStrings.CommentModelErrors.ReplyTextRequired))
+            return res.status(400).json({error: StaticStrings.CommentModelErrors.ReplyTextRequired}) 
+        else if (errorHandler.getErrorMessage(err).includes(StaticStrings.CommentModelErrors.MaxCommentSizeError))
+            return res.status(400).json({error: StaticStrings.CommentModelErrors.MaxCommentSizeError})
+        else
+            return res.status(400).json({error: errorHandler.getErrorMessage(err)}) 
+    }}
 
 /**
  * @desc Delete a reply
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  */
-const deleteReply = (req,res) => {
-    return res.status(501).json({error:StaticStrings.NotImplementedError})
+const deleteReply = async (req,res) => {
+    try {
+        let reply = await Comment_Services.deleteReply(req.params.commentId,req.params.replyId);
+        return res.status(200).json({
+            'id' : reply._id
+        });
+    } catch (err) {
+        if (errorHandler.getErrorMessage(err).includes(StaticStrings.CommentModelErrors.ReplyTextRequired))
+            return res.status(400).json({error: StaticStrings.CommentModelErrors.ReplyTextRequired}) 
+        else if (errorHandler.getErrorMessage(err).includes(StaticStrings.CommentModelErrors.MaxCommentSizeError))
+            return res.status(400).json({error: StaticStrings.CommentModelErrors.MaxCommentSizeError})
+        else
+            return res.status(400).json({error: errorHandler.getErrorMessage(err)}) 
+    }
 }
 
 /**
- * @desc React to a reply (like or unlike it depending on req.action)
+ * @desc Like a reply
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  */
-const likeReply = (req,res) => {
-    return res.status(501).json({error:StaticStrings.NotImplementedError})
+const likeReply = async (req,res) => {
+    try {
+        let reply = await Comment_Services.likeReply(req.params.commentId,req.params.replyId,req.auth._id);
+        return res.status(200).json({id:reply._id});
+    } catch (err){
+        console.log(err);
+        return res.status(500).json({error: errorHandler.getErrorMessage(err)})
+    }
+}
+
+/**
+ * @desc Unlike a reply
+ * @param Object   req - HTTP request object
+ * @param Object   res - HTTP response object
+*/
+const unlikeReply = async (req,res) => {
+    try {
+        let reply = await Comment_Services.unlikeReply(req.params.commentId,req.params.replyId,req.auth._id);
+        return res.status(200).json({id : reply._id});
+    } catch (err){
+        return res.status(500).json({error: errorHandler.getErrorMessage(err)})
+    } 
 }
 
 /**
@@ -140,6 +201,7 @@ const likeComment = async (req,res) => {
         return res.status(500).json({error: errorHandler.getErrorMessage(err)})
     } 
 }
+
 
 /**
  * @desc Unlike a comment
@@ -163,6 +225,7 @@ export default {
     editReply,
     deleteReply,
     likeReply,
+    unlikeReply,
     likeComment,
     unlikeComment
 }

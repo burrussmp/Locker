@@ -262,12 +262,10 @@ const Authorize = (req,res,next) => {
             switch(method){
                 case 'PUT':
                     required_permissions.push(Post_Permissions.EditContent);
-                    required_permissions.push(Comment_Permissions.EditContent);
                     required_permissions.push(Comment_Permissions.Interact)
                     break;
                 case 'DELETE':
                     required_permissions.push(Post_Permissions.EditContent);
-                    required_permissions.push(Comment_Permissions.EditContent);
                     required_permissions.push(Comment_Permissions.Interact)
                     break;
             }

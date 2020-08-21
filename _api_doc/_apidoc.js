@@ -60,6 +60,17 @@
             "error": "Comment not found"
         }
  */
+/**
+ * @apiDefine ReplyNotFound
+ * @apiVersion 0.1.0
+ *
+ * @apiError (4xx) 404 Reply not found
+ * @apiErrorExample ReplyNotFound:
+ *     HTTP/1.1 404 Resource Not Found
+        {
+            "error": "Reply not found"
+        }
+ */
 
 // ------------------------------------------------------------------------------------------
 // Current Permissions.

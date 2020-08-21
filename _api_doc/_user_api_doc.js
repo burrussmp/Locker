@@ -77,7 +77,7 @@
  * @apiErrorExample Invalid field:
  *     HTTP/1.1 400 Internal Server Error
         {
-            "error": "Bad request: The following are invalid fields 'bad_key'"
+            "error": "Bad request: The following are invalid fields "bad_key""
         }
  * @apiErrorExample Non-Unique Constraint:
  *     HTTP/1.1 400 Internal Server Error
@@ -126,7 +126,7 @@
 
  /**
  * @api {post} /api/users/:userId/avatar?access_token=YOUR_ACCESS_TOKEN Update Profile Photo
- * @apiDescription Updates the user's profile photo by storing it in an AWS S3 bucket.
+ * @apiDescription Updates the user"s profile photo by storing it in an AWS S3 bucket.
  * @apiName PostApiUsersUserIdAvatar
  * @apiGroup User
  * @apiVersion 0.1.0
@@ -324,12 +324,12 @@
         {
             "error": "(Bad request) The following are fields are required old_password"
         }
- * @apiError (4xx) 400 Bad Request: New password is too short, the same as the old password, old_password doesn't match the current password, etc.
+ * @apiError (4xx) 400 Bad Request: New password is too short, the same as the old password, old_password doesn"t match the current password, etc.
  */
 
 /**
  * @api {get} /api/users/:userId/follow?access_token=YOUR_ACCESS_TOKEN Get Followers/Followings
- * @apiDescription Retrieve a list of :userId's followers and following.
+ * @apiDescription Retrieve a list of :userId"s followers and following.
  * @apiName GetApiUsersUserIdFollow
  * @apiGroup User
  * @apiVersion 0.1.0

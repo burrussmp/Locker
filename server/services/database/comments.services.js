@@ -3,18 +3,18 @@
 // imports
 import mongoose from 'mongoose';
 import Comment from '../../models/comment.model';
-
 /**
  * @desc Returns the replies of a specific comment
  * @param String commentId - The ID of the Mongoose comment
  * @param String reqId - The ID of the person requesting
+ * @param String replyId - Additionally filters for a single ID if necessary
  * @return A promise of a list of the replies has the number of likes, _id, text, and creation time.
  */
-const fetchReplies = async (commentId,reqId) => {
-    let id = mongoose.Types.ObjectId(commentId);
+const fetchReplies = async (commentId,reqId,replyId=undefined) => {
+    commentId = mongoose.Types.ObjectId(commentId);
     reqId = mongoose.Types.ObjectId(reqId);
-    return Comment.aggregate([
-        { $match: { _id : id } },
+    let pipeline = [
+        { $match: { _id : commentId } },
         { $project : {"_id":0, "replies": "$replies" }},
         { $unwind : "$replies"},
         {
@@ -26,44 +26,124 @@ const fetchReplies = async (commentId,reqId) => {
             "liked": {$cond: { if: { $and : [{$isArray: "$replies.likes" },{ $in: [ reqId, "$replies.likes" ] }	]}, then: true, else: false}},
             }
         },
-
-    ]).exec();
+    ]
+    if (replyId){
+        replyId = mongoose.Types.ObjectId(replyId);
+        pipeline.splice(3,0,{ $match: { "replies._id" : replyId}});
+    }
+    return Comment.aggregate(pipeline).exec();
 };
+
 
 
 /**
  * @desc Adds a reply to a specific object.
  * @param String commentId - The ID of the Mongoose comment
  * @param Object reply - The reply (should have a text and postedBy field)
- * @return a promise to the updated comment object.
+ * @return a promise to the updated reply object
  */
 const addReply = async (commentId,reply) => {
-    return Comment.findOneAndUpdate({'_id':commentId},{$push: { 
+    let comment = await Comment.findOneAndUpdate({'_id':commentId},{$push: { 
         replies:{
             text: reply.text,
             postedBy: reply.postedBy,
         }
     }},
-    {runValidators:true});
+    {runValidators:true,new:true});
+    return comment.replies[comment.replies.length-1];
 };
 
+/**
+ * @desc Modifies a reply
+ * @param String commentId  - The ID of the Mongoose comment
+ * @param String replyId    - The ID of the reply
+ * @param String newText    - The text to set the updated thing
+ * @return a promise to the edited reply 
+ */
+const editReply = async (commentId,replyId,newText) => {
+    let comment = await Comment.findOneAndUpdate(
+        {'_id':commentId,'replies._id':replyId},
+        { $set:{ "replies.$.text":newText } },
+    {runValidators:true,new:true});
+    return comment.replies.id(replyId);
+};
+
+/**
+ * @desc Deletes a reply and returns a promise to it
+ * @param String commentId  - The ID of the Mongoose comment
+ * @param String replyId    - The ID of the reply
+ * @return a promise to the deleted reply 
+ */
+const deleteReply = async (commentId,replyId) => {
+    let comment = await Comment.findByIdAndUpdate(commentId,
+        { $pull:{ replies:{'_id':replyId} } },
+    {runValidators:true,new:false});
+    return comment.replies.id(replyId);
+};
+
+/**
+ * @desc Like a comment
+ * @param String    commentId   - The ID of comment to like
+ * @param String    likerId     - The ID of the person liking the comment
+ * @return a promise to the updated comment object.
+ */
 const likeComment = async (commentId,likerId) => {
     return Comment.findOneAndUpdate(
         {'_id' : commentId}, 
         {$addToSet: {likes: likerId}}) // update their account
 }
 
+/**
+ * @desc Unlike a comment
+ * @param String    commentId   - The ID of comment to like
+ * @param String    likerId     - The ID of the person unliking the comment
+ * @return a promise to the updated comment object.
+ */
 const unlikeComment = async (commentId,likerId) => {
     return Comment.findOneAndUpdate(
         {'_id' : commentId}, 
         {$pull: {likes: likerId}}) // update their account
 }
 
+/**
+ * @desc Like a reply
+ * @param String    commentId   - The ID of comment to like
+ * @param String    replyId     - The ID of the reply
+ * @param String    likerId     - The ID of the person liking the comment
+ * @return a promise to the updated comment object.
+ */
+const likeReply = async (commentId,replyId,likerId) => {
+    let comment = await Comment.findOneAndUpdate(
+        {'_id':commentId,'replies._id':replyId},
+        { $addToSet:{ "replies.$.likes":likerId } },
+    {runValidators:true,new:true});// update their account
+    return comment.replies.id(replyId);
+}
+
+/**
+ * @desc Unlike a reply
+ * @param String    commentId   - The ID of comment to like
+ * @param String    replyId     - The ID of the reply
+ * @param String    likerId     - The ID of the person unliking the comment
+ * @return a promise to the updated comment object.
+ */
+const unlikeReply = async (commentId,replyId,likerId) => {
+    let comment = await Comment.findOneAndUpdate(
+        {'_id':commentId,'replies._id':replyId},
+        { $pull:{ "replies.$.likes":likerId } },
+    {runValidators:true,new:true});// update their account
+    return comment.replies.id(replyId);
+}
+
 export default {
     fetchReplies,
     addReply,
     likeComment,
-    unlikeComment
+    unlikeComment,
+    editReply,
+    deleteReply,
+    likeReply,
+    unlikeReply
 }
 
 

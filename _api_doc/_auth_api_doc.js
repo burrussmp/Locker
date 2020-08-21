@@ -72,6 +72,6 @@
  * @apiSuccessExample Response (example):
  *     HTTP/1.1 200 OK
  *     {
-            message: "Logged out"
+            "message": "Logged out"
  *     }
  */
