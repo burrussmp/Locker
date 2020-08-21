@@ -196,9 +196,109 @@ define({ "api": [
     ]
   },
   {
+    "type": "delete",
+    "url": "/api/:commentId/likes?access_token=YOUR_ACCESS_TOKEN",
+    "title": "Unlike",
+    "description": "<p>Unlike a comment</p>",
+    "name": "DeleteApiCommentIdLikes",
+    "group": "Comment",
+    "version": "0.1.0",
+    "permission": [
+      {
+        "name": "LoginRequired",
+        "title": "Require login",
+        "description": ""
+      },
+      {
+        "name": "PostEditContent",
+        "title": "Require scope \"post:edit_content\"",
+        "description": "<p>Assigned to all Users by default</p>"
+      },
+      {
+        "name": "CommentEditContent",
+        "title": "Require scope \"comment:edit_content\"",
+        "description": "<p>Assigned to all Users by default</p>"
+      }
+    ],
+    "success": {
+      "fields": {
+        "200": [
+          {
+            "group": "200",
+            "type": "String",
+            "optional": false,
+            "field": "message",
+            "description": "<p>&quot;Successfully unliked a comment&quot;</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Response (example):",
+          "content": "  HTTP/1.1 200 OK\n{\n  \"message\" : \"Successfully unliked a comment\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "4xx": [
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "400",
+            "description": "<p>Bad Request: Text not included</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "401",
+            "description": "<p>Invalid or missing token in Authorization header (Authorization: bearer <token>)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Unauthorized</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "404",
+            "description": "<p>Comment not found</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "NotLoggedIn:",
+          "content": "HTTP/1.1 401 Unauthorized\n    {\n        \"error\": \"UnauthorizedError: Invalid or missing JWT token.\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "BadPermissions:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"Insufficient permissions\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "CommentNotFound:",
+          "content": "HTTP/1.1 404 Resource Not Found\n    {\n        \"error\": \"Comment not found\"\n    }",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "_api_doc/_reply_api_doc.js",
+    "groupTitle": "Comment",
+    "sampleRequest": [
+      {
+        "url": "http://localhost:3000/api/:commentId/likes?access_token=YOUR_ACCESS_TOKEN"
+      }
+    ]
+  },
+  {
     "type": "get",
     "url": "/api/:commentId/replies?access_token=YOUR_ACCESS_TOKEN",
-    "title": "List replies for a given comment",
+    "title": "List replies",
     "description": "<p>For the provided comment, list all the replies</p>",
     "name": "GetApiCommentIdReplies",
     "group": "Comment",
@@ -227,28 +327,64 @@ define({ "api": [
             "group": "200",
             "type": "Object[]",
             "optional": false,
-            "field": "Replies",
+            "field": "data",
             "description": "<p>A list of all the replies</p>"
+          },
+          {
+            "group": "200",
+            "type": "String",
+            "optional": false,
+            "field": "data.text",
+            "description": "<p>The reply text</p>"
+          },
+          {
+            "group": "200",
+            "type": "ObjectID",
+            "optional": false,
+            "field": "data.postedBy",
+            "description": "<p>The ID of the replier</p>"
+          },
+          {
+            "group": "200",
+            "type": "Date",
+            "optional": false,
+            "field": "data.createdAt",
+            "description": "<p>The timestamp the reply was posted</p>"
+          },
+          {
+            "group": "200",
+            "type": "Number",
+            "optional": false,
+            "field": "data.likes",
+            "description": "<p>Number of likes</p>"
+          },
+          {
+            "group": "200",
+            "type": "Boolean",
+            "optional": false,
+            "field": "data.liked",
+            "description": "<p>Whether or not the requester liked this response or not</p>"
           }
         ]
       },
       "examples": [
         {
           "title": "Response (example):",
-          "content": "    HTTP/1.1 200 OK\n{\n[\n  {\n    likes: [],\n    _id: '5f3f42e641ff666c6e6d35e5',\n    text: 'This is a great post!',\n    postedBy: '5f3f42e641ff666c6e6d35e0',\n    updatedAt: '2020-08-21T03:43:34.308Z',\n    createdAt: '2020-08-21T03:43:34.308Z'\n  },\n  {\n    likes: [],\n    _id: '5f3f42e641ff666c6e6d35e6',\n    text: 'Does it come in different colors?',\n    postedBy: '5f3f42e641ff666c6e6d35e2',\n    updatedAt: '2020-08-21T03:43:34.315Z',\n    createdAt: '2020-08-21T03:43:34.315Z'\n  }\n]\n}",
+          "content": "    HTTP/1.1 200 OK\n{\n[\n  {\n    text: 'This is a new reply',\n    postedBy: 5f3ff3c98edf7e37fc3a5810,\n    createdAt: 2020-08-21T16:18:17.617Z,\n    likes: 0,\n    liked: false\n  }\n]\n          ✓ Correctly posts reply\n[\n  {\n    text: 'This is a new reply',\n    postedBy: 5f3ff3c98edf7e37fc3a581d,\n    createdAt: 2020-08-21T16:18:17.678Z,\n    likes: 0,\n    liked: false\n  }\n]\n}",
           "type": "json"
         }
       ]
     },
+    "filename": "_api_doc/_reply_api_doc.js",
+    "groupTitle": "Comment",
+    "sampleRequest": [
+      {
+        "url": "http://localhost:3000/api/:commentId/replies?access_token=YOUR_ACCESS_TOKEN"
+      }
+    ],
     "error": {
       "fields": {
         "4xx": [
-          {
-            "group": "4xx",
-            "optional": false,
-            "field": "404",
-            "description": "<p>Bad Request: &quot;Comment not found&quot;</p>"
-          },
           {
             "group": "4xx",
             "optional": false,
@@ -260,6 +396,12 @@ define({ "api": [
             "optional": false,
             "field": "403",
             "description": "<p>Unauthorized</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "404",
+            "description": "<p>Comment not found</p>"
           }
         ]
       },
@@ -273,6 +415,117 @@ define({ "api": [
           "title": "BadPermissions:",
           "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"Insufficient permissions\"\n    }",
           "type": "json"
+        },
+        {
+          "title": "CommentNotFound:",
+          "content": "HTTP/1.1 404 Resource Not Found\n    {\n        \"error\": \"Comment not found\"\n    }",
+          "type": "json"
+        }
+      ]
+    }
+  },
+  {
+    "type": "post",
+    "url": "/api/:commentId/replies?access_token=YOUR_ACCESS_TOKEN",
+    "title": "Add Reply",
+    "description": "<p>Adds a reply to a comment</p>",
+    "name": "PostApiCommentIdReplies",
+    "group": "Comment",
+    "version": "0.1.0",
+    "permission": [
+      {
+        "name": "LoginRequired",
+        "title": "Require login",
+        "description": ""
+      },
+      {
+        "name": "PostEditContent",
+        "title": "Require scope \"post:edit_content\"",
+        "description": "<p>Assigned to all Users by default</p>"
+      },
+      {
+        "name": "CommentEditContent",
+        "title": "Require scope \"comment:edit_content\"",
+        "description": "<p>Assigned to all Users by default</p>"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Request body": [
+          {
+            "group": "Request body",
+            "type": "String",
+            "optional": false,
+            "field": "text",
+            "description": "<p><code>Required</code> Reply (Cannot exceed 120 characters or be empty)</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "200": [
+          {
+            "group": "200",
+            "type": "String",
+            "optional": false,
+            "field": "message",
+            "description": "<p>&quot;Successfully replied to the comment&quot;</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Response (example):",
+          "content": "  HTTP/1.1 200 OK\n{\n  \"message\" : \"Successfully replied to the comment\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "4xx": [
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "400",
+            "description": "<p>Bad Request: Text not included</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "401",
+            "description": "<p>Invalid or missing token in Authorization header (Authorization: bearer <token>)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Unauthorized</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "404",
+            "description": "<p>Comment not found</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "NotLoggedIn:",
+          "content": "HTTP/1.1 401 Unauthorized\n    {\n        \"error\": \"UnauthorizedError: Invalid or missing JWT token.\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "BadPermissions:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"Insufficient permissions\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "CommentNotFound:",
+          "content": "HTTP/1.1 404 Resource Not Found\n    {\n        \"error\": \"Comment not found\"\n    }",
+          "type": "json"
         }
       ]
     },
@@ -281,6 +534,106 @@ define({ "api": [
     "sampleRequest": [
       {
         "url": "http://localhost:3000/api/:commentId/replies?access_token=YOUR_ACCESS_TOKEN"
+      }
+    ]
+  },
+  {
+    "type": "put",
+    "url": "/api/:commentId/likes?access_token=YOUR_ACCESS_TOKEN",
+    "title": "Like",
+    "description": "<p>Like a comment</p>",
+    "name": "PutApiCommentIdLikes",
+    "group": "Comment",
+    "version": "0.1.0",
+    "permission": [
+      {
+        "name": "LoginRequired",
+        "title": "Require login",
+        "description": ""
+      },
+      {
+        "name": "PostEditContent",
+        "title": "Require scope \"post:edit_content\"",
+        "description": "<p>Assigned to all Users by default</p>"
+      },
+      {
+        "name": "CommentEditContent",
+        "title": "Require scope \"comment:edit_content\"",
+        "description": "<p>Assigned to all Users by default</p>"
+      }
+    ],
+    "success": {
+      "fields": {
+        "200": [
+          {
+            "group": "200",
+            "type": "String",
+            "optional": false,
+            "field": "message",
+            "description": "<p>&quot;Successfully liked a comment&quot;</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Response (example):",
+          "content": "  HTTP/1.1 200 OK\n{\n  \"message\" : \"Successfully liked a comment\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "4xx": [
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "400",
+            "description": "<p>Bad Request: Text not included</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "401",
+            "description": "<p>Invalid or missing token in Authorization header (Authorization: bearer <token>)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Unauthorized</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "404",
+            "description": "<p>Comment not found</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "NotLoggedIn:",
+          "content": "HTTP/1.1 401 Unauthorized\n    {\n        \"error\": \"UnauthorizedError: Invalid or missing JWT token.\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "BadPermissions:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"Insufficient permissions\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "CommentNotFound:",
+          "content": "HTTP/1.1 404 Resource Not Found\n    {\n        \"error\": \"Comment not found\"\n    }",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "_api_doc/_reply_api_doc.js",
+    "groupTitle": "Comment",
+    "sampleRequest": [
+      {
+        "url": "http://localhost:3000/api/:commentId/likes?access_token=YOUR_ACCESS_TOKEN"
       }
     ]
   },

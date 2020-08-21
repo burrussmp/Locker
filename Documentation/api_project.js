@@ -4,6 +4,8 @@ define({
   "description": "API Documentation",
   "sampleUrl": "http://localhost:3000",
   "order": [
+    "Auth",
+    "User",
     "PostApiUsers",
     "PutApiUsersUserIdPassword",
     "PutApiUsersUserIdFollow",
@@ -15,13 +17,18 @@ define({
     "GetApiUsersUserIdAvatar",
     "PostApiUsersUserIdAvatar",
     "DeleteApiUsersUserIdAvatar",
-    "DeleteApiUsersUserId"
+    "DeleteApiUsersUserId",
+    "Comment",
+    "PutApiCommentIdLikes",
+    "DeleteApiCommentIdLikes",
+    "GetApiCommentIdReplies",
+    "PostApiCommentIdReplies"
   ],
   "defaultVersion": "0.0.0",
   "apidoc": "0.3.0",
   "generator": {
     "name": "apidoc",
-    "time": "2020-08-21T03:46:14.506Z",
+    "time": "2020-08-21T16:35:13.735Z",
     "url": "https://apidocjs.com",
     "version": "0.25.0"
   }

@@ -1,6 +1,6 @@
 import chai  from 'chai';
 import chaiHttp from 'chai-http';
-
+import util from 'util'
 import {app} from '../../server/server';
 import {Setup} from '../../development/comments.data';
 import {UserData} from '../../development/user.data';
@@ -8,7 +8,6 @@ import {drop_database} from  '../helper';
 import User from '../../server/models/user.model';
 import Comment from '../../server/models/comment.model';
 import StaticStrings from '../../config/StaticStrings';
-
 
 chai.use(chaiHttp);
 chai.should();
@@ -30,11 +29,15 @@ const reply_test = () => {
                 // add some replies
                 for (let i = 0; i < num_comments; i++){
                     for (let j = 0; j<i*2; j++){
+                    let like_array = [];
+                        for (let k = 0; k < (i+5)*j;k++){
+                            like_array.push(user_id_array[(k+1)%num_comments]);
+                        }
                     await Comment.findOneAndUpdate(
                         {'_id':comment_id_array[i]},{$push: { replies:{
                             text: "new text",
                             postedBy: user_id_array[j%num_comments],
-                            likes: [user_id_array[(j+1)%num_comments],user_id_array[(j+2)%num_comments]]
+                            likes: like_array
                             }
                         }
                         },{runValidators:true,new:true});
@@ -65,22 +68,24 @@ const reply_test = () => {
                     userToken1 = res.body.token;
                 });  
             });
-            it("See if all replies or of the proper length",async()=>{
+            it("See if all replies are of the proper length",async()=>{
                 return agent.get(`/api/${comment_id_array[0]}/replies?access_token=${userToken0}`)
                 .then(res=>{
                     res.status.should.eql(200);
-                    res.body.replies.length.should.eql(0);
+                    res.body.data.length.should.eql(0);
                     return agent.get(`/api/${comment_id_array[1]}/replies?access_token=${userToken1}`)
                     .then(res=>{
+                        // console.log(util.inspect(res.body, false, null, true /* enable colors */))
                         res.status.should.eql(200);
-                        res.body.replies[0].should.have.property('text'); // the required
-                        res.body.replies[0].should.have.property('postedBy'); // the required
-                        res.body.replies[0].likes.length.should.eql(2);
-                        res.body.replies.length.should.eql(2);
+                        res.body.data[0].should.have.property('text'); // the required
+                        res.body.data[0].should.have.property('postedBy'); // the required
+                        res.body.data[0].should.have.property('createdAt'); // the required
+                        res.body.data[1].likes.should.eql(6);
+                        res.body.data.length.should.eql(2);
                         return agent.get(`/api/${comment_id_array[2]}/replies?access_token=${userToken1}`)
                         .then(res=>{
                             res.status.should.eql(200);
-                            res.body.replies.length.should.eql(4);
+                            res.body.data.length.should.eql(4);
                         });
                     }); 
                 });  
@@ -108,6 +113,279 @@ const reply_test = () => {
                 });  
             })
         })
+        describe("POST '/api/:commentId/replies'",()=>{
+            let comment_id_array;
+            let userId0,userId1,userId2;
+            let agent = chai.request.agent(app);
+            let userToken0,userToken1;
+            beforeEach(async()=>{
+                await drop_database();
+                await Setup();
+                let num_comments = await Comment.countDocuments();
+                num_comments.should.eql(UserData.length);
+                comment_id_array = await Comment.find().select('_id').distinct('_id');
+                let user_id_array = await User.find().select('_id').distinct('_id');
+                // add some replies
+                for (let i = 0; i < num_comments; i++){
+                    for (let j = 0; j<i*2; j++){
+                    let like_array = [];
+                        for (let k = 0; k < (i+5)*j;k++){
+                            like_array.push(user_id_array[(j+1)%num_comments]);
+                        }
+                    await Comment.findOneAndUpdate(
+                        {'_id':comment_id_array[i]},{$push: { replies:{
+                            text: "new text",
+                            postedBy: user_id_array[j%num_comments],
+                            likes: like_array
+                            }
+                        }
+                        },{runValidators:true,new:true});
+                    }
+                }
+                for (let i = 0; i < num_comments; i++){
+                    let  comment = await Comment.findById({'_id':comment_id_array[i]});
+                    comment.replies.length.should.eql(i*2)
+                }
+                await agent.get('/api/users').then(res=>{
+                    res.body.length.should.eql(3);
+                    res.body[0].username.should.eql(UserData[0].username)
+                    userId0 = res.body[0]._id;
+                    userId1 = res.body[1]._id;
+                    userId2 = res.body[2]._id
+                });
+                await agent.post('/auth/login').send({
+                    login: UserData[0].email,
+                    password: UserData[0].password
+                }).then((res) => {
+                    userToken0 = res.body.token;
+                });
+                await agent.post('/auth/login').send({
+                    login: UserData[1].email,
+                    password: UserData[1].password
+                }).then((res) => {
+                    userToken1 = res.body.token;
+                });  
+            });
+            let new_reply = "This is a new reply";
+            it("Correctly posts reply",async()=>{
+                return agent.post(`/api/${comment_id_array[0]}/replies?access_token=${userToken0}`)
+                .send({text: new_reply})
+                .then(res=>{
+                    res.status.should.eql(200);
+                    res.body.message.should.eql(StaticStrings.AddedReplySuccess);
+                    return agent.get(`/api/${comment_id_array[0]}/replies?access_token=${userToken1}`)
+                        .then(res=>{
+                            res.body.data.length.should.eql(1);
+                            res.body.data[0].postedBy.should.eql(userId0);
+                            res.body.data[0].text.should.eql(new_reply);
+                            res.body.data[0].likes.should.eql(0);
+                        })
+                });  
+            })
+            it("Extra field (should succeed)",async()=>{
+                return agent.post(`/api/${comment_id_array[0]}/replies?access_token=${userToken0}`)
+                .send({text: new_reply,dumb_field:"hello"})
+                .then(res=>{
+                    res.status.should.eql(200);
+                    res.body.message.should.eql(StaticStrings.AddedReplySuccess);
+                    return agent.get(`/api/${comment_id_array[0]}/replies?access_token=${userToken1}`)
+                        .then(res=>{
+                            res.body.data.length.should.eql(1);
+                            res.body.data[0].postedBy.should.eql(userId0);
+                            res.body.data[0].text.should.eql(new_reply);
+                            res.body.data[0].likes.should.eql(0);
+                        })
+                });  
+            })
+            it("Missing text field (should fail)",async()=>{
+                return agent.post(`/api/${comment_id_array[0]}/replies?access_token=${userToken0}`)
+                .send({dumb_field:"hello"})
+                .then(res=>{
+                    res.status.should.eql(400);
+                    res.body.error.should.eql(StaticStrings.CommentModelErrors.ReplyTextRequired)
+                    return agent.get(`/api/${comment_id_array[0]}/replies?access_token=${userToken1}`)
+                        .then(res=>{
+                            res.body.data.length.should.eql(0);
+                        })
+                });  
+            })
+            it("Empty text field (should fail)",async()=>{
+                return agent.post(`/api/${comment_id_array[0]}/replies?access_token=${userToken0}`)
+                .send({text:""})
+                .then(res=>{
+                    res.status.should.eql(400);
+                    res.body.error.should.eql(StaticStrings.CommentModelErrors.ReplyTextRequired)
+                    return agent.get(`/api/${comment_id_array[0]}/replies?access_token=${userToken1}`)
+                        .then(res=>{
+                            res.body.data.length.should.eql(0);
+                        })
+                });  
+            })
+            it("Text field all spaces(should fail)",async()=>{
+                return agent.post(`/api/${comment_id_array[0]}/replies?access_token=${userToken0}`)
+                .send({text:"  "})
+                .then(res=>{
+                    res.status.should.eql(400);
+                    res.body.error.should.eql(StaticStrings.CommentModelErrors.ReplyTextRequired)
+                    return agent.get(`/api/${comment_id_array[0]}/replies?access_token=${userToken1}`)
+                        .then(res=>{
+                            res.body.data.length.should.eql(0);
+                        })
+                });  
+            })
+            it("If the comment doesn't exist, should get 404",async()=>{
+                return agent.post(`/api/mwahah/replies?access_token=${userToken0}`)
+                .send({text: new_reply})
+                .then(res=>{
+                    res.status.should.eql(404);
+                    res.body.error.should.eql(StaticStrings.CommentModelErrors.CommentNotFoundError); 
+                });  
+            })
+            it("Not logged in (should fail)",async()=>{
+                return agent.post(`/api/${comment_id_array[1]}/replies`)
+                .send({text: new_reply})
+                .then(res=>{
+                    res.status.should.eql(401);
+                    res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError); 
+                });  
+            })
+            it("Missing privileges",async()=>{
+                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':[]},{new:true});
+                return agent.post(`/api/${comment_id_array[1]}/replies?access_token=${userToken0}`)
+                .send({text: new_reply})
+                .then(res=>{
+                    res.status.should.eql(403);
+                    res.body.error.should.eql(StaticStrings.InsufficientPermissionsError); 
+                });  
+            })
+        });
+        describe("PUT/DELETE '/api/:commentId/likes'",()=>{
+            let comment_id_array;
+            let userId0,userId1,userId2;
+            let agent = chai.request.agent(app);
+            let userToken0,userToken1;
+            beforeEach(async()=>{
+                await drop_database();
+                await Setup();
+                let num_comments = await Comment.countDocuments();
+                num_comments.should.eql(UserData.length);
+                comment_id_array = await Comment.find().select('_id').distinct('_id');
+                let user_id_array = await User.find().select('_id').distinct('_id');
+                // add some replies
+                for (let i = 0; i < num_comments; i++){
+                    for (let j = 0; j<i*2; j++){
+                    let like_array = [];
+                        for (let k = 0; k < (i+5)*j;k++){
+                            like_array.push(user_id_array[(j+1)%num_comments]);
+                        }
+                    await Comment.findOneAndUpdate(
+                        {'_id':comment_id_array[i]},{$push: { replies:{
+                            text: "new text",
+                            postedBy: user_id_array[j%num_comments],
+                            likes: like_array
+                            }
+                        }
+                        },{runValidators:true,new:true});
+                    }
+                }
+                for (let i = 0; i < num_comments; i++){
+                    let  comment = await Comment.findById({'_id':comment_id_array[i]});
+                    comment.replies.length.should.eql(i*2)
+                }
+                await agent.get('/api/users').then(res=>{
+                    res.body.length.should.eql(3);
+                    res.body[0].username.should.eql(UserData[0].username)
+                    userId0 = res.body[0]._id;
+                    userId1 = res.body[1]._id;
+                    userId2 = res.body[2]._id
+                });
+                await agent.post('/auth/login').send({
+                    login: UserData[0].email,
+                    password: UserData[0].password
+                }).then((res) => {
+                    userToken0 = res.body.token;
+                });
+                await agent.post('/auth/login').send({
+                    login: UserData[1].email,
+                    password: UserData[1].password
+                }).then((res) => {
+                    userToken1 = res.body.token;
+                });  
+            });
+            it("Like a comment twice (should succeed and only place 1 like)",async()=>{
+                return agent.put(`/api/${comment_id_array[0]}/likes?access_token=${userToken0}`)
+                .then((res)=>{
+                    res.status.should.eql(200);
+                    return agent.put(`/api/${comment_id_array[0]}/likes?access_token=${userToken0}`)
+                    .then(async res=>{
+                        res.status.should.eql(200);
+                        res.body.message.should.eql(StaticStrings.LikedCommentSuccess);
+                        let comment = await Comment.findById(comment_id_array[0]);
+                        comment.likes.length.should.eql(1);
+                        comment.likes[0].toString().should.eql(userId0);
+                    });
+                });  
+            })
+            it("Unlike a comment first (should do nothing)",async()=>{
+                return agent.delete(`/api/${comment_id_array[0]}/likes?access_token=${userToken0}`)
+                .then(async (res)=>{
+                    res.status.should.eql(200);
+                    res.body.message.should.eql(StaticStrings.UnlikedCommentSuccess);
+                    let comment = await Comment.findById(comment_id_array[0]);
+                    comment.likes.length.should.eql(0);
+                });  
+            });
+            it("Like a comment, then unlike the comment",async()=>{
+                return agent.put(`/api/${comment_id_array[0]}/likes?access_token=${userToken0}`)
+                .then((res)=>{
+                    res.status.should.eql(200);
+                    return agent.delete(`/api/${comment_id_array[0]}/likes?access_token=${userToken0}`)
+                    .then(async res=>{
+                        res.status.should.eql(200);
+                        res.body.message.should.eql(StaticStrings.UnlikedCommentSuccess);
+                        let comment = await Comment.findById(comment_id_array[0]);
+                        comment.likes.length.should.eql(0);
+                    });
+                });  
+            })
+            it("If the comment doesn't exist, should get 404",async()=>{
+                return agent.put(`/api/mwahah/likes?access_token=${userToken0}`)
+                .then(res=>{
+                    res.status.should.eql(404);
+                    res.body.error.should.eql(StaticStrings.CommentModelErrors.CommentNotFoundError);
+                    return agent.delete(`/api/mwahah/likes?access_token=${userToken0}`)
+                    .then(res=>{
+                        res.status.should.eql(404);
+                        res.body.error.should.eql(StaticStrings.CommentModelErrors.CommentNotFoundError); 
+                    });  
+                });  
+            })
+            it("Not logged in (should fail)",async()=>{
+                return agent.put(`/api/${comment_id_array[1]}/likes`)
+                .then(res=>{
+                    res.status.should.eql(401);
+                    res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError);
+                    return agent.delete(`/api/${comment_id_array[1]}/likes`)
+                    .then(res=>{
+                        res.status.should.eql(401);
+                        res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError); 
+                    });  
+                });  
+            })
+            it("Missing privileges",async()=>{
+                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':["post:edit_content"]},{new:true});
+                return agent.delete(`/api/${comment_id_array[1]}/likes?access_token=${userToken0}`)
+                .then(res=>{
+                    res.status.should.eql(403);
+                    res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
+                    return agent.put(`/api/${comment_id_array[1]}/likes?access_token=${userToken0}`)
+                    .then(res=>{
+                        res.status.should.eql(403);
+                        res.body.error.should.eql(StaticStrings.InsufficientPermissionsError); 
+                    });  
+                });  
+            })
+        });
     });
 }
 

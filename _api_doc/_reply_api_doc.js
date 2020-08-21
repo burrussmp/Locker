@@ -9,53 +9,98 @@
  * @apiPermission PostRead
  * @apiPermission CommentRead
  * @apiUse PermissionError
- * @apiSuccess (200) {Object[]}   Replies  A list of all the replies
- * @apiSuccess (200) {Object[]}   likes    A list of who liked a response
- * @apiSuccess (200) {Object[]}   Replies  A list of all the replies
- * @apiSuccess (200) {Object[]}   Replies  A list of all the replies
- * @apiSuccess (200) {Object[]}   Replies  A list of all the replies
- * @apiSuccess (200) {Object[]}   Replies  A list of all the replies
+ * @apiSuccess (200) {Object[]}   data  A list of all the replies
+ * @apiSuccess (200) {String}   data.text    The reply text
+ * @apiSuccess (200) {ObjectID} data.postedBy The ID of the replier
+ * @apiSuccess (200) {Date}     data.createdAt The timestamp the reply was posted 
+ * @apiSuccess (200) {Number}   data.likes  Number of likes
+ * @apiSuccess (200) {Boolean}   data.liked  Whether or not the requester liked this response or not
  * @apiSuccessExample Response (example):
  *     HTTP/1.1 200 OK
 {
 [
   {
-    likes: [ 5f3f47e0cc6b0174b9cf8fe4, 5f3f47e0cc6b0174b9cf8fe6 ],
-    _id: 5f3f47e0cc6b0174b9cf8fe8,
-    text: 'new text',
-    postedBy: 5f3f47e0cc6b0174b9cf8fe2,
-    updatedAt: 2020-08-21T04:04:48.831Z,
-    createdAt: 2020-08-21T04:04:48.831Z
-  },
+    text: 'This is a new reply',
+    postedBy: 5f3ff3c98edf7e37fc3a5810,
+    createdAt: 2020-08-21T16:18:17.617Z,
+    likes: 0,
+    liked: false
+  }
+]
+          ✓ Correctly posts reply
+[
   {
-    likes: [ 5f3f47e0cc6b0174b9cf8fe6, 5f3f47e0cc6b0174b9cf8fe2 ],
-    _id: 5f3f47e0cc6b0174b9cf8fe9,
-    text: 'new text',
-    postedBy: 5f3f47e0cc6b0174b9cf8fe4,
-    updatedAt: 2020-08-21T04:04:48.838Z,
-    createdAt: 2020-08-21T04:04:48.838Z
+    text: 'This is a new reply',
+    postedBy: 5f3ff3c98edf7e37fc3a581d,
+    createdAt: 2020-08-21T16:18:17.678Z,
+    likes: 0,
+    liked: false
   }
 ]
 }
- * @apiError (4xx) 404 Bad Request: "Comment not found"
+ * @apiUse CommentNotFound
  */
 
-db.comments.aggregate([
-    { $match : {_id : "5f3f4caee2a9f77d4a4bee62"}}
-]);
-   { $match: { status: "A" } },
-   { $group: { _id: "$cust_id", total: { $sum: "$amount" } } }
-])
-db.comments.aggregate([
-    { $match: { "_id" : ObjectId("5f3f4caee2a9f77d4a4bee62") } },
-    { $project : {"total_likes": { $size: "$likes" }}},
-    { $merge: { "into": "comments", "on": "_id", "whenMatched": "replace", "whenNotMatched": "insert" } }
-])
-//   ,  { $project: { likes: 1 } } /* select the tokens field as something we want to "send" to the next command in the chain */
-//   , { $unwind: '$likes' } /* this converts arrays into unique documents for counting */
-//   , { $group: { /* execute 'grouping' */
-//           _id: { token: '$likes' } /* using the 'token' value as the _id */
-//         , count: { $sum: 1 } /* create a sum value */
-//       }
-//     }
-]);
+/**
+ * @api {post} /api/:commentId/replies?access_token=YOUR_ACCESS_TOKEN Add Reply
+ * @apiDescription Adds a reply to a comment
+ * @apiName PostApiCommentIdReplies
+ * @apiGroup Comment
+ * @apiVersion 0.1.0
+ * @apiPermission LoginRequired
+ * @apiUse LoginError
+ * @apiPermission PostEditContent
+ * @apiPermission CommentEditContent
+ * @apiUse PermissionError
+ * @apiParam    (Request body)  {String}      text        <code>Required</code> Reply (Cannot exceed 120 characters or be empty)
+ * @apiSuccess (200) {String} message "Successfully replied to the comment"
+ * @apiSuccessExample Response (example):
+ *     HTTP/1.1 200 OK
+  {
+    "message" : "Successfully replied to the comment"
+  }
+ * @apiUse CommentNotFound
+ * @apiError (4xx) 400 Bad Request: Text not included
+ */
+
+ /**
+ * @api {put} /api/:commentId/likes?access_token=YOUR_ACCESS_TOKEN Like
+ * @apiDescription Like a comment
+ * @apiName PutApiCommentIdLikes
+ * @apiGroup Comment
+ * @apiVersion 0.1.0
+ * @apiPermission LoginRequired
+ * @apiUse LoginError
+ * @apiPermission PostEditContent
+ * @apiPermission CommentEditContent
+ * @apiUse PermissionError
+ * @apiSuccess (200) {String} message "Successfully liked a comment"
+ * @apiSuccessExample Response (example):
+ *     HTTP/1.1 200 OK
+  {
+    "message" : "Successfully liked a comment"
+  }
+ * @apiUse CommentNotFound
+ * @apiError (4xx) 400 Bad Request: Text not included
+ */
+
+  /**
+ * @api {delete} /api/:commentId/likes?access_token=YOUR_ACCESS_TOKEN Unlike
+ * @apiDescription Unlike a comment
+ * @apiName DeleteApiCommentIdLikes
+ * @apiGroup Comment
+ * @apiVersion 0.1.0
+ * @apiPermission LoginRequired
+ * @apiUse LoginError
+ * @apiPermission PostEditContent
+ * @apiPermission CommentEditContent
+ * @apiUse PermissionError
+ * @apiSuccess (200) {String} message "Successfully unliked a comment"
+ * @apiSuccessExample Response (example):
+ *     HTTP/1.1 200 OK
+  {
+    "message" : "Successfully unliked a comment"
+  }
+ * @apiUse CommentNotFound
+ * @apiError (4xx) 400 Bad Request: Text not included
+ */

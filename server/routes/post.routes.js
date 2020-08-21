@@ -33,14 +33,14 @@ router.route('/api/posts/:postId/comments/:commentId')
   .delete(permission.Authorize, authCtrl.requireOwnership,postCtrl.deleteComment)
 
 
-  // test all below
-
+// test all below
 router.route('/api/:commentId/replies')
   .get(permission.Authorize, commentCtrl.listReplies)
   .post(permission.Authorize,commentCtrl.createReply)
 
 router.route('/api/:commentId/likes')
-  .put(permission.Authorize, commentCtrl.reactComment)
+  .put(permission.Authorize, commentCtrl.likeComment)
+  .delete(permission.Authorize, commentCtrl.unlikeComment)
 
 router.route('/api/:commentId/replies/:replyId')
   .get(permission.Authorize, commentCtrl.getReply)
@@ -48,6 +48,6 @@ router.route('/api/:commentId/replies/:replyId')
   .delete(permission.Authorize, authCtrl.requireOwnership,commentCtrl.deleteReply)
 
 router.route('/api/:commentId/replies/:replyId/likes')
-  .put(permission.Authorize,commentCtrl.reactReply)
+  .patch(permission.Authorize,commentCtrl.likeReply)
 
 export default router

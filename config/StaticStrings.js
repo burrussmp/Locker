@@ -71,7 +71,8 @@ const StaticStrings = {
     },
     CommentModelErrors: {
         MaxCommentSizeError: "Comment must be less than 120 characters",
-        CommentNotFoundError: "Comment not found"
+        CommentNotFoundError: "Comment not found",
+        ReplyTextRequired: "The reply text cannot be empty"
     },
     PostModelErrors: {
         MaxDescriptionSizeError: "Descriptions must be less than 180 characters",
@@ -98,7 +99,10 @@ const StaticStrings = {
     RemoveProfilePhotoSuccess: "Successfully removed profile photo",
     UpdatedPasswordSuccess: "Successfully updated password",
     AddedFollowerSuccess : "Following someone new!",
-    RemovedFollowerSuccess : "Successfully unfollowed someone"
+    RemovedFollowerSuccess : "Successfully unfollowed someone",
+    AddedReplySuccess: "Successfully replied to the comment",
+    LikedCommentSuccess : "Successfully liked a comment",
+    UnlikedCommentSuccess : "Successfully unliked a comment"
 };
 
 export default StaticStrings;

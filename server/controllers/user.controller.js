@@ -2,7 +2,6 @@
 // imports
 import User from '../models/user.model'
 import errorHandler from '../services/dbErrorHandler'
-import authCtrl from './auth.controller';
 import StaticStrings from '../../config/StaticStrings';
 import S3_Services from '../services/S3.services';
 import _ from 'lodash';

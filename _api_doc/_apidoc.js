@@ -48,6 +48,19 @@
         }
  */
 
+
+/**
+ * @apiDefine CommentNotFound
+ * @apiVersion 0.1.0
+ *
+ * @apiError (4xx) 404 Comment not found
+ * @apiErrorExample CommentNotFound:
+ *     HTTP/1.1 404 Resource Not Found
+        {
+            "error": "Comment not found"
+        }
+ */
+
 // ------------------------------------------------------------------------------------------
 // Current Permissions.
 // ------------------------------------------------------------------------------------------

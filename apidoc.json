@@ -4,6 +4,8 @@
     "description": "API Documentation",
     "sampleUrl" : "http://localhost:3000",
     "order": [
+        "Auth",
+        "User",
         "PostApiUsers",
         "PutApiUsersUserIdPassword",
         "PutApiUsersUserIdFollow",
@@ -15,6 +17,11 @@
         "GetApiUsersUserIdAvatar",
         "PostApiUsersUserIdAvatar",
         "DeleteApiUsersUserIdAvatar",
-        "DeleteApiUsersUserId"
+        "DeleteApiUsersUserId",
+        "Comment",
+        "PutApiCommentIdLikes",
+        "DeleteApiCommentIdLikes",
+        "GetApiCommentIdReplies",
+        "PostApiCommentIdReplies"
       ]
 }
