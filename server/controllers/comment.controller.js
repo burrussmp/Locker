@@ -11,20 +11,18 @@ import StaticStrings from '../../config/StaticStrings';
  */
 const commentByID = async (req, res, next, id) => {
     try {
-        let comment = await Comment.findById(id)
-            .populate('postedBy', 'username profile_photo')
-            .populate('likes', 'username')
-            .exec();
-        comment.postedBy.profile_photo = await comment.postedBy.profile_photo.populate('key mimetype').exec();
-        if (!comment) return res.status('404').json({
-            error: StaticStrings.CommentModelErrors.CommentNotFoundError
-        })
+        let comment = await Comment.findById({'_id':id});
+        if (!comment) {
+            return res.status('404').json({
+                error: StaticStrings.CommentModelErrors.CommentNotFoundError
+            })
+        }
         req.comment = comment
-        req.owner = id;
+        req.owner = comment.postedBy;
         next()
     } catch (err) {
-        return res.status('404').json({
-            error: StaticStrings.CommentNotFoundError
+        return res.status(404).json({
+            error: StaticStrings.CommentModelErrors.CommentNotFoundError
         })
     }
 }
@@ -37,18 +35,29 @@ const commentByID = async (req, res, next, id) => {
  * @param String   id  - The id of the reply to the comment
  */
 const replyByID = async (req, res, next, id) => {
+    if (!req.comment._id){
+        return res.status(500).json({error:StaticStrings.UnknownServerError});
+    }
+
     return res.status(501).json({error:StaticStrings.NotImplementedError})
 }
 
 /**
- * @desc Retrieve the reply by ID and sets ownership field of req to the id
+ * @desc List all the replies of a specific comment
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  * @return A list of replies for a particular comment. For each comment, there is
  * the username, the profile photo S3 key, the text, and when it was created
  */
-const listReplies = (req,res) => {
-    return res.status(501).json({error:StaticStrings.NotImplementedError})
+const listReplies = async (req,res) => {
+    try {
+        let replies = req.comment.replies;
+        return res.status(200).json({
+            replies: replies
+        });
+    } catch (err) {
+        return res.status(500).json({error:err.message});
+    }
 }
 
 /**
@@ -90,6 +99,26 @@ const deleteReply = (req,res) => {
     return res.status(501).json({error:StaticStrings.NotImplementedError})
 }
 
+/**
+ * @desc React to a reply (like or unlike it depending on req.action)
+ * @param Object   req - HTTP request object
+ * @param Object   res - HTTP response object
+ * @return Permanently remove the reply
+ */
+const reactReply = (req,res) => {
+    return res.status(501).json({error:StaticStrings.NotImplementedError})
+}
+
+/**
+ * @desc React to a comment (like or unlike it depending on req.action)
+ * @param Object   req - HTTP request object
+ * @param Object   res - HTTP response object
+ * @return Permanently remove the reply
+ */
+const reactComment = (req,res) => {
+    return res.status(501).json({error:StaticStrings.NotImplementedError})
+}
+
 export default {
     commentByID,
     replyByID,
@@ -98,4 +127,6 @@ export default {
     createReply,
     editReply,
     deleteReply,
+    reactReply,
+    reactComment
 }

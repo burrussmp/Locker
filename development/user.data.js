@@ -28,17 +28,6 @@ const UserData = [{
     },
 ]
 
-const addUsers = async () => {
-    console.log('Adding Users to DB');
-    for (let fake_user of UserData) {
-        let user = new User(fake_user);
-        user = await user.save()
-        console.log(`   Added user ${user.name}`);
-    }
-    console.log(`Done adding Users to DB`);
-}
-
 export {
-    UserData,
-    addUsers
+    UserData
 };

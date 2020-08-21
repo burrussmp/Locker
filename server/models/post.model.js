@@ -17,10 +17,10 @@ const ContentPostSchema = new mongoose.Schema({
 const ReactionSchema = new mongoose.Schema({
   type: {
     type : String,
-    required: true,
     trim: true,
+    default: 'none',
     enum: {
-      values: ['like','love','laugh','surprise','mad','sad'],
+      values: ['none','like','love','laugh','surprise','mad','sad'],
       message: StaticStrings.PostModelErrors.BadReactionType
     },
   },

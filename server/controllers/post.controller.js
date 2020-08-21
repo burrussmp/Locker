@@ -175,7 +175,7 @@ const editComment = (req,res) => {
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  */
-const listReactions = (req,res) => {
+const getReaction = (req,res) => {
   return res.status(501).json({error:StaticStrings.NotImplementedError})
 }
 
@@ -188,15 +188,6 @@ const changeReaction = (req,res) => {
   return res.status(501).json({error:StaticStrings.NotImplementedError})
 }
 
-/**
- * @desc Delete a reaction: Can do this multiple times and nothing should change
- * possible your reaction is not there
- * @param Object   req - HTTP request object
- * @param Object   res - HTTP response object
- */
-const deleteReaction = (req,res) => {
-  return res.status(501).json({error:StaticStrings.NotImplementedError})
-}
 
 export default {
   postByID,
@@ -210,10 +201,8 @@ export default {
   createComment,
   editComment,
   deleteComment,
-  listReactions,
+  getReaction,
   changeReaction,
-  deleteReaction,
-
 }
 
 // const create = (req, res, next) => {

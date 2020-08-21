@@ -100,6 +100,69 @@
  * @apiVersion 0.1.0
  */
 
+  /**
+ * @apiDefine CommentRead Require scope "comment:read"
+ * 
+ * Assigned to all Users by default
+ *
+ * @apiVersion 0.1.0
+ */
+
+/**
+ * @apiDefine CommentEditContent Require scope "comment:edit_content"
+ * 
+ * Assigned to all Users by default
+ *
+ * @apiVersion 0.1.0
+ */
+
+/**
+ * @apiDefine CommentDelete Require scope "comment:delete"
+ * 
+ * Assigned to all Users by default
+ *
+ * @apiVersion 0.1.0
+ */
+
+   /**
+ * @apiDefine PostRead Require scope "post:read"
+ * 
+ * Assigned to all Users by default
+ *
+ * @apiVersion 0.1.0
+ */
+
+/**
+ * @apiDefine PostEditContent Require scope "post:edit_content"
+ * 
+ * Assigned to all Users by default
+ *
+ * @apiVersion 0.1.0
+ */
+
+/**
+ * @apiDefine PostDelete Require scope "post:delete"
+ * 
+ * Assigned to all Users by default
+ *
+ * @apiVersion 0.1.0
+ */
+
+ /**
+ * @apiDefine PostCreate Require scope "post:create"
+ * 
+ * Assigned to all Users by default
+ *
+ * @apiVersion 0.1.0
+ */
+
+ /**
+ * @apiDefine PostInteract Require scope "post:interact"
+ * 
+ * Assigned to all Users by default
+ *
+ * @apiVersion 0.1.0
+ */
 
 // ------------------------------------------------------------------------------------------
 // History.

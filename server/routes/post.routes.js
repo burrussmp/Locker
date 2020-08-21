@@ -23,23 +23,31 @@ router.route('/api/posts/:postId/comments')
   .get(permission.Authorize, postCtrl.listComments)
   .post(permission.Authorize, postCtrl.createComment)
 
-router.route('/api/posts/:postId/reactions')
-  .get(permission.Authorize, postCtrl.listReactions)
+router.route('/api/posts/:postId/reaction')
+  .get(permission.Authorize, postCtrl.getReaction)
   .put(permission.Authorize, authCtrl.requireOwnership, postCtrl.changeReaction)
-  .delete(permission.Authorize, authCtrl.requireOwnership, postCtrl.deleteReaction)
 
 router.route('/api/posts/:postId/comments/:commentId')
   .get(permission.Authorize, postCtrl.getComment)
   .put(permission.Authorize, authCtrl.requireOwnership,postCtrl.editComment)
   .delete(permission.Authorize, authCtrl.requireOwnership,postCtrl.deleteComment)
 
+
+  // test all below
+
 router.route('/api/:commentId/replies')
   .get(permission.Authorize, commentCtrl.listReplies)
   .post(permission.Authorize,commentCtrl.createReply)
+
+router.route('/api/:commentId/likes')
+  .put(permission.Authorize, commentCtrl.reactComment)
 
 router.route('/api/:commentId/replies/:replyId')
   .get(permission.Authorize, commentCtrl.getReply)
   .put(permission.Authorize, authCtrl.requireOwnership,commentCtrl.editReply)
   .delete(permission.Authorize, authCtrl.requireOwnership,commentCtrl.deleteReply)
+
+router.route('/api/:commentId/replies/:replyId/likes')
+  .put(permission.Authorize,commentCtrl.reactReply)
 
 export default router

@@ -66,7 +66,8 @@ const get_permission_array = (type) => {
             Comment_Permissions.Create,
             Comment_Permissions.EditContent,
             Comment_Permissions.Read,
-            Comment_Permissions.Delete
+            Comment_Permissions.Delete,
+            Comment_Permissions.Interact,
         ]
     }
     return [...post_permissions,
@@ -229,6 +230,14 @@ const Authorize = (req,res,next) => {
                     break;
             }
         break
+        case `/api/:commentId/likes`:
+            switch(method){
+                case 'PUT':
+                    required_permissions.push(Post_Permissions.EditContent);
+                    required_permissions.push(Comment_Permissions.EditContent);
+                    break;
+            }
+        break
         case `/api/:commentId/replies/:replyId`:
             switch(method){
                 case 'GET':
@@ -242,6 +251,15 @@ const Authorize = (req,res,next) => {
                 case 'DELETE':
                     required_permissions.push(Post_Permissions.EditContent);
                     required_permissions.push(Comment_Permissions.Delete)
+                    break;
+            }
+        break
+        case `/api/:commentId/replies/:replyId/likes`:
+            switch(method){
+                case 'PUT':
+                    required_permissions.push(Post_Permissions.EditContent);
+                    required_permissions.push(Comment_Permissions.EditContent);
+                    required_permissions.push(Comment_Permissions.Interact)
                     break;
             }
         break
