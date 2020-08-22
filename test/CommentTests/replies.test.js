@@ -1,6 +1,5 @@
 import chai  from 'chai';
 import chaiHttp from 'chai-http';
-import util from 'util'
 import {app} from '../../server/server';
 import {Setup} from '../../development/comments.data';
 import {UserData} from '../../development/user.data';

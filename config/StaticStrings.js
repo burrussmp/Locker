@@ -22,7 +22,7 @@ const StaticStrings = {
     },
     S3ServiceErrors : {
         InvalidImageMimeType: "Invalid Mime Type, only JPEG and PNG",
-        BadRequestWrongKey: "Bad request: Form-day incorrect. Should be 'image'",
+        BadRequestWrongKey: "Bad request: Form-day incorrect. Should be 'profile_photo'",
         UploadServerError: 'ServerError: Unable to upload file',
         DeleteServerError: 'ServerError: Unable to delete file',
         RetrieveServerError : 'ServerError: Unable to send file, but it exists in S3',

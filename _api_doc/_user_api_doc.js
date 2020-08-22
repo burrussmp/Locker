@@ -136,7 +136,7 @@
  * @apiUse OwnershipError
  * @apiPermission UserEditContent
  * @apiUse PermissionError
- * @apiParam    (Form Data)  {File}        image        <code>Required</code>Profile image to upload
+ * @apiParam    (Form Data)  {File}        profile_photo        <code>Required</code>Profile image to upload
  * @apiSuccess (200) {String} message      Successfully uploaded user profile photo
  * @apiSuccessExample Response (example):
  *     HTTP/1.1 200 OK

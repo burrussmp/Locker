@@ -86,7 +86,7 @@ const uploadMediaS3 = (req,res,meta,next) => {
       }
     })
   });
-  const upload = image_upload.single('image'); // Parse req and upload image to S3
+  const upload = image_upload.single(meta.type); // Parse req and upload image to S3
   upload(req, res, async function (err) {
       if (err instanceof multer.MulterError) {
           return res.status(500).send({error:StaticStrings.S3ServiceErrors.BadRequestWrongKey})
