@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 import StaticStrings from '../../config/StaticStrings';
+import S3_Services from '../../server/services/S3.services';
 
 const MediaSchema = new mongoose.Schema({
   key: {
@@ -40,14 +41,11 @@ const MediaSchema = new mongoose.Schema({
     }
   })
 
-MediaSchema.pre("remove",function(next){
-  if (this.key){
-    S3_Services.deleteMediaS3(this.key)
-      .catch((err)=>{
+MediaSchema.pre("deleteOne",{document: true,query:false },async function(){
+  S3_Services.deleteMediaS3(this.key)
+    .catch((err)=>{
         console.log(err);
-      })
-  }
-  next();
+    })
 });
 
 export default mongoose.model('Media', MediaSchema)

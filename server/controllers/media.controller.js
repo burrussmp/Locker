@@ -15,7 +15,7 @@ import S3_Services from '../services/S3.services';
   * @param Object req - HTTP request object
   * @param Object res - HTTP response object
 */ 
-const mediaByKey = (req,res,next,key) => {
+const mediaExists = (req,res,next,key) => {
     // assert that it exists in S3
     S3_Services.fileExistsS3(key).catch((err)=>{
         res.status(400).json({error: StaticStrings.MediaControllerErrors})
@@ -24,18 +24,16 @@ const mediaByKey = (req,res,next,key) => {
     })
 }
 
-
 /**
   * @desc Get media from S3 bucket
   * @param Object req - HTTP request object
   * @param Object res - HTTP response object
+  * @param String key - S3 file identifier
 */ 
-const getMedia = (req, res) => {
-    let key = req.params.key;
-    console.log(key)
+const getMediaByKey = (req,res,key) => {
     S3_Services.getMediaS3(key)
     .catch((err)=>{
-        return res.status(404).json({error:err.message})
+        res.status(404).json({error:err.message})
     }).then((data)=>{
         try {
         res.setHeader('Content-Length', data.ContentLength);
@@ -45,9 +43,21 @@ const getMedia = (req, res) => {
             return res.status(500).json({message:StaticStrings.S3ServiceErrors.RetrieveServerError})
         }
     });
-  }
+}
+
+/**
+  * @desc Controller (pretty much a wrapper around fetchMedia)
+  * @param Object req - HTTP request object
+  * @param Object res - HTTP response object
+*/ 
+const getMedia = (req, res) => {
+    let key = req.params.key;
+    fetchmedia(req,res,key)
+}
+
 
   export default {
-      mediaByKey,
-      getMedia
+      mediaExists,
+      getMedia,
+      getMediaByKey,
   }

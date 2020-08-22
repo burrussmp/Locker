@@ -54,8 +54,13 @@ const postByID = async (req,res,next,id) => {
  * @param Object   res - HTTP response object
  * @return A list of all the posts by their ID and when they were posted
  */
-const listPosts = (req,res) => {
-  return res.status(501).json({error:StaticStrings.NotImplementedError})
+const listPosts = async (req,res) => {
+  try {
+    let posts = await Post.find().select('createdAt')
+    return res.status(200).json(posts);
+  }catch(err){
+    return res.status(500).json({error:errorHandler.getErrorMessage(err)})
+  }
 }
 
 /**
@@ -85,14 +90,15 @@ const createPost = async (req,res) => {
  * tags. For the comments, only the username and text is retrieved.
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
- * @return Creates a post
+ * @return Gets post info: type, contentId, createdAt, caption, tags, postedBy, 
  */
-const getPost = (req,res) => {
-  let type = undefined; // find the type by querying post
-  if (type == 'content'){
-    return contentPostCtrl.getPost(req,res)
+const getPost = async (req,res) => {
+  try {
+    let posts = await Post.findById(req.params.postId).select('type content caption price tags postedBy createdAt updatedAt')
+    return res.status(200).json(posts);
+  }catch(err){
+    return res.status(500).json({error:errorHandler.getErrorMessage(err)})
   }
-  return res.status(501).json({error:StaticStrings.NotImplementedError})
 }
 
 

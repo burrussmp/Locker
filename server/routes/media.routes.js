@@ -4,7 +4,7 @@ import permission from '../permissions';
 
 const router = express.Router()
 
-router.param('key', mediaController.mediaByKey)
+router.param('key', mediaController.mediaExists)
 
 router.route('/api/media/:key')
   .get(permission.Authorize, mediaController.getMedia)

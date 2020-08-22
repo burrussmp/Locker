@@ -8,6 +8,20 @@ import Post from '../../models/post.model';
 import errorHandler from '../dbErrorHandler'
 
 /**
+ * @desc Fetches all the content posts
+ * @param String replyId - REtrieve a specific post if necessary
+ * @return A promise of a list of posts (by ID)
+ */
+const fetchPosts = async (postId=undefined) => {
+    if(postId){
+        return Post.findById(postId);
+    } else {
+        return Post.find().select('_id createdAt')
+    }
+};
+
+
+/**
   * @desc Creates a new content post. 
   * Creates a media and post.price is set
   * @param Object req - HTTP request object
@@ -39,7 +53,7 @@ const createContentPost = async (req,res) => {
             type: type,
             content: contentPost._id,
             postedBy : req.auth._id,
-            description : req.body.description,
+            caption : req.body.caption,
             tags: req.body.tags.split(',')
         };
         let newPost = new Post(postData);
@@ -47,7 +61,7 @@ const createContentPost = async (req,res) => {
             newPost = await newPost.save();
             return res.status(200).json(newPost);
         } catch(err) {
-            await contentPost.remove();
+            await contentPost.deleteOne();
             return S3_Services.deleteMediaS3(req.file.key).then(()=>{
                 return res.status(400).json({error:errorHandler.getErrorMessage(err)});
             }).catch((err2)=>{
@@ -60,5 +74,6 @@ const createContentPost = async (req,res) => {
 
 
 export default {
-    createContentPost
+    createContentPost,
+    fetchPosts
 }

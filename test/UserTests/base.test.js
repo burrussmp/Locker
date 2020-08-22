@@ -144,7 +144,7 @@ const base_test = () => {
                             if (err){
                                 console.log(err);
                             }
-                            res.should.have.status(422);
+                            res.should.have.status(400);
                             res.body.error.should.be.a('string');
                             done();
                         });

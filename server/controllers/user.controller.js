@@ -1,11 +1,13 @@
 "use strict";
 // imports
 import User from '../models/user.model'
+import Media from '../models/media.model';
 import errorHandler from '../services/dbErrorHandler'
 import StaticStrings from '../../config/StaticStrings';
 import S3_Services from '../services/S3.services';
 import _ from 'lodash';
 import fs from 'fs';
+import mediaController from './media.controller';
 
 const DefaultProfilePhoto = process.cwd() + "/client/assets/images/profile-pic.png"
 
@@ -30,26 +32,19 @@ const filter_user = (user) => {
   * @param Object res - HTTP response object
 */ 
 const create = async (req, res) => {
-  // check if any invalid fields (bad request)
-  const fields_allowed = [
-    'first_name',
-    'phone_number',
-    'last_name',
-    'username',
-    'gender',
-    'email',
-    'date_of_birth',
-    'about',
-    'password',
-  ]
-  let update_fields = Object.keys(req.body);
-  let allowedToEdit = _.difference(update_fields,fields_allowed).length == 0;
-  if(!allowedToEdit){
-    let invalid_fields = _.difference(update_fields,fields_allowed)
-    return res.status(422).json({error:`${StaticStrings.BadRequestInvalidFields} ${invalid_fields}`})
+  let new_user = {
+    first_name: req.body.first_name,
+    phone_number: req.body.phone_number,
+    last_name : req.body.last_name,
+    username : req.body.username,
+    gender : req.body.gender,
+    email : req.body.email,
+    date_of_birth : req.body.date_of_birth,
+    about : req.body.about,
+    password: req.body.password
   }
-  let user = new User(req.body);
   try {
+    let user = new User(new_user)
     await user.save()
     return res.status(200).json({
       message: StaticStrings.SignedUpSuccess
@@ -148,7 +143,7 @@ const update = async (req, res) => {
 const remove = async (req, res) => {
   try {
     let user = req.profile
-    let deletedUser = await user.remove()
+    let deletedUser = await user.deleteOne()
     deletedUser.hashed_password = undefined
     deletedUser.salt = undefined
     return res.json(deletedUser)
@@ -199,20 +194,7 @@ const changePassword = async (req,res) => {
 */ 
 const getProfilePhoto = (req, res) => {
   if (req.profile.profile_photo && req.profile.profile_photo.key){
-    let profile_photo = req.profile.profile_photo;
-    S3_Services.getMediaS3(profile_photo.key)
-      .catch((err)=>{
-        res.status(404).json({error:err.message})
-      }).then((data)=>{
-        try {
-          res.setHeader('Content-Length', data.ContentLength);
-          res.setHeader('Content-Type', profile_photo.mimetype);
-          res.write(data.Body)
-          res.end(null);
-        } catch(err) {
-          res.status(500).json({message:StaticStrings.S3ServiceErrors.RetrieveServerError})
-        }
-      });
+    mediaController.getMediaByKey(req,res,req.profile.profile_photo.key)
   } else {
     fs.createReadStream(DefaultProfilePhoto).pipe(res)
   }
@@ -232,26 +214,17 @@ const uploadProfilePhoto = (req, res) => {
     let query = {'_id' : req.params.userId}; // at this point we have uploaded to S3 and just need to clean up
     let update = {$set:{'profile_photo' : image._id}};
     try {
-      let user = await User.findOneAndUpdate(query, update,{runValidators:true}) // fetch user
-        .populate('profile_photo','key')
-        .exec();
-      if (!user) return res.status(500).json({error:StaticStrings.UnknownServerError}) // possibly unable to fetch
+      let user = await User.findOneAndUpdate(query, update,{runValidators:true}); // update
       if (user.profile_photo) { 
-        S3_Services.deleteMediaS3(user.profile_photo.key).then(()=>{ // delete the old profile photo if necessary
-          res.status(200).json({message: StaticStrings.UploadProfilePhotoSuccess}) // Success!
-        }).catch(err=>{
-          res.status(500).json({error:err.message}) // unable to delete old one sadly
-        })
+        await req.profile.profile_photo.deleteOne();
+        res.status(200).json({message:StaticStrings.UploadProfilePhotoSuccess})
       } else {
         res.status(200).json({message:StaticStrings.UploadProfilePhotoSuccess}) // first upload, nothing to delete... Success!
       }
     } catch (err) { 
       if (req.file) {
-        S3_Services.deleteMediaS3(req.file.key).then(()=>{ // somewhere along the way we messed up... time to clean up!
-          res.status(500).json({error:StaticStrings.UserControllerErrors.BadUploadSuccessfulDelete + ' the error that caused it' + err.message}) // cleaned Mongo and S3
-        }).catch((err)=>{
-          res.status(500).json({error:StaticStrings.S3ServiceErrors.DeleteServerError + ' and ' + err.message}) // unable to clean mongo hmm
-        })
+        await image.deleteOne() // delete the new one
+        res.status(500).json({error: StaticStrings.UnknownServerError + ' and ' + err.message})
       } else {
         res.status(500).json({error: StaticStrings.UnknownServerError + ' and ' + err.message}) // should never see this... if we have req.file we parsed correctly
       }
@@ -267,17 +240,12 @@ const uploadProfilePhoto = (req, res) => {
 const removeProfilePhoto = async (req, res) => {
   let query = {'_id' : req.params.userId};
   let update = {$unset: {'profile_photo' : ""}};
+  let user = req.profile;
   try {
-    let user = await User.findOneAndUpdate(query, update)
-      .populate('profile_photo','key')
-      .exec();
-    if (!user)return res.status(500).json({error:StaticStrings.UnknownServerError});
+    await User.findOneAndUpdate(query, update)
     if (user.profile_photo && user.profile_photo.key) {
-      S3_Services.deleteMediaS3(user.profile_photo.key).then(()=>{
-        res.status(200).json({message:StaticStrings.RemoveProfilePhotoSuccess}) // Successfully removed photo
-      }).catch(err=>{
-        res.status(503).json({error: StaticStrings.UnknownServerError+err.message}) // error in removal
-      })
+      await user.profile_photo.deleteOne();
+      res.status(200).json({message:StaticStrings.RemoveProfilePhotoSuccess}) // Successfully removed photo
     } else {
       res.status(404).json({error:StaticStrings.UserControllerErrors.ProfilePhotoNotFound}); // no profile to remove
     }
@@ -299,14 +267,12 @@ const listFollow = async (req,res) => {
       .populate('following','_id username')
       .populate('followers','_id username')
       .exec();
-    if (!user)return res.status(500).json({error:StaticStrings.UnknownServerError});
     let response = {
       'following' : user.following,
       'followers' : user.followers
     };
     return res.status(200).json(response);
   } catch(err){
-    console.log(err);
     return res.status(400).json({error: errorHandler.getErrorMessage(err)})
   }
 };

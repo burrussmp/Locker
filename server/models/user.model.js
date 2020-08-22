@@ -81,6 +81,11 @@ const create_validation_error = (message)=>{
 
 UserSchema.virtual('password')
   .set(function(password) {
+    if (!password){
+      let ValidationError = new mongoose.Error.ValidationError(null);
+      ValidationError.addError('password',create_validation_error(StaticStrings.UserModelErrors.PasswordRequired));
+      return ValidationError
+    }
     this._password = password.trim();
     let err = isValidPassword(this._password,this.isNew);
     if (err) this.invalidate('password',err);
@@ -128,14 +133,12 @@ UserSchema.pre("save", function(next){
   next();
 })
 
-UserSchema.pre("remove",async function(){
-  if (this.profile_photo && this.profile_photo.key){
-    S3_Services.deleteMediaS3(this.profile_photo.key)
-      .catch((err)=>{
-        console.log(err);
-    });
+UserSchema.pre("deleteOne",{document: true,query:false },async function(){
+  let media = await mongoose.models.Media.findById(this.profile_photo); // remove the profile photo from S3
+  if (media){
+    await media.deleteOne();
   }
-  for (let followingID of this.following){
+  for (let followingID of this.following){ // remove from list of who they follow
     await mongoose.models.User.findOneAndUpdate({'_id' : followingID}, {$pull: {followers: this._id}})
   }
 });

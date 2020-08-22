@@ -11,6 +11,7 @@ router.param('commentId', commentCtrl.commentByID)
 router.param('replyId', commentCtrl.replyByID)
 
 
+
 router.route('/api/posts')
   .get(permission.Authorize, postCtrl.listPosts)
   .post(permission.Authorize, postCtrl.createPost)

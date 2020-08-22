@@ -6,7 +6,7 @@ import {app} from '../../server/server';
 import {UserData} from '../../development/user.data'
 import {drop_database,buffer_equality} from  '../helper';
 import User from '../../server/models/user.model';
-import Media from '../../server/models/image.model';
+import Media from '../../server/models/media.model';
 import StaticStrings from '../../config/StaticStrings';
 import S3_Services from '../../server/services/S3.services';
 
@@ -100,6 +100,28 @@ const avatar_test = () => {
                                 })
                             })
                         })
+                    })
+                });
+            }).timeout(3000);
+            it("delete a user and then see if cleaned up in S3", async()=>{
+                return agent.post('/auth/login').send(login_user).then(async (res) => {
+                    let id = id0;
+                    let token = res.body.token;
+                    return agent.post(`/api/users/${id}/avatar`)
+                    .set('Authorization',`Bearer ${res.body.token}`)
+                    .attach('image', process.cwd()+'/test/resources/profile2.jpg', 'profile_photo')
+                    .then(async (res)=>{
+                        res.body.message.should.eql(StaticStrings.UploadProfilePhotoSuccess);
+                        let user = await User.findById({"_id":id}).populate('profile_photo','key').exec()
+                        let image = await Media.findOne({"key":user.profile_photo.key});
+                        image.mimetype.should.eql('image/jpeg');
+                        let key = image.key;
+                        return agent.delete(`/api/users/${id}?access_token=${token}`).then(res=>{
+                            return S3_Services.fileExistsS3(key).catch(err=>{
+                                (err==null || err==undefined).should.be.false;
+                                err.statusCode.should.eql(404)
+                            })
+                        });
                     })
                 });
             }).timeout(3000);

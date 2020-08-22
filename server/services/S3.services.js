@@ -6,7 +6,7 @@ import multer from 'multer';
 import multerS3 from 'multer-s3';
 import crypto from 'crypto';
 import errorHandler from './dbErrorHandler';
-import Media from '../models/image.model';
+import Media from '../models/media.model';
 import StaticStrings from '../../config/StaticStrings';
 
 // Configure S3

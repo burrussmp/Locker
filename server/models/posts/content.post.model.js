@@ -3,8 +3,6 @@
 // imports
 import mongoose from 'mongoose';
 import StaticStrings from "../../../config/StaticStrings";
-import S3_Services from '../../services/S3.services';
-
 
 const ContentPostSchema = new mongoose.Schema({
   media: {
@@ -20,11 +18,9 @@ const ContentPostSchema = new mongoose.Schema({
 });
 
 ContentPostSchema.pre("deleteOne",{document: true,query:false },async function(){
-  let image = await mongoose.models.Media.findById(this.media);
-  S3_Services.deleteMediaS3(image.key)
-    .catch((err)=>{
-        console.log(err);
-    })
+  let media = await mongoose.models.Media.findById(this.media); // delegate cleanup to media
+  await media.deleteOne();
 });
 
 export default mongoose.model('ContentPost',ContentPostSchema)
+

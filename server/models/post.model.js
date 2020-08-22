@@ -7,9 +7,9 @@ const ReactionSchema = new mongoose.Schema({
   type: {
     type : String,
     trim: true,
-    default: 'none',
+    required: true,
     enum: {
-      values: ['none','like','love','laugh','surprise','mad','sad'],
+      values: ['like','love','laugh','surprise','mad','sad'],
       message: StaticStrings.PostModelErrors.BadReactionType
     },
   },
@@ -47,7 +47,7 @@ const PostSchema = new mongoose.Schema({
     ref: 'User',
     required: StaticStrings.PostModelErrors.MissingPoster
   },
-  description: {
+  caption: {
     type: String,
     trim: true,
     default : "",
@@ -71,10 +71,14 @@ const PostSchema = new mongoose.Schema({
     updatedAt: 'updatedAt'
   }
 })
-// delegate cleaning up to the post
+
+// cleanup
 PostSchema.pre("deleteOne",{document: true,query:false },async function(){
-  let content = await mongoose.model(this.type).findById(this.content);
+  let content = await mongoose.model(this.type).findById(this.content); // delegate cleaning to the post
   await content.deleteOne();
+  for (let comment of this.comments){
+    await mongoose.models.comments.findByIdAndRemove(comment);
+  }
 });
 
 export default mongoose.model('Post', PostSchema)
