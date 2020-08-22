@@ -1,18 +1,7 @@
+"use strict";
+
 import mongoose from 'mongoose'
 import StaticStrings from '../../config/StaticStrings';
-
-const ContentPostSchema = new mongoose.Schema({
-  media: {
-    type: mongoose.Schema.ObjectId, 
-    required: true,
-    ref: 'Image'
-  },
-  price : {
-    type : Number,
-    require: StaticStrings.PostModelErrors.ContentPostErrors.PriceRequired,
-    min: [0,StaticStrings.PostModelErrors.PriceNotNonnegative]
-  }
-});
 
 const ReactionSchema = new mongoose.Schema({
   type: {
@@ -36,10 +25,21 @@ const ReactionSchema = new mongoose.Schema({
   }
 });
 
+const tagLimit = (val) => {return val.length <=7 };
+
 const PostSchema = new mongoose.Schema({
+  type : {
+    type: String,
+    trim: true,
+    required: StaticStrings.PostModelErrors.TypeRequired,
+    enum : {
+      values:['ContentPost'],
+      message: StaticStrings.PostModelErrors.IncorrectType
+    }
+  },
   content :{ 
     type: mongoose.Schema.Types.ObjectId,
-    refPath: 'content',
+    refPath: 'type',
     required: StaticStrings.PostModelErrors.MissingContent,
   },
   postedBy: {
@@ -51,23 +51,30 @@ const PostSchema = new mongoose.Schema({
     type: String,
     trim: true,
     default : "",
-    maxlength: [180,StaticStrings.PostModelErrors.MaxDescriptionSizeError]
+    maxlength: [300,StaticStrings.PostModelErrors.MaxDescriptionSizeError]
   },
   reactions: [ReactionSchema],
   comments: [{ type: mongoose.Schema.ObjectId, ref: 'Comment'}],
-  tags: [{
-    type : String,
-    trim: true,
-    lowercase: true,
-    maxlength: [20,StaticStrings.PostModelErrors.MaxLengthTag],
-    match: [/^[a-zA-Z]+$/ , StaticStrings.PostModelErrors.TagMustBeAlphabetical]
+  tags: {
+    type: [{
+      type : String,
+      trim: true,
+      lowercase: true,
+      maxlength: [20,StaticStrings.PostModelErrors.MaxLengthTag],
+      match: [/^[a-zA-Z]+$/ , StaticStrings.PostModelErrors.TagMustBeAlphabetical]
   }],
+  validate: [tagLimit,StaticStrings.PostModelErrors.MaximumNumberOfTags]
+},
 },{
   timestamps : {
     createdAt:'createdAt',
     updatedAt: 'updatedAt'
   }
 })
+// delegate cleaning up to the post
+PostSchema.pre("deleteOne",{document: true,query:false },async function(){
+  let content = await mongoose.model(this.type).findById(this.content);
+  await content.deleteOne();
+});
 
-mongoose.model('ContentPost',ContentPostSchema)
 export default mongoose.model('Post', PostSchema)

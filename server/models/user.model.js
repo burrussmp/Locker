@@ -64,7 +64,7 @@ const UserSchema = new mongoose.Schema({
     default: "",
     maxlength: [120,'Bio cannot exceed 120 characters']
   },
-  profile_photo: {type: mongoose.Schema.ObjectId, ref: 'Image'},
+  profile_photo: {type: mongoose.Schema.ObjectId, ref: 'Media'},
   following: [{type: mongoose.Schema.ObjectId, ref: 'User'}],
   followers: [{type: mongoose.Schema.ObjectId, ref: 'User'}],
 },{
@@ -130,7 +130,7 @@ UserSchema.pre("save", function(next){
 
 UserSchema.pre("remove",async function(){
   if (this.profile_photo && this.profile_photo.key){
-    S3_Services.deleteImageS3(this.profile_photo.key)
+    S3_Services.deleteMediaS3(this.profile_photo.key)
       .catch((err)=>{
         console.log(err);
     });

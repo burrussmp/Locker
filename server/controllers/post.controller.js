@@ -5,9 +5,9 @@
 import Post from '../models/post.model'
 import StaticStrings from '../../config/StaticStrings';
 import errorHandler from '../services/dbErrorHandler'
-import fs from 'fs'
-
 import contentPostCtrl from '../controllers/content.post.controller';
+import ContentPostServices from "../services/database/content.post.services";
+
 
 // The way privacy will work
 //  1. Want to retrieve a post or comment or reply
@@ -27,7 +27,7 @@ import contentPostCtrl from '../controllers/content.post.controller';
   * @param Object   req   - HTTP request object
   * @param Object   res   - HTTP response object
   * @param Function next  - Next express middleware function
-  * @param String   id    - The ID of the post extracted from URL 
+  * @param String   id    - The ID of the post
 */ 
 const postByID = async (req,res,next,id) => {
   try {
@@ -40,10 +40,11 @@ const postByID = async (req,res,next,id) => {
     req.post = post
     req.owner = post.postedBy.toString();
     next()
-} catch (err) {
-    return res.status(404).json({
-        error: StaticStrings.PostModelErrors.PostNotFoundError
-    })
+  } catch (err) {
+      return res.status(404).json({
+          error: StaticStrings.PostModelErrors.PostNotFoundError
+      })
+  }
 }
 
 
@@ -65,15 +66,18 @@ const listPosts = (req,res) => {
  * @param Object   res - HTTP response object
  * @return Creates a post
  */
-const createPost = (req,res) => {
-  if (!req.body.type){
-    return res.status(400).json({error:StaticStrings.PostModelErrors.CreateMissingType})
+const createPost = async (req,res) => {
+  let type = req.query.type;
+  if (!type){
+    return res.status(501).json({error:StaticStrings.NotImplementedError})
   }
-  if (req.body.type == 'content'){
-    return contentPostCtrl.createPost(req,res)
+  if (type == 'ContentPost'){
+    return ContentPostServices.createContentPost(req,res);
+  } else {
+    return res.status(501).json({error:StaticStrings.NotImplementedError})
   }
-  return res.status(501).json({error:StaticStrings.NotImplementedError})
 }
+
 
 /**
  * @desc Gets a post by a particular ID. Delegates this to the type. All posts will return who uploaded it

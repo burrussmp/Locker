@@ -6,7 +6,7 @@ import {app} from '../../server/server';
 import {UserData} from '../../development/user.data'
 import {drop_database,buffer_equality} from  '../helper';
 import User from '../../server/models/user.model';
-import Image from '../../server/models/image.model';
+import Media from '../../server/models/image.model';
 import StaticStrings from '../../config/StaticStrings';
 import S3_Services from '../../server/services/S3.services';
 
@@ -52,7 +52,7 @@ const avatar_test = () => {
                         let user = await User.findById({"_id":id}).populate('profile_photo','key').exec()
                         user.should.have.property('profile_photo');
                         user.profile_photo.should.have.property('key');
-                        let image = await Image.findOne({"key":user.profile_photo.key});
+                        let image = await Media.findOne({"key":user.profile_photo.key});
                         image.mimetype.should.eql('image/png');
                         image.uploadedBy.toString().should.eql(id);
                         let key = image.key;
@@ -60,8 +60,8 @@ const avatar_test = () => {
                             data.Metadata.type.should.eql('profile_photo');
                             data.Metadata.user_id.should.eql(id);
                             data.Metadata.user_id.should.eql(user._id.toString());
-                            return S3_Services.deleteImageS3(key).then(async ()=> {
-                                image = await Image.findOne({"key":key});
+                            return S3_Services.deleteMediaS3(key).then(async ()=> {
+                                image = await Media.findOne({"key":key});
                                 (image == undefined || image == null).should.be.true;
                                 return S3_Services.fileExistsS3(key).catch(err=>{
                                     err.should.exist;
@@ -84,7 +84,7 @@ const avatar_test = () => {
                         let user = await User.findById({"_id":id}).populate('profile_photo','key').exec()
                         user.should.have.property('profile_photo');
                         user.profile_photo.should.have.property('key');
-                        let image = await Image.findOne({"key":user.profile_photo.key});
+                        let image = await Media.findOne({"key":user.profile_photo.key});
                         image.mimetype.should.eql('image/jpeg');
                         image.uploadedBy.toString().should.eql(id);
                         let key = image.key;
@@ -92,8 +92,8 @@ const avatar_test = () => {
                             data.Metadata.type.should.eql('profile_photo');
                             data.Metadata.user_id.should.eql(id);
                             data.Metadata.user_id.should.eql(user._id.toString());
-                            return S3_Services.deleteImageS3(key).then(async ()=> {
-                                image = await Image.findOne({"key":key});
+                            return S3_Services.deleteMediaS3(key).then(async ()=> {
+                                image = await Media.findOne({"key":key});
                                 (image == undefined || image == null).should.be.true;
                                 return S3_Services.fileExistsS3(key).catch(err=>{
                                     err.should.exist;
@@ -182,7 +182,7 @@ const avatar_test = () => {
                     .attach('image', process.cwd()+'/test/resources/profile1.png', 'profile_photo')
                     .then(async (res)=>{
                         let user = await User.findById({"_id":id}).populate('profile_photo','key').exec()
-                        let image = await Image.findOne({"key":user.profile_photo.key});
+                        let image = await Media.findOne({"key":user.profile_photo.key});
                         let key = image.key;
                         return S3_Services.fileExistsS3(key).then(()=>{
                             return agent.post(`/api/users/${id}/avatar`)
@@ -190,12 +190,12 @@ const avatar_test = () => {
                             .attach('image', process.cwd()+'/test/resources/profile2.jpg', 'profile_photo')
                             .then(async ()=>{
                                 let user = await User.findById({"_id":id}).populate('profile_photo','key').exec()
-                                let image = await Image.findOne({"key":user.profile_photo.key});
-                                let old_image = await Image.findOne({"key":key});
+                                let image = await Media.findOne({"key":user.profile_photo.key});
+                                let old_image = await Media.findOne({"key":key});
                                 (old_image == null || old_image == undefined).should.be.true;
                                 let key2 = image.key;
                                 key.should.not.eql(key2);
-                                let all_images = await Image.countDocuments();
+                                let all_images = await Media.countDocuments();
                                 all_images.should.eql(1);
                                 return S3_Services.fileExistsS3(key2).then(async()=>{
                                     return S3_Services.fileExistsS3(key).catch(async err=>{
@@ -218,17 +218,17 @@ const avatar_test = () => {
                     .attach('image', process.cwd()+'/test/resources/profile1.png', 'profile_photo')
                     .then(async (res)=>{
                         let user = await User.findById({"_id":id}).populate('profile_photo','key').exec()
-                        let image = await Image.findOne({"key":user.profile_photo.key});
+                        let image = await Media.findOne({"key":user.profile_photo.key});
                         let key = image.key;
                         return agent.post('/auth/login').send({login:UserData[1].username,password:UserData[1].password}).then(async (res) => {                   
                             return agent.post(`/api/users/${id2}/avatar`).set('Authorization',`Bearer ${res.body.token}`)
                             .attach('image', process.cwd()+'/test/resources/profile1.png', 'profile_photo')
                             .then(async (res)=>{
                                 let user2 = await User.findById({"_id":id2}).populate('profile_photo','key').exec()
-                                let image2 = await Image.findOne({"key":user2.profile_photo.key});
+                                let image2 = await Media.findOne({"key":user2.profile_photo.key});
                                 let key2 = image2.key;
                                 key2.should.not.eql(key);
-                                let all_images = await Image.countDocuments();
+                                let all_images = await Media.countDocuments();
                                 all_images.should.eql(2);
                                 return S3_Services.fileExistsS3(key2).then(async()=>{
                                     return S3_Services.fileExistsS3(key).catch(async err=>{
@@ -425,7 +425,7 @@ const avatar_test = () => {
                     .then(async (res)=>{
                         res.status.should.eql(200);
                         res.body.message.should.eql(StaticStrings.UploadProfilePhotoSuccess)
-                        let image = await Image.findOne({uploadedBy:id});
+                        let image = await Media.findOne({uploadedBy:id});
                         let key = image.key;
                         return agent.delete(`/api/users/${id}`)
                             .set('Authorization',`Bearer ${m_token}`)
@@ -433,7 +433,7 @@ const avatar_test = () => {
                                 res.status.should.eql(200);
                                 return S3_Services.fileExistsS3(key).catch(async(err)=>{
                                     err.statusCode.should.eql(404);
-                                    let image = await Image.findOne({'key':key});
+                                    let image = await Media.findOne({'key':key});
                                     (image == null || image == undefined).should.be.true;
                                 })
                     });
@@ -480,7 +480,7 @@ const avatar_test = () => {
                 let m_token = token;
                 let user = await User.findById({'_id':id}).populate('profile_photo','key').exec();
                 let key = user.profile_photo.key;
-                let image = await Image.findOne({'key':key});
+                let image = await Media.findOne({'key':key});
                 (image == null || image == undefined).should.be.false;
                 return S3_Services.fileExistsS3(key).then(async()=>{
                     return agent.delete(`/api/users/${id}/avatar`)
@@ -491,7 +491,7 @@ const avatar_test = () => {
                             res.body.message.should.eql(StaticStrings.RemoveProfilePhotoSuccess);
                             return S3_Services.fileExistsS3(key).catch(async(err)=>{
                                 err.statusCode.should.eql(404);
-                                let image = await Image.findOne({'key':key});
+                                let image = await Media.findOne({'key':key});
                                 (image == null || image == undefined).should.be.true;
                             })
                     });

@@ -6,7 +6,7 @@ import multer from 'multer';
 import multerS3 from 'multer-s3';
 import crypto from 'crypto';
 import errorHandler from './dbErrorHandler';
-import Image from '../models/image.model';
+import Media from '../models/image.model';
 import StaticStrings from '../../config/StaticStrings';
 
 // Configure S3
@@ -23,11 +23,22 @@ const s3 = new aws.S3();
   * @param Object res - HTTP response
   * @param Function next - call back function (next middleware)
 */
-const ImageFilter = (req, file, next) => {
-  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
-    next(null, true)
+const MediaFilter = (req, file, next) => {
+  let path = req.route.path;
+  if (path == '/api/users/:userId/avatar'){
+    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+      next(null, true)
+    } else {
+      next(new Error(StaticStrings.S3ServiceErrors.InvalidImageMimeType), false);
+    }
+  } else if (path == '/api/posts'){
+    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'video/mp4' ) {
+      next(null, true)
+    } else {
+      next(new Error(StaticStrings.S3ServiceErrors.InvalidMediaMimeType), false);
+    }
   } else {
-    next(new Error(StaticStrings.S3ServiceErrors.InvalidImageMimeType), false);
+    next(new Error("ServerError: You should not be able to upload from this path"),false)
   }
 }
 
@@ -37,13 +48,13 @@ const ImageFilter = (req, file, next) => {
   * @param String key - S3 file identifier
   * @return Returns a promise
 */
-const deleteImageS3 = async (key) =>{
+const deleteMediaS3 = async (key) =>{
   let params = {
       Bucket: process.env.BUCKET_NAME,
       Key: key
   }
   try {
-    await Image.deleteOne({'key':key});
+    await Media.deleteOne({'key':key});
     return s3.deleteObject(params).promise()
   } catch (err) {
     throw err;
@@ -51,18 +62,19 @@ const deleteImageS3 = async (key) =>{
 }
 
 /**
-  * @desc (Middleware) Upload an image to S3 and update MongoDB Image reference
+  * @desc (Middleware) Upload an image to S3 and update MongoDB Media reference
   * @param Object req - HTTP request
   * @param Object res - HTTP response
   * @param Object meta - meta data of image object
-  * @param Function next - callback function: parameters (HTTPRequest,HTTPResponse,mongoose.Schema.Image.model)
+  * @param Function next - callback function: parameters (HTTPRequest,HTTPResponse,mongoose.Schema.Media.model)
 */
-const uploadImageS3 = (req,res,meta,next) => {
+const uploadMediaS3 = (req,res,meta,next) => {
   const image_upload = multer({
-    fileFilter: ImageFilter,
+    fileFilter: MediaFilter,
     storage: multerS3({
       s3,
       bucket: process.env.BUCKET_NAME,
+      contentType: multerS3.AUTO_CONTENT_TYPE,
       metadata: function (req, file, next) {
         next(null, {
             'type':meta.type,
@@ -88,13 +100,13 @@ const uploadImageS3 = (req,res,meta,next) => {
       meta.mimetype = req.file.mimetype;
       meta.originalName = req.file.originalname;
       try {
-        let image = new Image(meta);
+        let image = new Media(meta);
         await image.save();
         next(req,res,image);
       } catch (err) {
-        deleteImageS3(meta.key)
+        deleteMediaS3(meta.key)
           .then(()=>{
-            res.status(400).json({error: StaticStrings.S3ServiceErrors.BadImageUploadSuccessfulDelete + err.message})
+            res.status(400).json({error: StaticStrings.S3ServiceErrors.BadMediaUploadSuccessfulDelete + err.message})
           }).catch((err)=>{
             res.status(500).json({error: err.message+' and ' +errorHandler.getErrorMessage(err2)})
           })
@@ -116,11 +128,11 @@ const listObjectsS3 = () => {
 
 /**
   * @desc Send image from S3 in HTTP response
-  * @param Mongoose.schema.model.Image image - MongoDB image object
+  * @param Mongoose.schema.model.Media image - MongoDB image object
   * @return Returns a promise where the resolve contains the image data and reject
   * contains the error
 */
-const getImageS3 = (key) => {
+const getMediaS3 = (key) => {
   let params = {
     Bucket: process.env.BUCKET_NAME,
     Key: key
@@ -144,9 +156,9 @@ const fileExistsS3 = async (key) => {
 
 
 export default {
-    uploadImageS3,
-    deleteImageS3,
-    getImageS3,
+    uploadMediaS3,
+    deleteMediaS3,
+    getMediaS3,
     listObjectsS3,
     fileExistsS3
 }

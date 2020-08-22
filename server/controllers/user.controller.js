@@ -200,7 +200,7 @@ const changePassword = async (req,res) => {
 const getProfilePhoto = (req, res) => {
   if (req.profile.profile_photo && req.profile.profile_photo.key){
     let profile_photo = req.profile.profile_photo;
-    S3_Services.getImageS3(profile_photo.key)
+    S3_Services.getMediaS3(profile_photo.key)
       .catch((err)=>{
         res.status(404).json({error:err.message})
       }).then((data)=>{
@@ -228,7 +228,7 @@ const uploadProfilePhoto = (req, res) => {
     'type': 'profile_photo',
     'uploadedBy' : req.params.userId
   };
-  S3_Services.uploadImageS3(req,res,meta, async (req,res,image)=>{ // upload to s3
+  S3_Services.uploadMediaS3(req,res,meta, async (req,res,image)=>{ // upload to s3
     let query = {'_id' : req.params.userId}; // at this point we have uploaded to S3 and just need to clean up
     let update = {$set:{'profile_photo' : image._id}};
     try {
@@ -237,7 +237,7 @@ const uploadProfilePhoto = (req, res) => {
         .exec();
       if (!user) return res.status(500).json({error:StaticStrings.UnknownServerError}) // possibly unable to fetch
       if (user.profile_photo) { 
-        S3_Services.deleteImageS3(user.profile_photo.key).then(()=>{ // delete the old profile photo if necessary
+        S3_Services.deleteMediaS3(user.profile_photo.key).then(()=>{ // delete the old profile photo if necessary
           res.status(200).json({message: StaticStrings.UploadProfilePhotoSuccess}) // Success!
         }).catch(err=>{
           res.status(500).json({error:err.message}) // unable to delete old one sadly
@@ -247,7 +247,7 @@ const uploadProfilePhoto = (req, res) => {
       }
     } catch (err) { 
       if (req.file) {
-        S3_Services.deleteImageS3(req.file.key).then(()=>{ // somewhere along the way we messed up... time to clean up!
+        S3_Services.deleteMediaS3(req.file.key).then(()=>{ // somewhere along the way we messed up... time to clean up!
           res.status(500).json({error:StaticStrings.UserControllerErrors.BadUploadSuccessfulDelete + ' the error that caused it' + err.message}) // cleaned Mongo and S3
         }).catch((err)=>{
           res.status(500).json({error:StaticStrings.S3ServiceErrors.DeleteServerError + ' and ' + err.message}) // unable to clean mongo hmm
@@ -273,7 +273,7 @@ const removeProfilePhoto = async (req, res) => {
       .exec();
     if (!user)return res.status(500).json({error:StaticStrings.UnknownServerError});
     if (user.profile_photo && user.profile_photo.key) {
-      S3_Services.deleteImageS3(user.profile_photo.key).then(()=>{
+      S3_Services.deleteMediaS3(user.profile_photo.key).then(()=>{
         res.status(200).json({message:StaticStrings.RemoveProfilePhotoSuccess}) // Successfully removed photo
       }).catch(err=>{
         res.status(503).json({error: StaticStrings.UnknownServerError+err.message}) // error in removal

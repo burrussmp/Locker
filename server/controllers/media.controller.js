@@ -15,11 +15,11 @@ import S3_Services from '../services/S3.services';
   * @param Object req - HTTP request object
   * @param Object res - HTTP response object
 */ 
-const imageByKey = (req,res,next,key) => {
+const mediaByKey = (req,res,next,key) => {
     // assert that it exists in S3
     S3_Services.fileExistsS3(key).catch((err)=>{
         res.status(400).json({error: StaticStrings.MediaControllerErrors})
-    }).then((data)=>{
+    }).then(()=>{
         return next();
     })
 }
@@ -30,9 +30,10 @@ const imageByKey = (req,res,next,key) => {
   * @param Object req - HTTP request object
   * @param Object res - HTTP response object
 */ 
-const getImage = (req, res) => {
+const getMedia = (req, res) => {
     let key = req.params.key;
-    S3_Services.getImageS3(key)
+    console.log(key)
+    S3_Services.getMediaS3(key)
     .catch((err)=>{
         return res.status(404).json({error:err.message})
     }).then((data)=>{
@@ -47,6 +48,6 @@ const getImage = (req, res) => {
   }
 
   export default {
-      imageByKey,
-      getImage
+      mediaByKey,
+      getMedia
   }

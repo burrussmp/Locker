@@ -26,8 +26,9 @@ const StaticStrings = {
         UploadServerError: 'ServerError: Unable to upload file',
         DeleteServerError: 'ServerError: Unable to delete file',
         RetrieveServerError : 'ServerError: Unable to send file, but it exists in S3',
-        BadImageUploadSuccessfulDelete: 'ServerError: Unable to upload image but clean up S3 worked.',
-        BadRequestMissingFile: 'Missing file to upload'
+        BadMediaUploadSuccessfulDelete: 'ServerError: Unable to upload media but clean up S3 worked.',
+        BadRequestMissingFile: 'Missing file to upload',
+        InvalidMediaMimeType: "The media being uploaded must be a video or image"
     },
     UserControllerErrors : {
         BadUploadSuccessfulDelete: "ServerError: Unable to update profile picture but clean up S3 worked.",
@@ -36,7 +37,7 @@ const StaticStrings = {
         UnfollowSelfError: "Cannot unfollow yourself",
         FollowingMissingID: "Missing either ID of follower or following. This is actually a server error."
     },
-    ImageModelErrors : {
+    MediaModelErrors : {
         KeyRequired: "S3 file key is required",
         TypeRequired: "The type is required (e.g profile_photo)",
         MimeTypeRequired: "The mimetype is required (e.g image/png)",
@@ -44,7 +45,7 @@ const StaticStrings = {
         DescriptionTooLong: "Description cannot exceed 180 characters",
         UploadedByRequired: "The ObjectID of the uploader is required",
         UnacceptableType: "ServerError: Image must be an acceptable type (e.g. profile_photo)",
-        KeyAlreadyExists: "ServerError: The S3 key must be unique (and should be)"
+        KeyAlreadyExists: "ServerError: The S3 key must be unique (and should be)",
     },
     UserModelErrors : {
         InvalidGender: "Valid gender is required",
@@ -79,7 +80,8 @@ const StaticStrings = {
         ReplyNotFound: "Reply not found",
     },
     PostModelErrors: {
-        MaxDescriptionSizeError: "Descriptions must be less than 180 characters",
+        TypeRequired: "Must specify the type",
+        MaxDescriptionSizeError: "Descriptions must be less than 300 characters",
         BadReactionType: "Unsupported reaction",
         MissingPoster: "A specific user must post",
         MaxLengthTag: "A tag cannot exceed 20 characters",
@@ -87,15 +89,20 @@ const StaticStrings = {
         IncorrectType: "This type of post is not supported",
         MissingContent: "This post is missing content",
         PostNotFoundError: "Post not found",
-        PriceNotNonnegative : "A price must be non-negative",
+        PriceNotNonnegative : "The price must be non-negative",
+        MaximumNumberOfTags: '{PATH} exceeds the limit of 7 tags',
         ContentPostErrors: {
-            PriceRequired: "Must specify the price of a content post"
+            PriceRequired: "Must specify the price of a content post",
         },
         CreateMissingType: "Missing 'type' in request body"
 
     },
     MediaControllerErrors: {
         MediaNotFound: "Error requested media not found"
+    },
+    PostController : {
+        UnknownPostType : "Unknown post type",
+        
     },
     SignedUpSuccess: "Successfully signed up!",
     LoggedOutSuccess: "Logged out",

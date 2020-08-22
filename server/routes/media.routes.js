@@ -4,9 +4,9 @@ import permission from '../permissions';
 
 const router = express.Router()
 
-router.param('key', mediaController.imageByKey)
+router.param('key', mediaController.mediaByKey)
 
-router.route('/api/image/:key')
-  .get(permission.Authorize, mediaController.getImage)
+router.route('/api/media/:key')
+  .get(permission.Authorize, mediaController.getMedia)
 
 export default router
