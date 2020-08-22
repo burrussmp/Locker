@@ -36,7 +36,7 @@
  * 
  */
 
- /**
+/**
  * @api {post} /api/users Sign Up
  * @apiDescription Sign in a new user to Locker
  * @apiName PostApiUsers
@@ -86,11 +86,12 @@
         }
  */
 
- /**
- * @api {get} /api/users/:userId?access_token=YOUR_ACCESS_TOKEN Get Specific User Info
+/**
+ * @api {get} /api/users/:userId Get Specific User Info
  * @apiDescription Retrieve data from a specific user queried by :userId path parameter in URL
  * @apiName GetApiUsersbyID
  * @apiGroup User
+* @apiUse LoginHeader
  * @apiVersion 0.1.0
  * @apiPermission LoginRequired
  * @apiUse LoginError
@@ -124,11 +125,12 @@
     }
  */
 
- /**
- * @api {post} /api/users/:userId/avatar?access_token=YOUR_ACCESS_TOKEN Update Profile Photo
+/**
+ * @api {post} /api/users/:userId/avatar Update Profile Photo
  * @apiDescription Updates the user"s profile photo by storing it in an AWS S3 bucket.
  * @apiName PostApiUsersUserIdAvatar
  * @apiGroup User
+* @apiUse LoginHeader
  * @apiVersion 0.1.0
  * @apiPermission LoginRequired
  * @apiUse LoginError
@@ -136,7 +138,7 @@
  * @apiUse OwnershipError
  * @apiPermission UserEditContent
  * @apiUse PermissionError
- * @apiParam    (Form Data)  {File}        profile_photo        <code>Required</code>Profile image to upload
+ * @apiParam    (Form Data)  {File}        media        <code>Required</code>Profile image to upload
  * @apiSuccess (200) {String} message      Successfully uploaded user profile photo
  * @apiSuccessExample Response (example):
  *     HTTP/1.1 200 OK
@@ -160,11 +162,12 @@
  * 
  */
 
-  /**
- * @api {delete} /api/users/:userId/avatar?access_token=YOUR_ACCESS_TOKEN Delete Profile Photo
+/**
+ * @api {delete} /api/users/:userId/avatar Delete Profile Photo
  * @apiDescription Permanently removes user profile photo
  * @apiName DeleteApiUsersUserIdAvatar
  * @apiGroup User
+* @apiUse LoginHeader
  * @apiVersion 0.1.0
  * @apiPermission LoginRequired
  * @apiUse LoginError
@@ -189,11 +192,12 @@
  * @apiError (5xx) 500 Unable to query DB for user. 
  */
 
-  /**
- * @api {get} /api/users/:userId/avatar?access_token=YOUR_ACCESS_TOKEN Get Profile Photo
+/**
+ * @api {get} /api/users/:userId/avatar Get Profile Photo
  * @apiDescription Retrieve the profile photo from AWS S3 bucket
  * @apiName GetApiUsersUserIdAvatar
  * @apiGroup User
+ * @apiUse LoginHeader
  * @apiVersion 0.1.0
  * @apiPermission LoginRequired
  * @apiUse LoginError
@@ -205,11 +209,12 @@
  * @apiError (5xx) 500 Unable to query DB for user. 
  */
 
-   /**
- * @api {delete} /api/users/:userId/?access_token=YOUR_ACCESS_TOKEN Delete User
+/**
+ * @api {delete} /api/users/:userId/ Delete User
  * @apiDescription Permanently removes a user and all their information (i.e. profile photo form S3, any followers/followings)
  * @apiName DeleteApiUsersUserId
  * @apiGroup User
+* @apiUse LoginHeader
  * @apiVersion 0.1.0
  * @apiPermission LoginRequired
  * @apiUse LoginError
@@ -245,11 +250,12 @@
  * @apiError (5xx) 500 Unable to remove user
  */
 
-   /**
- * @api {put} /api/users/:userId/?access_token=YOUR_ACCESS_TOKEN Update Profile Information
+/**
+ * @api {put} /api/users/:userId/ Update Profile Information
  * @apiDescription Update profile of a specific user and returns the updated profile to that user.
  * @apiName PutApiUsersUserId
  * @apiGroup User
+* @apiUse LoginHeader
  * @apiVersion 0.1.0
  * @apiPermission LoginRequired
  * @apiUse LoginError
@@ -298,11 +304,12 @@
  * @apiError (5xx) 400 Invalid update. The fields are likely not correct (see parameter requirements).
  */
 
-   /**
- * @api {put} /api/users/:userId/password?access_token=YOUR_ACCESS_TOKEN Update Password
+/**
+ * @api {put} /api/users/:userId/password Update Password
  * @apiDescription Update profile of a specific user and returns the updated profile to that user.
  * @apiName PutApiUsersUserIdPassword
  * @apiGroup User
+* @apiUse LoginHeader
  * @apiVersion 0.1.0
  * @apiPermission LoginRequired
  * @apiUse LoginError
@@ -328,10 +335,11 @@
  */
 
 /**
- * @api {get} /api/users/:userId/follow?access_token=YOUR_ACCESS_TOKEN Get Followers/Followings
+ * @api {get} /api/users/:userId/follow Get Followers/Followings
  * @apiDescription Retrieve a list of :userId"s followers and following.
  * @apiName GetApiUsersUserIdFollow
  * @apiGroup User
+* @apiUse LoginHeader
  * @apiVersion 0.1.0
  * @apiPermission LoginRequired
  * @apiUse LoginError
@@ -362,11 +370,12 @@
  * @apiError (4xx) 422 Bad Request: Unable to fetch list of followers/following
  */
 
- /**
- * @api {put} /api/users/:userId/follow?access_token=YOUR_ACCESS_TOKEN Follow Someone
+/**
+ * @api {put} /api/users/:userId/follow Follow Someone
  * @apiDescription The requester follows user with ID :userId
  * @apiName PutApiUsersUserIdFollow
  * @apiGroup User
+* @apiUse LoginHeader
  * @apiVersion 0.1.0
  * @apiPermission LoginRequired
  * @apiUse LoginError
@@ -382,11 +391,12 @@
  * @apiError (4xx) 422 Bad Request: Cannot follow self
  */
 
-  /**
- * @api {delete} /api/users/:userId/follow?access_token=YOUR_ACCESS_TOKEN Unfollow Someone
+/**
+ * @api {delete} /api/users/:userId/follow Unfollow Someone
  * @apiDescription The requester unfollows user with ID :userId
  * @apiName DeleteApiUsersUserIdUnFollow
  * @apiGroup User
+* @apiUse LoginHeader
  * @apiVersion 0.1.0
  * @apiPermission LoginRequired
  * @apiUse LoginError

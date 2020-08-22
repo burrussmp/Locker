@@ -12,7 +12,7 @@ const ContentPostSchema = new mongoose.Schema({
   },
   price : {
     type : Number,
-    require: StaticStrings.PostModelErrors.ContentPostErrors.PriceRequired,
+    required: StaticStrings.PostModelErrors.ContentPostErrors.PriceRequired,
     min: [0,StaticStrings.PostModelErrors.PriceNotNonnegative]
   }
 });

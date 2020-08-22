@@ -31,7 +31,7 @@ import ContentPostServices from "../services/database/content.post.services";
 */ 
 const postByID = async (req,res,next,id) => {
   try {
-    let post = await Post.findById({'_id':id});
+    let post = await Post.findById(id);
     if (!post) {
         return res.status('404').json({
             error: StaticStrings.PostModelErrors.PostNotFoundError
@@ -41,6 +41,7 @@ const postByID = async (req,res,next,id) => {
     req.owner = post.postedBy.toString();
     next()
   } catch (err) {
+    console.log(err)
       return res.status(404).json({
           error: StaticStrings.PostModelErrors.PostNotFoundError
       })
@@ -64,18 +65,13 @@ const listPosts = async (req,res) => {
 }
 
 /**
- * @desc Create a post. The fields that are required in the body is the
- * the type of content to be created and then depending on the content what is next.
- * This function should delegate the creation based on the type field
+ * @desc Create a post
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  * @return Creates a post
  */
 const createPost = async (req,res) => {
   let type = req.query.type;
-  if (!type){
-    return res.status(501).json({error:StaticStrings.NotImplementedError})
-  }
   if (type == 'ContentPost'){
     return ContentPostServices.createContentPost(req,res);
   } else {
@@ -85,22 +81,22 @@ const createPost = async (req,res) => {
 
 
 /**
- * @desc Gets a post by a particular ID. Delegates this to the type. All posts will return who uploaded it
- * including their profile photo and username, the last update and creation time, reactions, descriptions, comments,
- * tags. For the comments, only the username and text is retrieved.
+ * @desc Gets a post by a particular ID
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  * @return Gets post info: type, contentId, createdAt, caption, tags, postedBy, 
  */
 const getPost = async (req,res) => {
   try {
-    let posts = await Post.findById(req.params.postId).select('type content caption price tags postedBy createdAt updatedAt')
-    return res.status(200).json(posts);
+    if (req.post.type == 'ContentPost'){
+      return ContentPostServices.getContentPost(req,res)
+    } else {
+      return res.status(501).json({error:StaticStrings.NotImplementedError})
+    }
   }catch(err){
-    return res.status(500).json({error:errorHandler.getErrorMessage(err)})
+    return res.status(500).json({error:StaticStrings.UnknownServerError +'\nReason: '+err.message})
   }
 }
-
 
 /**
  * @desc Edit a post. This delegates editing to the particular type of post
@@ -108,12 +104,16 @@ const getPost = async (req,res) => {
  * @param Object   res - HTTP response object
  * @return Creates a post
  */
-const editPost = (req,res) => {
-  let type = undefined; // find the type by querying post
-  if (type == 'content'){
-    return contentPostCtrl.editPost(req,res)
+const editPost = async (req,res) => {
+  try {
+    if (req.post.type == 'ContentPost'){
+      return ContentPostServices.editContentPost(req,res)
+    } else {
+      return res.status(501).json({error:StaticStrings.NotImplementedError})
+    }
+  }catch(err){
+    return res.status(500).json({error:StaticStrings.UnknownServerError +'\nReason: '+err.message})
   }
-  return res.status(501).json({error:StaticStrings.NotImplementedError})
 }
 
 /**
@@ -121,12 +121,14 @@ const editPost = (req,res) => {
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  */
-const deletePost = (req,res) => {
-  let type = undefined; // find the type by querying post
-  if (type == 'content'){
-    return contentPostCtrl.deletePost(req,res)
+const deletePost = async (req,res) => {
+  try {
+    let post = await Post.findById(req.params.postId);
+    await post.deleteOne();
+    return res.status(200).send(post);
+  } catch (err){
+    return res.status(500).send({error: StaticStrings.UnknownServerError+'\nReason: '+err.message});
   }
-  return res.status(501).json({error:StaticStrings.NotImplementedError})
 }
 
 /**

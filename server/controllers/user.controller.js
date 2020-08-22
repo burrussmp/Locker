@@ -64,7 +64,7 @@ const userByID = async (req, res, next, id) => {
     let user = await User.findById(id)
       .populate('following', '_id name')
       .populate('followers', '_id name')
-      .populate('profile_photo','_id key mimetype')
+      .populate("profile_photo",'_id key mimetype')
       .exec()
     if (!user)
       return res.status('404').json({
@@ -207,12 +207,12 @@ const getProfilePhoto = (req, res) => {
 */ 
 const uploadProfilePhoto = (req, res) => {
   let meta = {
-    'type': 'profile_photo',
+    'type': "profile_photo",
     'uploadedBy' : req.params.userId
   };
-  S3_Services.uploadMediaS3(req,res,meta, async (req,res,image)=>{ // upload to s3
+  S3_Services.uploadSingleMediaS3(req,res,meta, async (req,res,image)=>{ // upload to s3
     let query = {'_id' : req.params.userId}; // at this point we have uploaded to S3 and just need to clean up
-    let update = {$set:{'profile_photo' : image._id}};
+    let update = {$set:{"profile_photo" : image._id}};
     try {
       let user = await User.findOneAndUpdate(query, update,{runValidators:true}); // update
       if (user.profile_photo) { 
@@ -239,7 +239,7 @@ const uploadProfilePhoto = (req, res) => {
 */ 
 const removeProfilePhoto = async (req, res) => {
   let query = {'_id' : req.params.userId};
-  let update = {$unset: {'profile_photo' : ""}};
+  let update = {$unset: {"profile_photo" : ""}};
   let user = req.profile;
   try {
     await User.findOneAndUpdate(query, update)

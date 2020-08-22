@@ -197,7 +197,7 @@ define({ "api": [
   },
   {
     "type": "delete",
-    "url": "/api/:commentId/likes?access_token=YOUR_ACCESS_TOKEN",
+    "url": "/api/:commentId/likes",
     "title": "Unlike",
     "description": "<p>Unlike a comment</p>",
     "name": "DeleteApiCommentIdLikes",
@@ -291,13 +291,26 @@ define({ "api": [
     "groupTitle": "Comment",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/:commentId/likes?access_token=YOUR_ACCESS_TOKEN"
+        "url": "http://localhost:3000/api/:commentId/likes"
       }
-    ]
+    ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    }
   },
   {
     "type": "get",
-    "url": "/api/:commentId/replies?access_token=YOUR_ACCESS_TOKEN",
+    "url": "/api/:commentId/replies",
     "title": "List Replies",
     "description": "<p>For the provided comment, list all the replies</p>",
     "name": "GetApiCommentIdReplies",
@@ -379,9 +392,22 @@ define({ "api": [
     "groupTitle": "Comment",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/:commentId/replies?access_token=YOUR_ACCESS_TOKEN"
+        "url": "http://localhost:3000/api/:commentId/replies"
       }
     ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    },
     "error": {
       "fields": {
         "4xx": [
@@ -426,7 +452,7 @@ define({ "api": [
   },
   {
     "type": "put",
-    "url": "/api/:commentId/likes?access_token=YOUR_ACCESS_TOKEN",
+    "url": "/api/:commentId/likes",
     "title": "Like",
     "description": "<p>Like a comment</p>",
     "name": "PutApiCommentIdLikes",
@@ -520,13 +546,521 @@ define({ "api": [
     "groupTitle": "Comment",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/:commentId/likes?access_token=YOUR_ACCESS_TOKEN"
+        "url": "http://localhost:3000/api/:commentId/likes"
       }
-    ]
+    ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "put",
+    "url": "/api/posts/:postId",
+    "title": "Edit Post",
+    "description": "<p>Edit one of your posts</p>",
+    "name": "EditApiPostsPostid",
+    "group": "Post",
+    "version": "0.1.0",
+    "permission": [
+      {
+        "name": "LoginRequired",
+        "title": "Require login",
+        "description": ""
+      },
+      {
+        "name": "PostEditContent",
+        "title": "Require scope \"post:edit_content\"",
+        "description": "<p>Assigned to all Users by default</p>"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Request Body": [
+          {
+            "group": "Request Body",
+            "type": "String",
+            "optional": true,
+            "field": "caption",
+            "description": "<p>Caption to show below the post (MaxLength: 300 characters)</p>"
+          },
+          {
+            "group": "Request Body",
+            "type": "String",
+            "optional": true,
+            "field": "tags",
+            "description": "<p>Comma delimited tags (Max: 7, MaxLength: 20 characters per tag, must be lphabetical)</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "200": [
+          {
+            "group": "200",
+            "type": "ObjectID",
+            "optional": false,
+            "field": "ID",
+            "description": "<p>The ID of the newly updated post</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Response (example):",
+          "content": "HTTP/1.1 200 OK\n{\n   \"_id\" : \"5f4142d3df64933395456de1\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "4xx": [
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "400",
+            "description": "<p>Invalid fields (too many tags, too long of a caption, etc.)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "401",
+            "description": "<p>Invalid or missing token in Authorization header (Authorization: bearer <token>)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Unauthorized</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "NotLoggedIn:",
+          "content": "HTTP/1.1 401 Unauthorized\n    {\n        \"error\": \"UnauthorizedError: Invalid or missing JWT token.\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "BadPermissions:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"Insufficient permissions\"\n    }",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "_api_doc/_post_api_doc.js",
+    "groupTitle": "Post",
+    "sampleRequest": [
+      {
+        "url": "http://localhost:3000/api/posts/:postId"
+      }
+    ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "get",
+    "url": "/api/posts/:postId",
+    "title": "Get Specific Post",
+    "description": "<p>Retrieves the information of a specific post</p>",
+    "name": "GetApiPostsPostID",
+    "group": "Post",
+    "version": "0.1.0",
+    "permission": [
+      {
+        "name": "LoginRequired",
+        "title": "Require login",
+        "description": ""
+      },
+      {
+        "name": "OwnershipRequired",
+        "title": "Require Ownership",
+        "description": "<p>Must own the resource you are requesting</p>"
+      },
+      {
+        "name": "PostRead",
+        "title": "Require scope \"post:read\"",
+        "description": "<p>Assigned to all Users by default</p>"
+      }
+    ],
+    "success": {
+      "fields": {
+        "200": [
+          {
+            "group": "200",
+            "type": "String",
+            "optional": false,
+            "field": "type",
+            "description": "<p>The type of post (e.g. &quot;ContentPost&quot;)</p>"
+          },
+          {
+            "group": "200",
+            "type": "Object",
+            "optional": false,
+            "field": "content",
+            "description": "<p>The content of the post (varies based on type)</p>"
+          },
+          {
+            "group": "200",
+            "type": "String",
+            "optional": false,
+            "field": "caption",
+            "description": "<p>The ID of the newly created post</p>"
+          },
+          {
+            "group": "200",
+            "type": "String[]",
+            "optional": false,
+            "field": "tags",
+            "description": "<p>The ID of the newly created post</p>"
+          },
+          {
+            "group": "200",
+            "type": "ObjectID",
+            "optional": false,
+            "field": "postedBy",
+            "description": "<p>The ID of the newly created post</p>"
+          },
+          {
+            "group": "200",
+            "type": "Date",
+            "optional": false,
+            "field": "createdAt",
+            "description": "<p>The ID of the newly created post</p>"
+          },
+          {
+            "group": "200",
+            "type": "Date",
+            "optional": false,
+            "field": "updatedAt",
+            "description": "<p>The ID of the newly created post</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Response (example):",
+          "content": "{\n    \"caption\": \"Check out the new shoe!\",\n    \"tags\": [\"shoe\", \"designer\"],\n    \"_id\": \"5f4155c1284bd74c053c2ffe\",\n    \"type\": \"ContentPost\",\n    \"content\": {\n        \"price\": 99.99,\n        \"media\": {\n            \"key\": \"2998472058f3455c6843ece354b90af0_ContentPost\",\n            \"mimetype\": \"image/png\"\n        }\n    },\n    \"postedBy\": \"5f4155c0284bd74c053c2ff9\",\n    \"createdAt\": \"2020-08-22T17:28:33.161Z\",\n    \"updatedAt\": \"2020-08-22T17:28:33.161Z\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "_api_doc/_post_api_doc.js",
+    "groupTitle": "Post",
+    "sampleRequest": [
+      {
+        "url": "http://localhost:3000/api/posts/:postId"
+      }
+    ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    },
+    "error": {
+      "fields": {
+        "4xx": [
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "401",
+            "description": "<p>Invalid or missing token in Authorization header (Authorization: bearer <token>)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Unauthorized</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "404",
+            "description": "<p>Post not found</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "NotLoggedIn:",
+          "content": "HTTP/1.1 401 Unauthorized\n    {\n        \"error\": \"UnauthorizedError: Invalid or missing JWT token.\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "BadPermissions:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"Insufficient permissions\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "PostNotFound:",
+          "content": "HTTP/1.1 404 Resource Not Found\n    {\n        \"error\": \"Post not found\"\n    }",
+          "type": "json"
+        }
+      ]
+    }
+  },
+  {
+    "type": "get",
+    "url": "/api/posts",
+    "title": "List All Posts",
+    "description": "<p>Retrieve a list of all the posts IDs</p>",
+    "name": "GetPosts",
+    "group": "Post",
+    "version": "0.1.0",
+    "permission": [
+      {
+        "name": "LoginRequired",
+        "title": "Require login",
+        "description": ""
+      },
+      {
+        "name": "PostRead",
+        "title": "Require scope \"post:read\"",
+        "description": "<p>Assigned to all Users by default</p>"
+      }
+    ],
+    "success": {
+      "fields": {
+        "200": [
+          {
+            "group": "200",
+            "type": "Object[]",
+            "optional": false,
+            "field": "body",
+            "description": "<p>A list of all posts</p>"
+          },
+          {
+            "group": "200",
+            "type": "ObjectID",
+            "optional": false,
+            "field": "body[index]",
+            "description": "<p>._id ID of post</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Response (example):",
+          "content": "HTTP/1.1 200 OK\n[\n    {\n        \"_id\": \"5f4142d2df64933395456dde\",\n        \"createdAt\": \"2020-08-22T16:07:46.915Z\"\n    },\n    {\n        \"_id\": \"5f4142d3df64933395456de1\",\n        \"createdAt\": \"2020-08-22T16:07:47.174Z\"\n    }\n]",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "_api_doc/_post_api_doc.js",
+    "groupTitle": "Post",
+    "sampleRequest": [
+      {
+        "url": "http://localhost:3000/api/posts"
+      }
+    ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    },
+    "error": {
+      "fields": {
+        "4xx": [
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "401",
+            "description": "<p>Invalid or missing token in Authorization header (Authorization: bearer <token>)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Unauthorized</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "NotLoggedIn:",
+          "content": "HTTP/1.1 401 Unauthorized\n    {\n        \"error\": \"UnauthorizedError: Invalid or missing JWT token.\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "BadPermissions:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"Insufficient permissions\"\n    }",
+          "type": "json"
+        }
+      ]
+    }
+  },
+  {
+    "type": "post",
+    "url": "/api/posts?type=ContentPost",
+    "title": "Create Content Post",
+    "description": "<p>Create a new content post</p>",
+    "name": "PostApiPosts",
+    "group": "Post",
+    "version": "0.1.0",
+    "permission": [
+      {
+        "name": "LoginRequired",
+        "title": "Require login",
+        "description": ""
+      },
+      {
+        "name": "PostCreate",
+        "title": "Require scope \"post:create\"",
+        "description": "<p>Assigned to all Users by default</p>"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Form Data": [
+          {
+            "group": "Form Data",
+            "type": "File",
+            "optional": false,
+            "field": "media",
+            "description": "<p><code>Required</code> An image or video file to accompany the post</p>"
+          },
+          {
+            "group": "Form Data",
+            "type": "Number",
+            "optional": false,
+            "field": "price",
+            "description": "<p><code>Required</code> Price (Non-Negative)</p>"
+          },
+          {
+            "group": "Form Data",
+            "type": "String",
+            "optional": true,
+            "field": "caption",
+            "description": "<p>Description of the post (MaxLength: 300 characters)</p>"
+          },
+          {
+            "group": "Form Data",
+            "type": "String",
+            "optional": true,
+            "field": "tags",
+            "description": "<p>Comma delimited tags (Max: 7, MaxLength: 20 characters per tag, must be alphabetical)</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "200": [
+          {
+            "group": "200",
+            "type": "ObjectID",
+            "optional": false,
+            "field": "ID",
+            "description": "<p>The ID of the newly created post</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Response (example):",
+          "content": "HTTP/1.1 200 OK\n{\n   \"_id\" : \"5f4142d3df64933395456de1\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "4xx": [
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "400",
+            "description": "<p>Missing required fields, invalid fields (price greater than zero, too many tags, etc)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "401",
+            "description": "<p>Invalid or missing token in Authorization header (Authorization: bearer <token>)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Unauthorized</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "NotLoggedIn:",
+          "content": "HTTP/1.1 401 Unauthorized\n    {\n        \"error\": \"UnauthorizedError: Invalid or missing JWT token.\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "BadPermissions:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"Insufficient permissions\"\n    }",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "_api_doc/_post_api_doc.js",
+    "groupTitle": "Post",
+    "sampleRequest": [
+      {
+        "url": "http://localhost:3000/api/posts?type=ContentPost"
+      }
+    ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    }
   },
   {
     "type": "delete",
-    "url": "/api/:commentId/replies/:replyId?access_token=YOUR_ACCESS_TOKEN",
+    "url": "/api/:commentId/replies/:replyId",
     "title": "Delete Reply",
     "description": "<p>Delete one of your replies</p>",
     "name": "DeleteApiCommentIdRepliesReplyId",
@@ -578,9 +1112,22 @@ define({ "api": [
     "groupTitle": "Reply",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/:commentId/replies/:replyId?access_token=YOUR_ACCESS_TOKEN"
+        "url": "http://localhost:3000/api/:commentId/replies/:replyId"
       }
     ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    },
     "error": {
       "fields": {
         "4xx": [
@@ -635,7 +1182,7 @@ define({ "api": [
   },
   {
     "type": "delete",
-    "url": "/api/:commentId/replies/:replyId/likes?access_token=YOUR_ACCESS_TOKEN",
+    "url": "/api/:commentId/replies/:replyId/likes",
     "title": "Unlike",
     "description": "<p>Unlike a reply</p>",
     "name": "DeleteApiCommentIdRepliesReplyIdLikes",
@@ -680,9 +1227,22 @@ define({ "api": [
     "groupTitle": "Reply",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/:commentId/replies/:replyId/likes?access_token=YOUR_ACCESS_TOKEN"
+        "url": "http://localhost:3000/api/:commentId/replies/:replyId/likes"
       }
     ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    },
     "error": {
       "fields": {
         "4xx": [
@@ -732,7 +1292,7 @@ define({ "api": [
   },
   {
     "type": "get",
-    "url": "/api/:commentId/replies/:replyId?access_token=YOUR_ACCESS_TOKEN",
+    "url": "/api/:commentId/replies/:replyId",
     "title": "Get Specific Reply",
     "description": "<p>Retrieves a specific reply</p>",
     "name": "GetApiCommentIdRepliesReplyId",
@@ -807,9 +1367,22 @@ define({ "api": [
     "groupTitle": "Reply",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/:commentId/replies/:replyId?access_token=YOUR_ACCESS_TOKEN"
+        "url": "http://localhost:3000/api/:commentId/replies/:replyId"
       }
     ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    },
     "error": {
       "fields": {
         "4xx": [
@@ -854,7 +1427,7 @@ define({ "api": [
   },
   {
     "type": "post",
-    "url": "/api/:commentId/replies?access_token=YOUR_ACCESS_TOKEN",
+    "url": "/api/:commentId/replies",
     "title": "Add Reply",
     "description": "<p>Adds a reply to a comment</p>",
     "name": "PostApiCommentIdReplies",
@@ -971,13 +1544,26 @@ define({ "api": [
     "groupTitle": "Reply",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/:commentId/replies?access_token=YOUR_ACCESS_TOKEN"
+        "url": "http://localhost:3000/api/:commentId/replies"
       }
-    ]
+    ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    }
   },
   {
     "type": "put",
-    "url": "/api/:commentId/replies/:replyId?access_token=YOUR_ACCESS_TOKEN",
+    "url": "/api/:commentId/replies/:replyId",
     "title": "Edit Reply",
     "description": "<p>Edit one of your replies</p>",
     "name": "PutApiCommentIdRepliesReplyId",
@@ -1049,9 +1635,22 @@ define({ "api": [
     "groupTitle": "Reply",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/:commentId/replies/:replyId?access_token=YOUR_ACCESS_TOKEN"
+        "url": "http://localhost:3000/api/:commentId/replies/:replyId"
       }
     ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    },
     "error": {
       "fields": {
         "4xx": [
@@ -1106,7 +1705,7 @@ define({ "api": [
   },
   {
     "type": "put",
-    "url": "/api/:commentId/replies/:replyId/likes?access_token=YOUR_ACCESS_TOKEN",
+    "url": "/api/:commentId/replies/:replyId/likes",
     "title": "Like",
     "description": "<p>Like a reply</p>",
     "name": "PutApiCommentIdRepliesReplyIdLikes",
@@ -1151,9 +1750,22 @@ define({ "api": [
     "groupTitle": "Reply",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/:commentId/replies/:replyId/likes?access_token=YOUR_ACCESS_TOKEN"
+        "url": "http://localhost:3000/api/:commentId/replies/:replyId/likes"
       }
     ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    },
     "error": {
       "fields": {
         "4xx": [
@@ -1203,7 +1815,7 @@ define({ "api": [
   },
   {
     "type": "delete",
-    "url": "/api/users/:userId/?access_token=YOUR_ACCESS_TOKEN",
+    "url": "/api/users/:userId/",
     "title": "Delete User",
     "description": "<p>Permanently removes a user and all their information (i.e. profile photo form S3, any followers/followings)</p>",
     "name": "DeleteApiUsersUserId",
@@ -1293,13 +1905,26 @@ define({ "api": [
     "groupTitle": "User",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/users/:userId/?access_token=YOUR_ACCESS_TOKEN"
+        "url": "http://localhost:3000/api/users/:userId/"
       }
-    ]
+    ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    }
   },
   {
     "type": "delete",
-    "url": "/api/users/:userId/avatar?access_token=YOUR_ACCESS_TOKEN",
+    "url": "/api/users/:userId/avatar",
     "title": "Delete Profile Photo",
     "description": "<p>Permanently removes user profile photo</p>",
     "name": "DeleteApiUsersUserIdAvatar",
@@ -1406,13 +2031,26 @@ define({ "api": [
     "groupTitle": "User",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/users/:userId/avatar?access_token=YOUR_ACCESS_TOKEN"
+        "url": "http://localhost:3000/api/users/:userId/avatar"
       }
-    ]
+    ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    }
   },
   {
     "type": "delete",
-    "url": "/api/users/:userId/follow?access_token=YOUR_ACCESS_TOKEN",
+    "url": "/api/users/:userId/follow",
     "title": "Unfollow Someone",
     "description": "<p>The requester unfollows user with ID :userId</p>",
     "name": "DeleteApiUsersUserIdUnFollow",
@@ -1496,9 +2134,22 @@ define({ "api": [
     "groupTitle": "User",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/users/:userId/follow?access_token=YOUR_ACCESS_TOKEN"
+        "url": "http://localhost:3000/api/users/:userId/follow"
       }
-    ]
+    ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    }
   },
   {
     "type": "get",
@@ -1590,7 +2241,7 @@ define({ "api": [
   },
   {
     "type": "get",
-    "url": "/api/users/:userId/avatar?access_token=YOUR_ACCESS_TOKEN",
+    "url": "/api/users/:userId/avatar",
     "title": "Get Profile Photo",
     "description": "<p>Retrieve the profile photo from AWS S3 bucket</p>",
     "name": "GetApiUsersUserIdAvatar",
@@ -1669,13 +2320,26 @@ define({ "api": [
     "groupTitle": "User",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/users/:userId/avatar?access_token=YOUR_ACCESS_TOKEN"
+        "url": "http://localhost:3000/api/users/:userId/avatar"
       }
-    ]
+    ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    }
   },
   {
     "type": "get",
-    "url": "/api/users/:userId/follow?access_token=YOUR_ACCESS_TOKEN",
+    "url": "/api/users/:userId/follow",
     "title": "Get Followers/Followings",
     "description": "<p>Retrieve a list of :userId&quot;s followers and following.</p>",
     "name": "GetApiUsersUserIdFollow",
@@ -1788,13 +2452,26 @@ define({ "api": [
     "groupTitle": "User",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/users/:userId/follow?access_token=YOUR_ACCESS_TOKEN"
+        "url": "http://localhost:3000/api/users/:userId/follow"
       }
-    ]
+    ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    }
   },
   {
     "type": "get",
-    "url": "/api/users/:userId?access_token=YOUR_ACCESS_TOKEN",
+    "url": "/api/users/:userId",
     "title": "Get Specific User Info",
     "description": "<p>Retrieve data from a specific user queried by :userId path parameter in URL</p>",
     "name": "GetApiUsersbyID",
@@ -1920,9 +2597,22 @@ define({ "api": [
     "groupTitle": "User",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/users/:userId?access_token=YOUR_ACCESS_TOKEN"
+        "url": "http://localhost:3000/api/users/:userId"
       }
     ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    },
     "error": {
       "fields": {
         "4xx": [
@@ -2102,7 +2792,7 @@ define({ "api": [
   },
   {
     "type": "post",
-    "url": "/api/users/:userId/avatar?access_token=YOUR_ACCESS_TOKEN",
+    "url": "/api/users/:userId/avatar",
     "title": "Update Profile Photo",
     "description": "<p>Updates the user&quot;s profile photo by storing it in an AWS S3 bucket.</p>",
     "name": "PostApiUsersUserIdAvatar",
@@ -2132,7 +2822,7 @@ define({ "api": [
             "group": "Form Data",
             "type": "File",
             "optional": false,
-            "field": "image",
+            "field": "media",
             "description": "<p><code>Required</code>Profile image to upload</p>"
           }
         ]
@@ -2219,13 +2909,26 @@ define({ "api": [
     "groupTitle": "User",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/users/:userId/avatar?access_token=YOUR_ACCESS_TOKEN"
+        "url": "http://localhost:3000/api/users/:userId/avatar"
       }
-    ]
+    ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    }
   },
   {
     "type": "put",
-    "url": "/api/users/:userId/?access_token=YOUR_ACCESS_TOKEN",
+    "url": "/api/users/:userId/",
     "title": "Update Profile Information",
     "description": "<p>Update profile of a specific user and returns the updated profile to that user.</p>",
     "name": "PutApiUsersUserId",
@@ -2377,13 +3080,26 @@ define({ "api": [
     "groupTitle": "User",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/users/:userId/?access_token=YOUR_ACCESS_TOKEN"
+        "url": "http://localhost:3000/api/users/:userId/"
       }
-    ]
+    ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    }
   },
   {
     "type": "put",
-    "url": "/api/users/:userId/follow?access_token=YOUR_ACCESS_TOKEN",
+    "url": "/api/users/:userId/follow",
     "title": "Follow Someone",
     "description": "<p>The requester follows user with ID :userId</p>",
     "name": "PutApiUsersUserIdFollow",
@@ -2467,13 +3183,26 @@ define({ "api": [
     "groupTitle": "User",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/users/:userId/follow?access_token=YOUR_ACCESS_TOKEN"
+        "url": "http://localhost:3000/api/users/:userId/follow"
       }
-    ]
+    ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    }
   },
   {
     "type": "put",
-    "url": "/api/users/:userId/password?access_token=YOUR_ACCESS_TOKEN",
+    "url": "/api/users/:userId/password",
     "title": "Update Password",
     "description": "<p>Update profile of a specific user and returns the updated profile to that user.</p>",
     "name": "PutApiUsersUserIdPassword",
@@ -2592,8 +3321,21 @@ define({ "api": [
     "groupTitle": "User",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/users/:userId/password?access_token=YOUR_ACCESS_TOKEN"
+        "url": "http://localhost:3000/api/users/:userId/password"
       }
-    ]
+    ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    }
   }
 ] });

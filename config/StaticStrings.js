@@ -22,7 +22,7 @@ const StaticStrings = {
     },
     S3ServiceErrors : {
         InvalidImageMimeType: "Invalid Mime Type, only JPEG and PNG",
-        BadRequestWrongKey: "Bad request: Form-day incorrect. Should be 'profile_photo'",
+        BadRequestWrongKey: "Bad request: Form-day incorrect field name invalid for media.",
         UploadServerError: 'ServerError: Unable to upload file',
         DeleteServerError: 'ServerError: Unable to delete file',
         RetrieveServerError : 'ServerError: Unable to send file, but it exists in S3',
@@ -81,7 +81,7 @@ const StaticStrings = {
     },
     PostModelErrors: {
         TypeRequired: "Must specify the type",
-        MaxDescriptionSizeError: "Descriptions must be less than 300 characters",
+        MaxCaptionSizeError: "Descriptions must be less than 300 characters",
         BadReactionType: "Unsupported reaction",
         MissingPoster: "A specific user must post",
         MaxLengthTag: "A tag cannot exceed 20 characters",
@@ -90,7 +90,7 @@ const StaticStrings = {
         MissingContent: "This post is missing content",
         PostNotFoundError: "Post not found",
         PriceNotNonnegative : "The price must be non-negative",
-        MaximumNumberOfTags: '{PATH} exceeds the limit of 7 tags',
+        MaximumNumberOfTags: 'Too many tags provided (maximum is 7)',
         ContentPostErrors: {
             PriceRequired: "Must specify the price of a content post",
         },

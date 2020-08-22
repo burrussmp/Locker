@@ -1,8 +1,9 @@
 /**
- * @api {post} /api/:commentId/replies?access_token=YOUR_ACCESS_TOKEN Add Reply
+ * @api {post} /api/:commentId/replies Add Reply
  * @apiDescription Adds a reply to a comment
  * @apiName PostApiCommentIdReplies
  * @apiGroup Reply
+* @apiUse LoginHeader
  * @apiVersion 0.1.0
  * @apiPermission LoginRequired
  * @apiUse LoginError
@@ -27,10 +28,11 @@
  */
 
  /**
- * @api {get} /api/:commentId/replies/:replyId?access_token=YOUR_ACCESS_TOKEN Get Specific Reply
+ * @api {get} /api/:commentId/replies/:replyId Get Specific Reply
  * @apiDescription Retrieves a specific reply
  * @apiName GetApiCommentIdRepliesReplyId
  * @apiGroup Reply
+* @apiUse LoginHeader
  * @apiVersion 0.1.0
  * @apiPermission LoginRequired
  * @apiUse LoginError
@@ -55,10 +57,11 @@
  */
 
   /**
- * @api {put} /api/:commentId/replies/:replyId?access_token=YOUR_ACCESS_TOKEN Edit Reply
+ * @api {put} /api/:commentId/replies/:replyId Edit Reply
  * @apiDescription Edit one of your replies
  * @apiName PutApiCommentIdRepliesReplyId
  * @apiGroup Reply
+* @apiUse LoginHeader
  * @apiVersion 0.1.0
  * @apiPermission LoginRequired
  * @apiPermission OwnershipRequired
@@ -81,10 +84,11 @@
  */
 
   /**
- * @api {delete} /api/:commentId/replies/:replyId?access_token=YOUR_ACCESS_TOKEN Delete Reply
+ * @api {delete} /api/:commentId/replies/:replyId Delete Reply
  * @apiDescription Delete one of your replies
  * @apiName DeleteApiCommentIdRepliesReplyId
  * @apiGroup Reply
+* @apiUse LoginHeader
  * @apiVersion 0.1.0
  * @apiPermission LoginRequired
  * @apiPermission OwnershipRequired
@@ -104,10 +108,11 @@
  */
 
    /**
- * @api {put} /api/:commentId/replies/:replyId/likes?access_token=YOUR_ACCESS_TOKEN Like
+ * @api {put} /api/:commentId/replies/:replyId/likes Like
  * @apiDescription Like a reply
  * @apiName PutApiCommentIdRepliesReplyIdLikes
  * @apiGroup Reply
+* @apiUse LoginHeader
  * @apiVersion 0.1.0
  * @apiPermission LoginRequired
  * @apiUse LoginError
@@ -125,10 +130,11 @@
  */
 
    /**
- * @api {delete} /api/:commentId/replies/:replyId/likes?access_token=YOUR_ACCESS_TOKEN Unlike
+ * @api {delete} /api/:commentId/replies/:replyId/likes Unlike
  * @apiDescription Unlike a reply
  * @apiName DeleteApiCommentIdRepliesReplyIdLikes
  * @apiGroup Reply
+* @apiUse LoginHeader
  * @apiVersion 0.1.0
  * @apiPermission LoginRequired
  * @apiUse LoginError

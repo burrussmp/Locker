@@ -1,8 +1,9 @@
   /**
- * @api {get} /api/:commentId/replies?access_token=YOUR_ACCESS_TOKEN List Replies
+ * @api {get} /api/:commentId/replies List Replies
  * @apiDescription For the provided comment, list all the replies
  * @apiName GetApiCommentIdReplies
  * @apiGroup Comment
+* @apiUse LoginHeader
  * @apiVersion 0.1.0
  * @apiPermission LoginRequired
  * @apiUse LoginError
@@ -43,10 +44,11 @@
 
 
  /**
- * @api {put} /api/:commentId/likes?access_token=YOUR_ACCESS_TOKEN Like
+ * @api {put} /api/:commentId/likes Like
  * @apiDescription Like a comment
  * @apiName PutApiCommentIdLikes
  * @apiGroup Comment
+* @apiUse LoginHeader
  * @apiVersion 0.1.0
  * @apiPermission LoginRequired
  * @apiUse LoginError
@@ -64,10 +66,11 @@
  */
 
 /**
- * @api {delete} /api/:commentId/likes?access_token=YOUR_ACCESS_TOKEN Unlike
+ * @api {delete} /api/:commentId/likes Unlike
  * @apiDescription Unlike a comment
  * @apiName DeleteApiCommentIdLikes
  * @apiGroup Comment
+* @apiUse LoginHeader
  * @apiVersion 0.1.0
  * @apiPermission LoginRequired
  * @apiUse LoginError

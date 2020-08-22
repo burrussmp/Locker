@@ -62,13 +62,13 @@ const deleteMediaS3 = async (key) =>{
 }
 
 /**
-  * @desc (Middleware) Upload an image to S3 and update MongoDB Media reference
+  * @desc (Middleware) Upload a single image or video to S3 and update MongoDB Media reference
   * @param Object req - HTTP request
   * @param Object res - HTTP response
   * @param Object meta - meta data of image object
   * @param Function next - callback function: parameters (HTTPRequest,HTTPResponse,mongoose.Schema.Media.model)
 */
-const uploadMediaS3 = (req,res,meta,next) => {
+const uploadSingleMediaS3 = (req,res,meta,next) => {
   const image_upload = multer({
     fileFilter: MediaFilter,
     storage: multerS3({
@@ -86,10 +86,10 @@ const uploadMediaS3 = (req,res,meta,next) => {
       }
     })
   });
-  const upload = image_upload.single(meta.type); // Parse req and upload image to S3
+  const upload = image_upload.single('media'); // Parse req and upload image to S3
   upload(req, res, async function (err) {
       if (err instanceof multer.MulterError) {
-          return res.status(500).send({error:StaticStrings.S3ServiceErrors.BadRequestWrongKey})
+          return res.status(400).send({error:StaticStrings.S3ServiceErrors.BadRequestWrongKey})
       } else if (err) {
           return res.status(422).send({error:err.message});
       }
@@ -156,7 +156,7 @@ const fileExistsS3 = async (key) => {
 
 
 export default {
-    uploadMediaS3,
+    uploadSingleMediaS3,
     deleteMediaS3,
     getMediaS3,
     listObjectsS3,

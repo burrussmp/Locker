@@ -46,13 +46,13 @@ const getMediaByKey = (req,res,key) => {
 }
 
 /**
-  * @desc Controller (pretty much a wrapper around fetchMedia)
+  * @desc Controller (pretty much a wrapper around getMEdiaBykey)
   * @param Object req - HTTP request object
   * @param Object res - HTTP response object
 */ 
 const getMedia = (req, res) => {
     let key = req.params.key;
-    fetchmedia(req,res,key)
+    return getMediaByKey(req,res,key)
 }
 
 

@@ -72,13 +72,26 @@
         }
  */
 
+ /**
+ * @apiDefine PostNotFound
+ * @apiVersion 0.1.0
+ *
+ * @apiError (4xx) 404 Post not found
+ * @apiErrorExample PostNotFound:
+ *     HTTP/1.1 404 Resource Not Found
+        {
+            "error": "Post not found"
+        }
+ */
+
 // ------------------------------------------------------------------------------------------
 // Current Permissions.
 // ------------------------------------------------------------------------------------------
 /**
  * @apiDefine LoginHeader
  * @apiVersion 0.1.0
- * @apiHeader (Header) {String} Authorization Bearer <code>JWT token</code>
+ * @apiHeader (Header) {String} Authorization Bearer <code>JWT token</code> 
+ * (Note: Optionally you can provide the query parameter as such "access_token=<YOUR_TOKEN>")
 */
 
 /**

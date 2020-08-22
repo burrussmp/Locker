@@ -51,7 +51,7 @@ const PostSchema = new mongoose.Schema({
     type: String,
     trim: true,
     default : "",
-    maxlength: [300,StaticStrings.PostModelErrors.MaxDescriptionSizeError]
+    maxlength: [300,StaticStrings.PostModelErrors.MaxCaptionSizeError]
   },
   reactions: [ReactionSchema],
   comments: [{ type: mongoose.Schema.ObjectId, ref: 'Comment'}],
@@ -61,8 +61,9 @@ const PostSchema = new mongoose.Schema({
       trim: true,
       lowercase: true,
       maxlength: [20,StaticStrings.PostModelErrors.MaxLengthTag],
-      match: [/^[a-zA-Z]+$/ , StaticStrings.PostModelErrors.TagMustBeAlphabetical]
+      match: [/^$|^[a-zA-Z]+$/ , StaticStrings.PostModelErrors.TagMustBeAlphabetical]
   }],
+  default: [],
   validate: [tagLimit,StaticStrings.PostModelErrors.MaximumNumberOfTags]
 },
 },{

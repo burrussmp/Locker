@@ -12,7 +12,7 @@ const MediaSchema = new mongoose.Schema({
       type: String,
       required: StaticStrings.MediaModelErrors.TypeRequired,
       enum: {
-        values: ['profile_photo','ContentPost'],
+        values: ["profile_photo",'ContentPost'],
         message: StaticStrings.MediaModelErrors.UnacceptableType
       }
   },

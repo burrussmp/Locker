@@ -134,12 +134,24 @@ UserSchema.pre("save", function(next){
 })
 
 UserSchema.pre("deleteOne",{document: true,query:false },async function(){
-  let media = await mongoose.models.Media.findById(this.profile_photo); // remove the profile photo from S3
+  // clean up profile photo
+  let media = await mongoose.models.Media.findById(this.profile_photo);
   if (media){
     await media.deleteOne();
   }
+  // clean up posts
+  let posts = await mongoose.models.Post.find({'postedBy':this._id});
+  for (let post of posts){
+    await post.deleteOne();
+  }
+  // clean up followers/following
   for (let followingID of this.following){ // remove from list of who they follow
     await mongoose.models.User.findOneAndUpdate({'_id' : followingID}, {$pull: {followers: this._id}})
+  }
+  // clean up comments
+  let comments = await mongoose.models.Comment.find({'postedBy':this._id});
+  for (let comment of comments){
+    await comment.deleteOne();
   }
 });
 

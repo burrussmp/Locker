@@ -18,6 +18,9 @@
     "PostApiUsersUserIdAvatar",
     "DeleteApiUsersUserIdAvatar",
     "DeleteApiUsersUserId",
+    "Post",
+    "GetPosts",
+    "PostApiPosts",
     "Comment",
     "PutApiCommentIdLikes",
     "DeleteApiCommentIdLikes",
@@ -34,7 +37,7 @@
   "apidoc": "0.3.0",
   "generator": {
     "name": "apidoc",
-    "time": "2020-08-21T20:23:11.275Z",
+    "time": "2020-08-22T21:01:38.485Z",
     "url": "https://apidocjs.com",
     "version": "0.25.0"
   }
