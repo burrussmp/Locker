@@ -148,11 +148,11 @@ UserSchema.pre("deleteOne",{document: true,query:false },async function(){
   for (let followingID of this.following){ // remove from list of who they follow
     await mongoose.models.User.findOneAndUpdate({'_id' : followingID}, {$pull: {followers: this._id}})
   }
-  // clean up comments
-  let comments = await mongoose.models.Comment.find({'postedBy':this._id});
-  for (let comment of comments){
-    await comment.deleteOne();
-  }
+  // clean up comments I DONT THINK WE SHOULD DO THIS TBH
+  // let comments = await mongoose.models.Comment.find({'postedBy':this._id});
+  // for (let comment of comments){
+  //   await comment.deleteOne();
+  // }
 });
 
 UserSchema.pre("findOneAndUpdate", async function(){

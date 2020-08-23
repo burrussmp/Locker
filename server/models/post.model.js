@@ -80,7 +80,7 @@ PostSchema.pre("deleteOne",{document: true,query:false },async function(){
   let content = await mongoose.model(this.type).findById(this.content); // delegate cleaning to the post
   await content.deleteOne();
   for (let comment of this.comments){
-    await mongoose.models.comments.findByIdAndRemove(comment);
+    await mongoose.model('Comment').findByIdAndRemove(comment._id);
   }
 });
 

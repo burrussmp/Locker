@@ -28,7 +28,7 @@ const CommentSchema = new mongoose.Schema({
     text: {
         type: String,
         trim: true,
-        required: true,
+        required: StaticStrings.CommentModelErrors.CommentTextRequired,
         maxlength: [300, StaticStrings.CommentModelErrors.MaxCommentSizeError]
     },
     postedBy: {

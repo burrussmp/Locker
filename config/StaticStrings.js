@@ -78,6 +78,7 @@ const StaticStrings = {
         CommentNotFoundError: "Comment not found",
         ReplyTextRequired: "The reply text cannot be empty",
         ReplyNotFound: "Reply not found",
+        CommentTextRequired : "A comment cannot be empty"
     },
     PostModelErrors: {
         TypeRequired: "Must specify the type",

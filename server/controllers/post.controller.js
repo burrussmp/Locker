@@ -7,8 +7,10 @@ import Comment from '../models/comment.model';
 import StaticStrings from '../../config/StaticStrings';
 import errorHandler from '../services/dbErrorHandler'
 import ContentPostServices from "../services/database/content.post.services";
+import mongoose from 'mongoose';
 
-const ReactionTypes = ['like','love','laugh','surprise','mad','sad']
+const ReactionTypes = mongoose.models.Post.schema.tree.reactions[0].tree.type.enum.values;
+
 // The way privacy will worCommentk
 //  1. Want to retrieve a post or comment or reply
 //  2. When retrieving the key, check who it is posted by
@@ -189,10 +191,10 @@ const createComment = async (req,res) => {
     new_comment = await new_comment.save();
     try {
       await Post.findOneAndUpdate(
-        {'_id':commentId},
+        {'_id':req.params.postId},
         {$push: {comments:new_comment._id }},
         {runValidators:true});
-      return res.status(200).json(new_comment);
+      return res.status(200).json({'_id':new_comment._id});
     } catch(err){
       return res.status(400).json({error:errorHandler.getErrorMessage(err)})
     }
