@@ -186,7 +186,7 @@ const Authorize = (req,res,next) => {
                     break;
             }
         break
-        case `/api/posts/:postId/comments/:commentId`:
+        case `/api/comments/:commentId`:
             switch(method){
                 case 'GET':
                     required_permissions.push(Post_Permissions.Read);
@@ -195,10 +195,6 @@ const Authorize = (req,res,next) => {
                 case 'DELETE':
                     required_permissions.push(Post_Permissions.EditContent);
                     required_permissions.push(Comment_Permissions.Delete)
-                    break;
-                case 'PUT':
-                    required_permissions.push(Post_Permissions.EditContent);
-                    required_permissions.push(Comment_Permissions.EditContent)
                     break;
             }
         break

@@ -60,7 +60,6 @@
  * @apiVersion 0.1.0
  * @apiUse LoginHeader
  * @apiPermission LoginRequired
- * @apiPermission OwnershipRequired
  * @apiUse LoginError
  * @apiPermission PostRead
  * @apiUse PermissionError
@@ -100,11 +99,12 @@
   * @apiVersion 0.1.0
   * @apiUse LoginHeader
   * @apiPermission LoginRequired
+  * @apiPermission OwnershipRequired
   * @apiUse LoginError
   * @apiPermission PostEditContent
   * @apiUse PermissionError
   * @apiParam    (Request Body)     {String}      [caption]  Caption to show below the post (MaxLength: 300 characters)
-  * @apiParam    (Request Body)     {String}      [tags]     Comma delimited tags (Max: 7, MaxLength: 20 characters per tag, must be lphabetical)
+  * @apiParam    (Request Body)     {String}      [tags]     Comma delimited tags (Max: 7, MaxLength: 20 characters per tag, must be alphabetical)
   * @apiSuccess  (200) {ObjectID} ID The ID of the newly updated post
   *
   * @apiSuccessExample Response (example):
@@ -113,4 +113,47 @@
   *      "_id" : "5f4142d3df64933395456de1"
   *   }
   * @apiError (4xx) 400 Invalid fields (too many tags, too long of a caption, etc.)
+   * @apiUse PostNotFound
   */
+
+ /**
+  * @api {delete} /api/posts/:postId Delete Post
+  * @apiDescription Delete one of your posts
+  * @apiName DeleteApiPostsPostID
+  * @apiGroup Post
+  * @apiVersion 0.1.0
+  * @apiUse LoginHeader
+  * @apiPermission LoginRequired
+  * @apiPermission OwnershipRequired
+  * @apiUse LoginError
+  * @apiPermission PostDelete
+  * @apiUse PermissionError
+  * @apiSuccess  (200) {Object} DeletedPost See the example response for format
+  *
+  * @apiSuccessExample Response (example):
+  *   HTTP/1.1 200 OK
+    {
+        "caption": "Let's put this caption",
+        "comments": [],
+        "tags": [
+            "tag",
+            "tag",
+            "tag",
+            "tag",
+            "tag",
+            "tag",
+            "tag"
+        ],
+        "_id": "5f41ea00c025ae611618988c",
+        "type": "ContentPost",
+        "content": "5f41ea00c025ae611618988b",
+        "postedBy": "5f41e9f1c025ae6116189888",
+        "reactions": [],
+        "createdAt": "2020-08-23T04:01:04.988Z",
+        "updatedAt": "2020-08-23T04:01:04.988Z",
+        "__v": 0
+    }
+ * @apiUse PostNotFound
+  */
+
+  

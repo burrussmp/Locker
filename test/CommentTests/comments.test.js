@@ -238,7 +238,7 @@ const comments_test = () => {
                 });  
             })
         })
-        describe("DELETE/GET /api/posts/:postId/comments/:commentId",()=>{
+        describe("DELETE/GET /api/comments/:commentId",()=>{
             let userId0,userId1,userId2;
             let agent = chai.request.agent(app);
             let userToken0,userToken1;
@@ -304,52 +304,47 @@ const comments_test = () => {
                 }
             });
             it("Delete twice (first succeeds and second 404s)",async()=>{
-                return agent.delete(`/api/posts/${postId0}/comments/${commentId1}?access_token=${userToken0}`)
+                return agent.delete(`/api/comments/${commentId1}?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(200);
                         res.body.should.have.property('_id')
-                        return agent.delete(`/api/posts/${postId0}/comments/${commentId1}?access_token=${userToken0}`)
+                        return agent.delete(`/api/comments/${commentId1}?access_token=${userToken0}`)
                         .then(async res=>{
                             res.status.should.eql(404);
                             res.body.error.should.eql(StaticStrings.CommentModelErrors.CommentNotFoundError);
                     });   
                 });  
             })
-            it("Bad ID for post and comment (2 404 errors)",async()=>{
-                return agent.delete(`/api/posts/${userId0}/comments/${commentId1}?access_token=${userToken0}`)
-                    .then(async res=>{
-                        res.status.should.eql(404);
-                        res.body.error.should.eql(StaticStrings.PostModelErrors.PostNotFoundError)
-                        return agent.delete(`/api/posts/${postId0}/comments/${userId0}?access_token=${userToken0}`)
+            it("Bad ID for comment (404 errors)",async()=>{
+                return agent.delete(`/api/comments/${userId0}?access_token=${userToken0}`)
                         .then(async res=>{
                             res.status.should.eql(404);
                             res.body.error.should.eql(StaticStrings.CommentModelErrors.CommentNotFoundError);
                     });   
-                });  
             })
             it("Not logged in (should fail)",async()=>{
-                return agent.delete(`/api/posts/${postId0}/comments/${commentId1}`)
+                return agent.delete(`/api/comments/${commentId1}`)
                     .then(async res=>{
                         res.status.should.eql(401);
                         res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError) 
                 });  
             })
             it("Owner of post but not comment (should fail)",async()=>{
-                return agent.delete(`/api/posts/${postId0}/comments/${commentId0}?access_token=${userToken0}`)
+                return agent.delete(`/api/comments/${commentId0}?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(403);
                         res.body.error.should.eql(StaticStrings.NotOwnerError) 
                 });  
             })
             it("Owner of comment but not post (should succeed)",async()=>{
-                return agent.delete(`/api/posts/${postId0}/comments/${commentId0}?access_token=${userToken1}`)
+                return agent.delete(`/api/comments/${commentId0}?access_token=${userToken1}`)
                     .then(async res=>{
                         res.status.should.eql(200);
                 });  
             })
             it("Bad Permissions (should fail)",async()=>{
                 await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':["user:read"]},{new:true});
-                return agent.delete(`/api/posts/${postId0}/comments/${commentId1}?access_token=${userToken0}`)
+                return agent.delete(`/api/comments/${commentId1}?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(403);
                         res.body.error.should.eql(StaticStrings.InsufficientPermissionsError) 
@@ -357,14 +352,14 @@ const comments_test = () => {
             })
             it("Bad Permissions (should fail)",async()=>{
                 await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':["user:read"]},{new:true});
-                return agent.delete(`/api/posts/${postId0}/comments/${commentId1}?access_token=${userToken0}`)
+                return agent.delete(`/api/comments/${commentId1}?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(403);
                         res.body.error.should.eql(StaticStrings.InsufficientPermissionsError) 
                 });  
             })
             it("Get comment that you haven't liked and see if it shows that (should succeed)",async()=>{
-                return agent.get(`/api/posts/${postId0}/comments/${commentId0}?access_token=${userToken0}`)
+                return agent.get(`/api/comments/${commentId0}?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(200);
                         res.body.text.should.eql(CommentData[0].text);
@@ -374,7 +369,7 @@ const comments_test = () => {
                 });  
             });
             it("Get comment that no one has liked (should succeed)",async()=>{
-                return agent.get(`/api/posts/${postId0}/comments/${commentId1}?access_token=${userToken0}`)
+                return agent.get(`/api/comments/${commentId1}?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(200);
                         res.body.text.should.eql(CommentData[1].text);
@@ -384,7 +379,7 @@ const comments_test = () => {
                 });  
             });
             it("Get comment that you have liked (should succeed)",async()=>{
-                return agent.get(`/api/posts/${postId0}/comments/${commentId0}?access_token=${userToken1}`)
+                return agent.get(`/api/comments/${commentId0}?access_token=${userToken1}`)
                     .then(async res=>{
                         res.status.should.eql(200);
                         res.body.text.should.eql(CommentData[0].text);
@@ -393,20 +388,15 @@ const comments_test = () => {
                         res.body.likes.should.eql(1);
                 });  
             });
-            it("Bad IDS (2 404 errors)",async()=>{
-                return agent.get(`/api/posts/${userId0}/comments/${commentId0}?access_token=${userToken1}`)
+            it("Bad IDS (404 errors)",async()=>{
+                    return agent.get(`/api/comments/${userId0}?access_token=${userToken1}`)
                     .then(async res=>{
                         res.status.should.eql(404);
-                        res.body.error.should.eql(StaticStrings.PostModelErrors.PostNotFoundError)
-                        return agent.get(`/api/posts/${postId0}/comments/${userId0}?access_token=${userToken1}`)
-                        .then(async res=>{
-                            res.status.should.eql(404);
-                            res.body.error.should.eql(StaticStrings.CommentModelErrors.CommentNotFoundError)
-                    });  
+                        res.body.error.should.eql(StaticStrings.CommentModelErrors.CommentNotFoundError)
                 });  
             });
             it("Not logged in (should fail)",async()=>{
-                return agent.get(`/api/posts/${postId0}/comments/${commentId0}?access_token=${userId0}`)
+                return agent.get(`/api/comments/${commentId0}?access_token=${userId0}`)
                     .then(async res=>{
                         res.status.should.eql(401);
                         res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError)
@@ -414,7 +404,7 @@ const comments_test = () => {
             });
             it("No permissions",async()=>{
                 await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':["user:read"]},{new:true});
-                return agent.get(`/api/posts/${postId0}/comments/${commentId0}?access_token=${userToken0}`)
+                return agent.get(`/api/comments/${commentId0}?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(403);
                         res.body.error.should.eql(StaticStrings.InsufficientPermissionsError)

@@ -226,15 +226,15 @@ const deleteComment = async (req,res) => {
  */
 const getReaction = async (req,res) => {
   try {
-    postId = mongoose.Types.ObjectId(req.params.postId);
-    reqId = mongoose.Types.ObjectId(req.auth._id);
+    let postId = mongoose.Types.ObjectId(req.params.postId);
+    let reqId = mongoose.Types.ObjectId(req.auth._id);
     let reactions = await Post.aggregate([
-      {$match:postId},
+      {$match: {"_id":postId}},
       {$unwind: "$reactions"},
       {$group: {
           "_id": "$reactions.type",
           "total": {$sum: 1},
-          "selected": {$max: {$eq: ["$reactions.postedBy","id7"]}}}
+          "selected": {$max: {$eq: ["$reactions.postedBy",reqId]}}}
       }
     ])
     let reactionData = Object.assign({selected:false}, ...Object.entries({...ReactionTypes}).map(([a,b]) => ({ [b]: 0 })))
@@ -242,8 +242,9 @@ const getReaction = async (req,res) => {
       reactionData[reaction._id] = reaction.total;
       if (reaction.selected) reactionData.selected=reaction._id;
     }
-    return res.status(200).json({data:reactionData});
+    return res.status(200).json(reactionData);
   }catch(err){
+    console.log(err);
     return res.status(500).json({error:errorHandler.getErrorMessage(err)})
   }}
 
@@ -261,11 +262,13 @@ const changeReaction = async (req,res) => {
         type:req.body.reaction,
         postedBy:req.auth._id
       };
-      let post = await Post.findOneAndUpdate(
-        {'_id':req.params.postId,'reactions.postedBy':req.auth._id},
-        { $set:{ "reactions.$": reaction } },
-        {runValidators:true,new:true});// update their account
-      return res.status(200).send({'id':post._id});
+      let post = await Post.findOne({'_id':req.params.postId,'reactions.postedBy':req.auth._id});
+      if (post){
+        post = await Post.findOneAndUpdate({'_id':req.params.postId,'reactions.postedBy':req.auth._id},{ $set:{ "reactions.$.type": reaction.type } },)        
+      } else {
+        post = await Post.findOneAndUpdate({'_id':req.params.postId},{ $push:{ "reactions": reaction } },)
+      }
+      return res.status(200).send({'_id':post._id});
     }
 
   } catch (err){
@@ -284,17 +287,18 @@ const removeReaction = async (req,res) => {
     if (!ReactionTypes.includes(req.body.reaction)){
       return res.status(400).json({error:StaticStrings.PostController.MissingOrInvalidReaction})
     } else {
-      let reaction = {
-        type:req.body.reaction,
-        postedBy:req.auth._id
-      };
       let post = await Post.findOneAndUpdate(
         {'_id':req.params.postId,'reactions.postedBy':req.auth._id},
-        { $pull:"reactions.$"},
+        { $pull: {"reactions":{"postedBy":req.auth._id} }},
         {runValidators:true,new:true});// update their account
-        return res.status(200).send({'id':post._id});
+      if (post){
+        return res.status(200).send({'_id':post._id});
+      } else {
+        return res.status(404).send({error:StaticStrings.PostModelErrors.NoReactionToDelete});
+      }
     }
   } catch (err){
+    console.log(err)
     return res.status(500).json({error:errorHandler.getErrorMessage(err)})
   }
 

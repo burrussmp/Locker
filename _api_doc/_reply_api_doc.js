@@ -1,5 +1,5 @@
 /**
- * @api {post} /api/:commentId/replies Add Reply
+ * @api {post} /api/:commentId/replies Create a Reply
  * @apiDescription Adds a reply to a comment
  * @apiName PostApiCommentIdReplies
  * @apiGroup Reply
@@ -56,7 +56,7 @@
  * @apiUse CommentNotFound
  */
 
-  /**
+ /**
  * @api {put} /api/:commentId/replies/:replyId Edit Reply
  * @apiIgnore Removed but implemented
  * @apiDescription Edit one of your replies

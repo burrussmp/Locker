@@ -194,6 +194,14 @@
  */
 
  /**
+ * @apiDefine CommentCreate Require scope "comment:create"
+ * 
+ * Assigned to all Users by default
+ *
+ * @apiVersion 0.1.0
+ */
+
+ /**
  * @apiDefine PostInteract Require scope "post:interact"
  * 
  * Assigned to all Users by default
