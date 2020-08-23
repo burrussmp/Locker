@@ -58,6 +58,7 @@
 
   /**
  * @api {put} /api/:commentId/replies/:replyId Edit Reply
+ * @apiIgnore Removed but implemented
  * @apiDescription Edit one of your replies
  * @apiName PutApiCommentIdRepliesReplyId
  * @apiGroup Reply

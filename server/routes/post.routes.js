@@ -36,7 +36,6 @@ router.route('/api/posts/:postId/comments/:commentId')
   .delete(permission.Authorize, authCtrl.requireOwnership,postCtrl.deleteComment)
 
 
-// Ones below are implemented, tested, and documented
 router.route('/api/:commentId/replies')
   .get(permission.Authorize, commentCtrl.listReplies)
   .post(permission.Authorize,commentCtrl.createReply)
@@ -47,8 +46,9 @@ router.route('/api/:commentId/likes')
 
 router.route('/api/:commentId/replies/:replyId')
   .get(permission.Authorize, commentCtrl.getReply)
-  .put(permission.Authorize, authCtrl.requireOwnership,commentCtrl.editReply)
   .delete(permission.Authorize, authCtrl.requireOwnership,commentCtrl.deleteReply)
+  //.put(permission.Authorize, authCtrl.requireOwnership,commentCtrl.editReply) //  IMPLEMENTED BUT TAKEN OUT
+
 
 router.route('/api/:commentId/replies/:replyId/likes')
   .put(permission.Authorize, commentCtrl.likeReply)

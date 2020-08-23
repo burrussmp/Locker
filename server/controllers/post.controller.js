@@ -156,10 +156,10 @@ const listComments = async (req,res) => {
  */
 const getComment = async (req,res) => {
   try {
-    commentId = mongoose.Types.ObjectId(req.params.commentId);
-    reqId = mongoose.Types.ObjectId(req.auth._id);
+    let commentId = mongoose.Types.ObjectId(req.params.commentId);
+    let reqId = mongoose.Types.ObjectId(req.auth._id);
     let comment = await Comment.aggregate([
-      {$match: commentId},
+      {$match: { _id : commentId }},
       {$project: {
         "text" : "$text",
         "postedBy" : "$postedBy",
@@ -169,8 +169,9 @@ const getComment = async (req,res) => {
         }
       }
     ])
-    return res.status(200).json({data:comment});
+    return res.status(200).json(comment[0]);
   }catch(err){
+    console.log(err);
     return res.status(500).json({error:errorHandler.getErrorMessage(err)})
   }
 }
@@ -212,7 +213,7 @@ const deleteComment = async (req,res) => {
   try {
     let comment = await Comment.findById(req.params.commentId);
     await comment.deleteOne();
-    return res.status(200).json(comment);
+    return res.status(200).json({"_id":comment._id});
   } catch(err){
     return res.status(400).json({error:errorHandler.getErrorMessage(err)})
 }}

@@ -115,7 +115,7 @@ const createReply = async (req,res) => {
  * @desc Edit a reply: Can only modify the text
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
- * @return Ccan only edit the text
+ * @return Can only edit the text
  */
 const editReply = async (req,res) => {
     try {
