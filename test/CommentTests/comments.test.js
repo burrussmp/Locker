@@ -5,7 +5,6 @@ import {UserData} from '../../development/user.data';
 import {PostData,ReactionData} from '../../development/post.data';
 import {CommentData} from '../../development/comments.data';
 import User from '../../server/models/user.model';
-import Media from '../../server/models/media.model';
 import Comment from '../../server/models/comment.model';
 import Post from '../../server/models/post.model';
 import StaticStrings from '../../config/StaticStrings';
@@ -13,8 +12,6 @@ import {drop_database} from  '../helper';
 import _ from 'lodash';
 
 let image1 = process.cwd() + '/test/resources/profile1.png';
-let image2 = process.cwd() + '/test/resources/profile2.jpg';
-let textfile = process.cwd() + '/test/resources/profile3.txt';
 let video = process.cwd() + '/test/resources/sample_vid.mp4';
 
 

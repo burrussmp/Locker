@@ -8,7 +8,7 @@ const user_tests = () => {
     // describe("PATH: '/api/:commentId'", RepliesTest);
     // describe("PATH: '/api/posts'", ContentPostTestBasics);
     // describe("PATH: /api/posts/:postId/comments",CommentTest)
-
+    describe("PATH: /api/posts/:postId/reaction",ReactionTest)
 }
 
 export default user_tests;

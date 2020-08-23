@@ -12,7 +12,7 @@ const ReactionSchema = new mongoose.Schema({
     required: true,
     enum: {
       values: ReactionTypes,
-      message: StaticStrings.PostModelErrors.BadReactionType
+      message: StaticStrings.PostModelErrors.InvalidReaction
     },
   },
   postedBy: {

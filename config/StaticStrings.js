@@ -83,7 +83,7 @@ const StaticStrings = {
     PostModelErrors: {
         TypeRequired: "Must specify the type",
         MaxCaptionSizeError: "Descriptions must be less than 300 characters",
-        BadReactionType: "Unsupported reaction",
+        InvalidReaction: "Unsupported reaction",
         MissingPoster: "A specific user must post",
         MaxLengthTag: "A tag cannot exceed 20 characters",
         TagMustBeAlphabetical: "The tag can only contain uppercase and lowercase letters",

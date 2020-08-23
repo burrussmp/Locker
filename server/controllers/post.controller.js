@@ -256,7 +256,7 @@ const getReaction = async (req,res) => {
 const changeReaction = async (req,res) => {
   try {
     if (!ReactionTypes.includes(req.body.reaction)){
-      return res.status(400).json({error:StaticStrings.PostController.MissingOrInvalidReaction})
+      return res.status(400).json({error:StaticStrings.PostModelErrors.InvalidReaction})
     } else {
       let reaction = {
         type:req.body.reaction,
@@ -284,18 +284,14 @@ const changeReaction = async (req,res) => {
  */
 const removeReaction = async (req,res) => {
   try {
-    if (!ReactionTypes.includes(req.body.reaction)){
-      return res.status(400).json({error:StaticStrings.PostController.MissingOrInvalidReaction})
+    let post = await Post.findOneAndUpdate(
+      {'_id':req.params.postId,'reactions.postedBy':req.auth._id},
+      { $pull: {"reactions":{"postedBy":req.auth._id} }},
+      {runValidators:true,new:true});// update their account
+    if (post){
+      return res.status(200).send({'_id':post._id});
     } else {
-      let post = await Post.findOneAndUpdate(
-        {'_id':req.params.postId,'reactions.postedBy':req.auth._id},
-        { $pull: {"reactions":{"postedBy":req.auth._id} }},
-        {runValidators:true,new:true});// update their account
-      if (post){
-        return res.status(200).send({'_id':post._id});
-      } else {
-        return res.status(404).send({error:StaticStrings.PostModelErrors.NoReactionToDelete});
-      }
+      return res.status(404).send({error:StaticStrings.PostModelErrors.NoReactionToDelete});
     }
   } catch (err){
     console.log(err)

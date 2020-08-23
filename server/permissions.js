@@ -198,7 +198,7 @@ const Authorize = (req,res,next) => {
                     break;
             }
         break
-        case `/api/posts/:postId/reactions`:
+        case `/api/posts/:postId/reaction`:
             switch(method){
                 case 'GET':
                     required_permissions.push(Post_Permissions.Read);
