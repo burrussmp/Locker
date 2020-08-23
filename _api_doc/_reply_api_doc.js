@@ -10,7 +10,7 @@
  * @apiPermission PostEditContent
  * @apiPermission CommentEditContent
  * @apiUse PermissionError
- * @apiParam    (Request body)  {String}      text        <code>Required</code> Reply (Cannot exceed 120 characters or be empty)
+ * @apiParam    (Request body)  {String}      text        <code>Required</code> Reply (Cannot exceed 300 characters or be empty)
  * @apiSuccess (id) {ObjectID} id The ID of the reply that was created
  * @apiSuccessExample Response (example):
  *     HTTP/1.1 200 OK
@@ -23,7 +23,7 @@
  * @apiErrorExample TooLong:
       HTTP/1.1 400 Bad Request
         {
-            "error": "Text must be less than 120 characters"
+            "error": "Text must be less than 300 characters"
         }
  */
 
@@ -70,7 +70,7 @@
  * @apiPermission PostEditContent
  * @apiPermission CommentEditContent
  * @apiUse PermissionError
- * @apiParam (Request body) {String}   text    <code>Required</code> Reply (Cannot exceed 120 characters or be empty)
+ * @apiParam (Request body) {String}   text    <code>Required</code> Reply (Cannot exceed 300 characters or be empty)
  * @apiSuccess (200) {String}   text    The updated reply text
  * @apiSuccess (200) {ObjectID} id      The ID of the reply
  * @apiSuccessExample Response (example):

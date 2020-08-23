@@ -2,14 +2,16 @@
 
 import mongoose from 'mongoose'
 import StaticStrings from '../../config/StaticStrings';
+import PostCtrl from '../controllers/post.controller';
 
+const ReactionTypes = ['like','love','laugh','surprise','mad','sad']
 const ReactionSchema = new mongoose.Schema({
   type: {
     type : String,
     trim: true,
     required: true,
     enum: {
-      values: ['like','love','laugh','surprise','mad','sad'],
+      values: ReactionTypes,
       message: StaticStrings.PostModelErrors.BadReactionType
     },
   },

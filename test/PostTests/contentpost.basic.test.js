@@ -131,7 +131,7 @@ const content_post_test_basics = () => {
                             });
                         });
                 });  
-            })
+                })
                 it("Permissions: Insufficient (should fail)",async()=>{
                 let post_data = JSON.parse(JSON.stringify(PostData[0]))
                 await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':["user:read"]},{new:true});

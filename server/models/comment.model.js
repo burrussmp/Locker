@@ -6,7 +6,7 @@ const ReplySchema = new mongoose.Schema({
         type: String,
         trim: true,
         required: StaticStrings.CommentModelErrors.ReplyTextRequired,
-        maxlength: [120, StaticStrings.CommentModelErrors.MaxCommentSizeError]
+        maxlength: [300, StaticStrings.CommentModelErrors.MaxCommentSizeError]
     },
     postedBy: {
         type: mongoose.Schema.ObjectId,
@@ -29,7 +29,7 @@ const CommentSchema = new mongoose.Schema({
         type: String,
         trim: true,
         required: true,
-        maxlength: [120, StaticStrings.CommentModelErrors.MaxCommentSizeError]
+        maxlength: [300, StaticStrings.CommentModelErrors.MaxCommentSizeError]
     },
     postedBy: {
         type: mongoose.Schema.ObjectId,

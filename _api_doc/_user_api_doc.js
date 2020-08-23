@@ -51,7 +51,7 @@
  * @apiParam    (Request body)  {String}      password        <code>Required</code> Password (at least 7 characters; at least 1 number; at least one of @, !, #, $, % or ^; at least 1 uppercase letter)
  * @apiParam    (Request body)  {Date}        [date_of_birth] Date of birth
  * @apiParam    (Request body)  {String}      [gender]        Gender
- * @apiParam    (Request body)  {String}      [about]         Description of user (Cannot exceed 120 characters)
+ * @apiParam    (Request body)  {String}      [about]         Description of user (Cannot exceed 300 characters)
  * @apiParamExample {json} Request-Example:
  * {
  *  "first_name"    : "John",
@@ -270,7 +270,7 @@
  * @apiParam    (Request body)  {String}      [last_name]       Last name
  * @apiParam    (Request body)  {Date}        [date_of_birth] Date of birth
  * @apiParam    (Request body)  {String}      [gender]        Gender
- * @apiParam    (Request body)  {String}      [about]         Description of user (Cannot exceed 120 characters) * @apiSuccess (200) {Object} DeletedUser The user that has been deleted.
+ * @apiParam    (Request body)  {String}      [about]         Description of user (Cannot exceed 300 characters) * @apiSuccess (200) {Object} DeletedUser The user that has been deleted.
  * @apiSuccessExample Response (example):
  *     HTTP/1.1 200 OK
 {

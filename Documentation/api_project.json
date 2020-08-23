@@ -21,6 +21,7 @@
     "Post",
     "GetPosts",
     "PostApiPosts",
+    "PutApiPostsPostID",
     "Comment",
     "PutApiCommentIdLikes",
     "DeleteApiCommentIdLikes",
@@ -31,13 +32,15 @@
     "PostApiCommentIdReplies",
     "GetApiCommentIdRepliesReplyId",
     "PutApiCommentIdRepliesReplyId",
-    "DeleteApiCommentIdRepliesReplyId"
+    "DeleteApiCommentIdRepliesReplyId",
+    "Miscellaneous",
+    "GetMediaKey"
   ],
   "defaultVersion": "0.0.0",
   "apidoc": "0.3.0",
   "generator": {
     "name": "apidoc",
-    "time": "2020-08-22T21:01:38.485Z",
+    "time": "2020-08-22T21:26:08.531Z",
     "url": "https://apidocjs.com",
     "version": "0.25.0"
   }

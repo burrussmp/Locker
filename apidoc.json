@@ -21,6 +21,7 @@
         "Post",
         "GetPosts",
         "PostApiPosts",
+        "PutApiPostsPostID",
         "Comment",
         "PutApiCommentIdLikes",
         "DeleteApiCommentIdLikes",
@@ -31,7 +32,9 @@
         "PostApiCommentIdReplies",
         "GetApiCommentIdRepliesReplyId",
         "PutApiCommentIdRepliesReplyId",
-        "DeleteApiCommentIdRepliesReplyId"
+        "DeleteApiCommentIdRepliesReplyId",
+        "Miscellaneous",
+        "GetMediaKey"
 
       ]
 }

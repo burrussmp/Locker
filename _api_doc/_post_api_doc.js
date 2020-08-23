@@ -34,7 +34,6 @@
   * @apiGroup Post
   * @apiVersion 0.1.0
   * @apiUse LoginHeader
-  * @apiVersion 0.1.0
   * @apiPermission LoginRequired
   * @apiUse LoginError
   * @apiPermission PostCreate
@@ -60,7 +59,6 @@
  * @apiGroup Post
  * @apiVersion 0.1.0
  * @apiUse LoginHeader
- * @apiVersion 0.1.0
  * @apiPermission LoginRequired
  * @apiPermission OwnershipRequired
  * @apiUse LoginError
@@ -97,11 +95,10 @@
  /**
   * @api {put} /api/posts/:postId Edit Post
   * @apiDescription Edit one of your posts
-  * @apiName EditApiPostsPostid
+  * @apiName PutApiPostsPostID
   * @apiGroup Post
   * @apiVersion 0.1.0
   * @apiUse LoginHeader
-  * @apiVersion 0.1.0
   * @apiPermission LoginRequired
   * @apiUse LoginError
   * @apiPermission PostEditContent

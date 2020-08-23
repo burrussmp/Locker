@@ -74,7 +74,7 @@ const StaticStrings = {
         MissingTextField: "Missing text field in request body"
     },
     CommentModelErrors: {
-        MaxCommentSizeError: "Text must be less than 120 characters",
+        MaxCommentSizeError: "Text must be less than 300 characters",
         CommentNotFoundError: "Comment not found",
         ReplyTextRequired: "The reply text cannot be empty",
         ReplyNotFound: "Reply not found",
@@ -102,6 +102,7 @@ const StaticStrings = {
     },
     PostController : {
         UnknownPostType : "Unknown post type",
+        MissingOrInvalidReaction : "Missing or invalid reaction in request body"
         
     },
     SignedUpSuccess: "Successfully signed up!",

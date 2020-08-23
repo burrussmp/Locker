@@ -21,6 +21,7 @@ router.route('/api/posts/:postId')
   .put(permission.Authorize, authCtrl.requireOwnership,postCtrl.editPost)
   .delete(permission.Authorize, authCtrl.requireOwnership,postCtrl.deletePost)
 
+// test all below
 router.route('/api/posts/:postId/comments')
   .get(permission.Authorize, postCtrl.listComments)
   .post(permission.Authorize, postCtrl.createComment)
@@ -28,10 +29,10 @@ router.route('/api/posts/:postId/comments')
 router.route('/api/posts/:postId/reaction')
   .get(permission.Authorize, postCtrl.getReaction)
   .put(permission.Authorize, authCtrl.requireOwnership, postCtrl.changeReaction)
+  .delete(permission.Authorize, authCtrl.requireOwnership, postCtrl.removeReaction)
 
 router.route('/api/posts/:postId/comments/:commentId')
   .get(permission.Authorize, postCtrl.getComment)
-  .put(permission.Authorize, authCtrl.requireOwnership,postCtrl.editComment)
   .delete(permission.Authorize, authCtrl.requireOwnership,postCtrl.deleteComment)
 
 

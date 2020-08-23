@@ -564,12 +564,12 @@ define({ "api": [
     }
   },
   {
-    "type": "put",
-    "url": "/api/posts/:postId",
-    "title": "Edit Post",
-    "description": "<p>Edit one of your posts</p>",
-    "name": "EditApiPostsPostid",
-    "group": "Post",
+    "type": "get",
+    "url": "/api/media/:key",
+    "title": "Get Media from S3",
+    "description": "<p>Edit one of your posts. The :key path parameter is the file identifier in the S3 bucket</p>",
+    "name": "GetMediaKey",
+    "group": "Miscellaneous",
     "version": "0.1.0",
     "permission": [
       {
@@ -578,50 +578,21 @@ define({ "api": [
         "description": ""
       },
       {
-        "name": "PostEditContent",
-        "title": "Require scope \"post:edit_content\"",
-        "description": "<p>Assigned to all Users by default</p>"
+        "name": "none"
       }
     ],
-    "parameter": {
-      "fields": {
-        "Request Body": [
-          {
-            "group": "Request Body",
-            "type": "String",
-            "optional": true,
-            "field": "caption",
-            "description": "<p>Caption to show below the post (MaxLength: 300 characters)</p>"
-          },
-          {
-            "group": "Request Body",
-            "type": "String",
-            "optional": true,
-            "field": "tags",
-            "description": "<p>Comma delimited tags (Max: 7, MaxLength: 20 characters per tag, must be lphabetical)</p>"
-          }
-        ]
-      }
-    },
     "success": {
       "fields": {
         "200": [
           {
             "group": "200",
-            "type": "ObjectID",
+            "type": "Stream",
             "optional": false,
-            "field": "ID",
-            "description": "<p>The ID of the newly updated post</p>"
+            "field": "media",
+            "description": "<p>The response object is a stream of the media that has been retrieved.</p>"
           }
         ]
-      },
-      "examples": [
-        {
-          "title": "Response (example):",
-          "content": "HTTP/1.1 200 OK\n{\n   \"_id\" : \"5f4142d3df64933395456de1\"\n}",
-          "type": "json"
-        }
-      ]
+      }
     },
     "error": {
       "fields": {
@@ -629,20 +600,20 @@ define({ "api": [
           {
             "group": "4xx",
             "optional": false,
-            "field": "400",
-            "description": "<p>Invalid fields (too many tags, too long of a caption, etc.)</p>"
+            "field": "404",
+            "description": "<p>Media not found</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "500",
+            "description": "<p>Server Error</p>"
           },
           {
             "group": "4xx",
             "optional": false,
             "field": "401",
             "description": "<p>Invalid or missing token in Authorization header (Authorization: bearer <token>)</p>"
-          },
-          {
-            "group": "4xx",
-            "optional": false,
-            "field": "403",
-            "description": "<p>Unauthorized</p>"
           }
         ]
       },
@@ -651,19 +622,14 @@ define({ "api": [
           "title": "NotLoggedIn:",
           "content": "HTTP/1.1 401 Unauthorized\n    {\n        \"error\": \"UnauthorizedError: Invalid or missing JWT token.\"\n    }",
           "type": "json"
-        },
-        {
-          "title": "BadPermissions:",
-          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"Insufficient permissions\"\n    }",
-          "type": "json"
         }
       ]
     },
-    "filename": "_api_doc/_post_api_doc.js",
-    "groupTitle": "Post",
+    "filename": "_api_doc/_miscellaneous_api.js",
+    "groupTitle": "Miscellaneous",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/posts/:postId"
+        "url": "http://localhost:3000/api/media/:key"
       }
     ],
     "header": {
@@ -1042,6 +1008,123 @@ define({ "api": [
     "sampleRequest": [
       {
         "url": "http://localhost:3000/api/posts?type=ContentPost"
+      }
+    ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Bearer <code>JWT token</code> (Note: Optionally you can provide the query parameter as such &quot;access_token=&lt;YOUR_TOKEN&gt;&quot;)</p>"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "put",
+    "url": "/api/posts/:postId",
+    "title": "Edit Post",
+    "description": "<p>Edit one of your posts</p>",
+    "name": "PutApiPostsPostID",
+    "group": "Post",
+    "version": "0.1.0",
+    "permission": [
+      {
+        "name": "LoginRequired",
+        "title": "Require login",
+        "description": ""
+      },
+      {
+        "name": "PostEditContent",
+        "title": "Require scope \"post:edit_content\"",
+        "description": "<p>Assigned to all Users by default</p>"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Request Body": [
+          {
+            "group": "Request Body",
+            "type": "String",
+            "optional": true,
+            "field": "caption",
+            "description": "<p>Caption to show below the post (MaxLength: 300 characters)</p>"
+          },
+          {
+            "group": "Request Body",
+            "type": "String",
+            "optional": true,
+            "field": "tags",
+            "description": "<p>Comma delimited tags (Max: 7, MaxLength: 20 characters per tag, must be lphabetical)</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "200": [
+          {
+            "group": "200",
+            "type": "ObjectID",
+            "optional": false,
+            "field": "ID",
+            "description": "<p>The ID of the newly updated post</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Response (example):",
+          "content": "HTTP/1.1 200 OK\n{\n   \"_id\" : \"5f4142d3df64933395456de1\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "4xx": [
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "400",
+            "description": "<p>Invalid fields (too many tags, too long of a caption, etc.)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "401",
+            "description": "<p>Invalid or missing token in Authorization header (Authorization: bearer <token>)</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Unauthorized</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "NotLoggedIn:",
+          "content": "HTTP/1.1 401 Unauthorized\n    {\n        \"error\": \"UnauthorizedError: Invalid or missing JWT token.\"\n    }",
+          "type": "json"
+        },
+        {
+          "title": "BadPermissions:",
+          "content": "HTTP/1.1 403 Forbidden\n    {\n        \"error\": \"Insufficient permissions\"\n    }",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "_api_doc/_post_api_doc.js",
+    "groupTitle": "Post",
+    "sampleRequest": [
+      {
+        "url": "http://localhost:3000/api/posts/:postId"
       }
     ],
     "header": {
@@ -1458,7 +1541,7 @@ define({ "api": [
             "type": "String",
             "optional": false,
             "field": "text",
-            "description": "<p><code>Required</code> Reply (Cannot exceed 120 characters or be empty)</p>"
+            "description": "<p><code>Required</code> Reply (Cannot exceed 300 characters or be empty)</p>"
           }
         ]
       }
@@ -1515,7 +1598,7 @@ define({ "api": [
       "examples": [
         {
           "title": "TooLong:",
-          "content": "HTTP/1.1 400 Bad Request\n  {\n      \"error\": \"Text must be less than 120 characters\"\n  }",
+          "content": "HTTP/1.1 400 Bad Request\n  {\n      \"error\": \"Text must be less than 300 characters\"\n  }",
           "type": "json"
         },
         {
@@ -1599,7 +1682,7 @@ define({ "api": [
             "type": "String",
             "optional": false,
             "field": "text",
-            "description": "<p><code>Required</code> Reply (Cannot exceed 120 characters or be empty)</p>"
+            "description": "<p><code>Required</code> Reply (Cannot exceed 300 characters or be empty)</p>"
           }
         ]
       }
@@ -2721,7 +2804,7 @@ define({ "api": [
             "type": "String",
             "optional": true,
             "field": "about",
-            "description": "<p>Description of user (Cannot exceed 120 characters)</p>"
+            "description": "<p>Description of user (Cannot exceed 300 characters)</p>"
           }
         ]
       },
@@ -3008,7 +3091,7 @@ define({ "api": [
             "type": "String",
             "optional": true,
             "field": "about",
-            "description": "<p>Description of user (Cannot exceed 120 characters) * @apiSuccess (200) {Object} DeletedUser The user that has been deleted.</p>"
+            "description": "<p>Description of user (Cannot exceed 300 characters) * @apiSuccess (200) {Object} DeletedUser The user that has been deleted.</p>"
           }
         ]
       }

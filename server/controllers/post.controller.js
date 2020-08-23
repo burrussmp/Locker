@@ -3,13 +3,13 @@
 
 // imports
 import Post from '../models/post.model'
+import Comment from '../models/comment.model';
 import StaticStrings from '../../config/StaticStrings';
 import errorHandler from '../services/dbErrorHandler'
-import contentPostCtrl from '../controllers/content.post.controller';
 import ContentPostServices from "../services/database/content.post.services";
 
-
-// The way privacy will work
+const ReactionTypes = ['like','love','laugh','surprise','mad','sad']
+// The way privacy will worCommentk
 //  1. Want to retrieve a post or comment or reply
 //  2. When retrieving the key, check who it is posted by
 //  3. If their account is public or if you are a follower of this person
@@ -132,23 +132,45 @@ const deletePost = async (req,res) => {
 }
 
 /**
- * @desc Gets all the comments from a post. The comments should include the
- * profile photo S3 key, the username, and the text.
+ * @desc Gets all the comments from a post and returns their ID and creation timestamp
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  */
-const listComments = (req,res) => {
-  return res.status(501).json({error:StaticStrings.NotImplementedError})
-}
+const listComments = async (req,res) => {
+  try {
+    let post = await Post.findById(req.params.postId).populate({
+      path: 'comments',
+      select: 'createdAt'
+    }).exec();
+    return res.status(200).json({data:post.comments});
+  }catch(err){
+    return res.status(500).json({error:errorHandler.getErrorMessage(err)})
+  }}
 
 /**
- * @desc Retrieves a comment including the profile picture of the person, the text
- * the time it was created and edited, reactions, and replies The whole thing basically.
+ * @desc Retrieves a specific comment
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  */
-const getComment = (req,res) => {
-  return res.status(501).json({error:StaticStrings.NotImplementedError})
+const getComment = async (req,res) => {
+  try {
+    commentId = mongoose.Types.ObjectId(req.params.commentId);
+    reqId = mongoose.Types.ObjectId(req.auth._id);
+    let comment = await Comment.aggregate([
+      {$match: commentId},
+      {$project: {
+        "text" : "$text",
+        "postedBy" : "$postedBy",
+        "createdAt" : "$createdAt",
+        "likes": {$cond: { if: { $isArray: "$likes" }, then: { $size: "$likes" }, else: 0}},
+        "liked": {$cond: { if: { $and : [{$isArray: "$likes" },{ $in: [ reqId, "$likes" ] }	]}, then: true, else: false}},
+        }
+      }
+    ])
+    return res.status(200).json({data:comment});
+  }catch(err){
+    return res.status(500).json({error:errorHandler.getErrorMessage(err)})
+  }
 }
 
 
@@ -157,8 +179,26 @@ const getComment = (req,res) => {
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  */
-const createComment = (req,res) => {
-  return res.status(501).json({error:StaticStrings.NotImplementedError})
+const createComment = async (req,res) => {
+  try {
+    let comment_data = {
+      text: req.body.text,
+      postedBy: req.auth._id
+    }
+    let new_comment = new Comment(comment_data);
+    new_comment = await new_comment.save();
+    try {
+      await Post.findOneAndUpdate(
+        {'_id':commentId},
+        {$push: {comments:new_comment._id }},
+        {runValidators:true});
+      return res.status(200).json(new_comment);
+    } catch(err){
+      return res.status(400).json({error:errorHandler.getErrorMessage(err)})
+    }
+  } catch(err){
+    return res.status(400).json({error:errorHandler.getErrorMessage(err)})
+  }
 }
 
 /**
@@ -166,37 +206,96 @@ const createComment = (req,res) => {
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  */
-const deleteComment = (req,res) => {
-  return res.status(501).json({error:StaticStrings.NotImplementedError})
-}
+const deleteComment = async (req,res) => {
+  try {
+    let comment = await Comment.findById(req.params.commentId);
+    await comment.deleteOne();
+    return res.status(200).json(comment);
+  } catch(err){
+    return res.status(400).json({error:errorHandler.getErrorMessage(err)})
+}}
 
-/**
- * @desc Edit a comments text only
- * @param Object   req - HTTP request object
- * @param Object   res - HTTP response object
- */
-const editComment = (req,res) => {
-  return res.status(501).json({error:StaticStrings.NotImplementedError})
-}
 
 /**
  * @desc List all reactions of a particular post
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  */
-const getReaction = (req,res) => {
-  return res.status(501).json({error:StaticStrings.NotImplementedError})
-}
+const getReaction = async (req,res) => {
+  try {
+    postId = mongoose.Types.ObjectId(req.params.postId);
+    reqId = mongoose.Types.ObjectId(req.auth._id);
+    let reactions = await Post.aggregate([
+      {$match:postId},
+      {$unwind: "$reactions"},
+      {$group: {
+          "_id": "$reactions.type",
+          "total": {$sum: 1},
+          "selected": {$max: {$eq: ["$reactions.postedBy","id7"]}}}
+      }
+    ])
+    let reactionData = Object.assign({selected:false}, ...Object.entries({...ReactionTypes}).map(([a,b]) => ({ [b]: 0 })))
+    for (let reaction of reactions){
+      reactionData[reaction._id] = reaction.total;
+      if (reaction.selected) reactionData.selected=reaction._id;
+    }
+    return res.status(200).json({data:reactionData});
+  }catch(err){
+    return res.status(500).json({error:errorHandler.getErrorMessage(err)})
+  }}
 
 /**
  * @desc Change the reaction. You can react to your own post
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  */
-const changeReaction = (req,res) => {
-  return res.status(501).json({error:StaticStrings.NotImplementedError})
+const changeReaction = async (req,res) => {
+  try {
+    if (!ReactionTypes.includes(req.body.reaction)){
+      return res.status(400).json({error:StaticStrings.PostController.MissingOrInvalidReaction})
+    } else {
+      let reaction = {
+        type:req.body.reaction,
+        postedBy:req.auth._id
+      };
+      let post = await Post.findOneAndUpdate(
+        {'_id':req.params.postId,'reactions.postedBy':req.auth._id},
+        { $set:{ "reactions.$": reaction } },
+        {runValidators:true,new:true});// update their account
+      return res.status(200).send({'id':post._id});
+    }
+
+  } catch (err){
+    return res.status(500).json({error:errorHandler.getErrorMessage(err)})
+  }
+
 }
 
+/**
+ * @desc Remove reaction
+ * @param Object   req - HTTP request object
+ * @param Object   res - HTTP response object
+ */
+const removeReaction = async (req,res) => {
+  try {
+    if (!ReactionTypes.includes(req.body.reaction)){
+      return res.status(400).json({error:StaticStrings.PostController.MissingOrInvalidReaction})
+    } else {
+      let reaction = {
+        type:req.body.reaction,
+        postedBy:req.auth._id
+      };
+      let post = await Post.findOneAndUpdate(
+        {'_id':req.params.postId,'reactions.postedBy':req.auth._id},
+        { $pull:"reactions.$"},
+        {runValidators:true,new:true});// update their account
+        return res.status(200).send({'id':post._id});
+    }
+  } catch (err){
+    return res.status(500).json({error:errorHandler.getErrorMessage(err)})
+  }
+
+}
 
 export default {
   postByID,
@@ -208,8 +307,9 @@ export default {
   listComments,
   getComment,
   createComment,
-  editComment,
   deleteComment,
   getReaction,
   changeReaction,
+  ReactionTypes,
+  removeReaction
 }

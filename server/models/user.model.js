@@ -62,7 +62,7 @@ const UserSchema = new mongoose.Schema({
   about: {
     type: String,
     default: "",
-    maxlength: [120,'Bio cannot exceed 120 characters']
+    maxlength: [300,'Bio cannot exceed 300 characters']
   },
   profile_photo: {type: mongoose.Schema.ObjectId, ref: 'Media'},
   following: [{type: mongoose.Schema.ObjectId, ref: 'User'}],
