@@ -1,5 +1,4 @@
 "use strict"; 
-
 //imports
 import aws from 'aws-sdk';
 import multer from 'multer';
@@ -8,11 +7,13 @@ import crypto from 'crypto';
 import errorHandler from './dbErrorHandler';
 import Media from '../models/media.model';
 import StaticStrings from '../../config/StaticStrings';
+import config from '../../config/config';
+
 
 // Configure S3
 aws.config.update({
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: config.aws_config.aws_secret,
+  accessKeyId: config.aws_config.aws_access_key,
   region: 'us-east-1'
 });
 const s3 = new aws.S3();
@@ -50,7 +51,7 @@ const MediaFilter = (req, file, next) => {
 */
 const deleteMediaS3 = async (key) =>{
   let params = {
-      Bucket: process.env.BUCKET_NAME,
+      Bucket: config.bucket_name,
       Key: key
   }
   try {
@@ -73,7 +74,7 @@ const uploadSingleMediaS3 = (req,res,meta,next) => {
     fileFilter: MediaFilter,
     storage: multerS3({
       s3,
-      bucket: process.env.BUCKET_NAME,
+      bucket: config.bucket_name,
       contentType: multerS3.AUTO_CONTENT_TYPE,
       metadata: function (req, file, next) {
         next(null, {
@@ -121,7 +122,7 @@ const uploadSingleMediaS3 = (req,res,meta,next) => {
  */
 const listObjectsS3 = () => {
   let params = {
-    Bucket: process.env.BUCKET_NAME,
+    Bucket: config.bucket_name,
   }
   s3.listObjectsV2(params).promise();
 };
@@ -134,7 +135,7 @@ const listObjectsS3 = () => {
 */
 const getMediaS3 = (key) => {
   let params = {
-    Bucket: process.env.BUCKET_NAME,
+    Bucket: config.bucket_name,
     Key: key
   }
   return s3.getObject(params).promise()
@@ -148,7 +149,7 @@ const getMediaS3 = (key) => {
 */
 const fileExistsS3 = async (key) => {
   let params = {
-    Bucket: process.env.BUCKET_NAME,
+    Bucket: config.bucket_name,
     Key: key
   }
   return s3.headObject(params).promise();

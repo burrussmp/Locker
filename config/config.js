@@ -11,12 +11,29 @@ const get_mongodb_uri = () => {
   }
 }
 
+const get_aws_config = () => {
+  if (process.env.NODE_ENV == 'development'){
+    return {
+      aws_access_key: process.env.AWS_ACCESS_KEY_ID_DEV,
+      aws_secret: process.env.AWS_SECRET_ACCESS_KEY_DEV
+    }
+  } else if (process.env.NODE_ENV == 'test'){
+    return {
+      aws_access_key: process.env.AWS_ACCESS_KEY_ID_TEST,
+      aws_secret: process.env.AWS_SECRET_ACCESS_KEY_TEST
+    }
+  } else {
+    throw `NODE_ENV set to ${process.env.NODE_ENV}: Invalid must be development, test, or production`;
+  }
+}
+
 const config = {
   env: process.env.NODE_ENV || 'development',
   port: process.env.PORT || 3000,
   mongoUri: get_mongodb_uri(),
   jwtSecret: process.env.JWT_SECRET,
-
+  bucket_name: process.env.NODE_ENV == 'development' ? "locker-media-storage-dev" : "locker-media-storage-test",
+  aws_config: get_aws_config()
 }
 
 export default config
