@@ -51,7 +51,6 @@ const create = async (req, res) => {
       expire: new Date() + 9999
     })
     return res.status(200).json({
-      message: StaticStrings.SignedUpSuccess,
       token : token
     })
   } catch (err) {

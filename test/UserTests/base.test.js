@@ -54,7 +54,6 @@ const base_test = () => {
                             console.log(err);
                         }
                         res.should.have.status(200);
-                        res.body.message.should.be.a('string');
                         done();
                     });
             });
@@ -107,7 +106,6 @@ const base_test = () => {
                             console.log(err);
                         }
                         res.should.have.status(200);
-                        res.body.message.should.be.a('string');
                         done();
                     });
                 });

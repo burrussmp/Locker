@@ -27,7 +27,7 @@
       "examples": [
         {
           "title": "Response (example):",
-          "content": "HTTP/1.1 200 OK\n{\n        \"message\": \"Logged out\"\n}",
+          "content": "HTTP/1.1 200 OK\n{\n        \"message\": \"Logged out\"\n    }",
           "type": "json"
         }
       ]
@@ -3623,15 +3623,15 @@
             "group": "200",
             "type": "String",
             "optional": false,
-            "field": "SignedUp",
-            "description": "<p>Successfully signed up!</p>"
+            "field": "token",
+            "description": "<p>JWT token</p>"
           }
         ]
       },
       "examples": [
         {
           "title": "Response (example):",
-          "content": "HTTP/1.1 200 OK\n {\n   \"message\": \"Successfully signed up!\"\n }",
+          "content": "HTTP/1.1 200 OK\n {\n   \"token\" : \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZjNhYjg4MDg1NmQyNTYxZWZlNzRmYTEiLCJwZXJtaXNzaW9ucyI6WyJwb3N0OnJlYWQiLCJwb3N0OmludGVyYWN0IiwidXNlcjplZGl0X2NvbnRlbnQiLCJ1c2VyOmRlbGV0ZSIsInVzZXI6cmVhZCJdLCJpYXQiOjE1OTc2ODM4NTZ9.gh2c-KHWUamR87k9kUR7yBDyL4NB3LROxrAEDnrDvLo\"\n }",
           "type": "json"
         }
       ]

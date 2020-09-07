@@ -61,12 +61,12 @@
  *  "phone_number"  : "502-673-3231",
  *  "password"      : "JohnDoeP@ssw@rd123#"
  * }
- * @apiSuccess  (200) {String} SignedUp Successfully signed up! 
+ * @apiSuccess  (200) {String} token JWT token
  *
  * @apiSuccessExample Response (example):
  *     HTTP/1.1 200 OK
  *      {
- *        "message": "Successfully signed up!"
+ *        "token" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZjNhYjg4MDg1NmQyNTYxZWZlNzRmYTEiLCJwZXJtaXNzaW9ucyI6WyJwb3N0OnJlYWQiLCJwb3N0OmludGVyYWN0IiwidXNlcjplZGl0X2NvbnRlbnQiLCJ1c2VyOmRlbGV0ZSIsInVzZXI6cmVhZCJdLCJpYXQiOjE1OTc2ODM4NTZ9.gh2c-KHWUamR87k9kUR7yBDyL4NB3LROxrAEDnrDvLo"
  *      }
  * @apiError (4xx) 400 Missing required fields, invalid fields, non-unique username/email/phone number, etc.
  * @apiErrorExample Invalid username:

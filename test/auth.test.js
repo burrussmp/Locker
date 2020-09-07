@@ -45,7 +45,6 @@ const auth_tests = () => {
                         console.log(err);
                     }
                     res.should.have.status(200);
-                    res.body.message.should.eql(StaticStrings.SignedUpSuccess);
                     done();
                 });
         });
