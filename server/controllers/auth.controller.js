@@ -7,8 +7,22 @@ import User from '../models/user.model'
 import StaticStrings from '../../config/StaticStrings';
 
 /**
+ * @desc Create a token of the user 
+ * @return Signed JWT token
+*/
+const createToken = (user) => {
+  const token = jwt.sign({ // create token
+    _id: user._id,
+    collection: "User"
+  }, process.env.JWT_SECRET,
+  { algorithm: 'HS256'})
+  return token;
+};
+
+
+/**
   * @desc Queries User model matching either email, username, or phone number and returns results
-  * @param Object req - req.body.login : email, username, or phone number
+  * @param {Object} req - req.body.login : email, username, or phone number
   * @return Mongoose.model.User
 */
 const findUserLogin = async (req) => {
@@ -46,12 +60,8 @@ const login = async (req, res) => {
         error: StaticStrings.LoginErrors.InvalidPassword
       })
     }
-    const token = jwt.sign({
-      _id: user._id,
-      collection: "User"
-    }, process.env.JWT_SECRET,
-    { algorithm: 'HS256'})
-    res.cookie("t", token, {
+    let token = createToken(user);
+    res.cookie("t", token, { // put in cookies
       expire: new Date() + 9999
     })
     return res.json({
@@ -183,5 +193,6 @@ export default {
   logout,
   checkLogin,
   isAdmin,
-  requireOwnership
+  requireOwnership,
+  createToken
 }

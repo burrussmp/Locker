@@ -1,13 +1,13 @@
 "use strict";
 // imports
 import User from '../models/user.model'
-import Media from '../models/media.model';
 import errorHandler from '../services/dbErrorHandler'
 import StaticStrings from '../../config/StaticStrings';
 import S3_Services from '../services/S3.services';
 import _ from 'lodash';
 import fs from 'fs';
 import mediaController from './media.controller';
+import authController from './auth.controller';
 
 const DefaultProfilePhoto = process.cwd() + "/client/assets/images/profile-pic.png"
 
@@ -46,8 +46,13 @@ const create = async (req, res) => {
   try {
     let user = new User(new_user)
     await user.save()
+    let token = authController.createToken(user);
+    res.cookie("t", token, { // put in cookies
+      expire: new Date() + 9999
+    })
     return res.status(200).json({
-      message: StaticStrings.SignedUpSuccess
+      message: StaticStrings.SignedUpSuccess,
+      token : token
     })
   } catch (err) {
     return res.status(400).json({error: errorHandler.getErrorMessage(err)})
