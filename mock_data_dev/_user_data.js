@@ -6,7 +6,7 @@ const UserData = [
     first_name: 'Paula',
     last_name: 'Sullivan',
     email: 'paula.sullivan@gmail.com',
-    phone_number: '123-456-7890',
+    phone_number: '502-456-7890',
     password: 'Pass@123',
   },
   {
@@ -22,7 +22,7 @@ const UserData = [
     first_name: 'Alexa',
     last_name: 'Garcia',
     email: 'soccer_chick@gmail.com',
-    phone_number: '432-321-4343',
+    phone_number: '502-321-4343',
     password: 'Pass@123',
   },
   {
@@ -30,10 +30,9 @@ const UserData = [
     first_name: 'Kanye',
     last_name: 'West',
     email: 'kanye_west@gmail.com',
-    phone_number: '432-123-4321',
+    phone_number: '502-232-3212',
     password: 'Pass@123',
-  },
-
+  }
 ];
 
 exports.data = UserData;

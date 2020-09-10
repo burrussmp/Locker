@@ -7,6 +7,7 @@ import StaticStrings from '../config/StaticStrings';
 // Connection URL
 mongoose.Promise = global.Promise
 // Configure DB
+console.log(config.mongoUri)
 mongoose.connect(config.mongoUri, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true, useFindAndModify: false })
 // See if connection is valid
 mongoose.connection.on('error', () => {
