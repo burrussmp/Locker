@@ -8,6 +8,24 @@ const UserData = [
     email: 'paula.sullivan@gmail.com',
     phone_number: '502-456-7890',
     password: 'Pass@123',
+    avatar : process.cwd() + '/mock_data_dev/assets/profile_imgs/male_1.jpg',
+    follows : [1,2,3],
+    posts : [{
+      type: "ContentPost",
+      price: 59.99,
+      caption: "Big fan of this look, especially the jeans.",
+      tags: "jeans,designer",
+      media : process.cwd() + '/mock_data_dev/assets/content_posts/content_1.png',
+      comments : [
+        {
+          "user" : 0,
+          "text" : "You think @KanyeWest would wear this?",
+          replies : [{
+            "user" : 1,
+            "text" : "no way @paulasullivan"
+          }]
+        }]
+      }]
   },
   {
     username: 'mattthewpburruss',
@@ -16,6 +34,9 @@ const UserData = [
     email: 'matthew.burruss@gmail.com',
     phone_number: '502-689-1822',
     password: 'Pass@123',
+    avatar : process.cwd() + '/mock_data_dev/assets/profile_imgs/male_2.jpg',
+    follows : [],
+    posts: []
   },
   {
     username: 'alexa_garcia12',
@@ -24,6 +45,23 @@ const UserData = [
     email: 'soccer_chick@gmail.com',
     phone_number: '502-321-4343',
     password: 'Pass@123',
+    avatar : process.cwd() + '/mock_data_dev/assets/profile_imgs/women_1.jpg',
+    follows : [0,1],
+    posts : [{
+      type: "ContentPost",
+      price: 89.99,
+      caption: "It's like camo 2.0 :)",
+      tags: "yoga,pants,matching",
+      media : process.cwd() + '/mock_data_dev/assets/content_posts/content_2.png',
+      },
+      {
+        type: "ContentPost",
+        price: 119.99,
+        caption: "I'm actually not this fancy, but hey I can dream!",
+        tags: "blue,dress",
+        media : process.cwd() + '/mock_data_dev/assets/content_posts/content_3.jpg',
+      }
+    ]
   },
   {
     username: 'KanyeWest',
@@ -32,6 +70,38 @@ const UserData = [
     email: 'kanye_west@gmail.com',
     phone_number: '502-232-3212',
     password: 'Pass@123',
+    avatar : process.cwd() + '/mock_data_dev/assets/profile_imgs/male_3.jpg',
+    follows : [0,1,2,4],
+    posts : [{
+      type: "ContentPost",
+      price: 399.99,
+      caption: "Is this for Kim or for me? #yeezy",
+      tags: "Kanye",
+      media : process.cwd() + '/mock_data_dev/assets/content_posts/content_5.jpeg',
+    }]
+  },
+  {
+    username: 'blondie',
+    first_name: 'Becca',
+    last_name: 'Karen',
+    email: 'becca_karen@gmail.com',
+    phone_number: '502-111-2212',
+    password: 'Pass@123',
+    avatar : process.cwd() + '/mock_data_dev/assets/profile_imgs/women_2.jpg',
+    follows : [2,3],
+    posts : [{
+      type: "ContentPost",
+      price: 49.99,
+      caption: "Finally I can match nature",
+      tags: "green,long",
+      media : process.cwd() + '/mock_data_dev/assets/content_posts/content_4.jpeg',
+    },{
+      type: "ContentPost",
+      price: 249.99,
+      caption: "Catwalk",
+      tags: "designer,floral,dress",
+      media : process.cwd() + '/mock_data_dev/assets/content_posts/content_7.jpeg',
+    }]
   }
 ];
 

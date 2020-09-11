@@ -62,11 +62,13 @@
  *  "password"      : "JohnDoeP@ssw@rd123#"
  * }
  * @apiSuccess  (200) {String} token JWT token
+ * @apiSuccess  (200) {String} _id   ID of newly created user
  *
  * @apiSuccessExample Response (example):
  *     HTTP/1.1 200 OK
  *      {
- *        "token" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZjNhYjg4MDg1NmQyNTYxZWZlNzRmYTEiLCJwZXJtaXNzaW9ucyI6WyJwb3N0OnJlYWQiLCJwb3N0OmludGVyYWN0IiwidXNlcjplZGl0X2NvbnRlbnQiLCJ1c2VyOmRlbGV0ZSIsInVzZXI6cmVhZCJdLCJpYXQiOjE1OTc2ODM4NTZ9.gh2c-KHWUamR87k9kUR7yBDyL4NB3LROxrAEDnrDvLo"
+ *        "token" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZjNhYjg4MDg1NmQyNTYxZWZlNzRmYTEiLCJwZXJtaXNzaW9ucyI6WyJwb3N0OnJlYWQiLCJwb3N0OmludGVyYWN0IiwidXNlcjplZGl0X2NvbnRlbnQiLCJ1c2VyOmRlbGV0ZSIsInVzZXI6cmVhZCJdLCJpYXQiOjE1OTc2ODM4NTZ9.gh2c-KHWUamR87k9kUR7yBDyL4NB3LROxrAEDnrDvLo",
+ *        "_id" : "5f34821b0c46f63b28831230"
  *      }
  * @apiError (4xx) 400 Missing required fields, invalid fields, non-unique username/email/phone number, etc.
  * @apiErrorExample Invalid username:

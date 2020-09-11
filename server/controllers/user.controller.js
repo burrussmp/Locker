@@ -51,7 +51,8 @@ const create = async (req, res) => {
       expire: new Date() + 9999
     })
     return res.status(200).json({
-      token : token
+      token : token,
+      _id : user._id
     })
   } catch (err) {
     return res.status(400).json({error: errorHandler.getErrorMessage(err)})

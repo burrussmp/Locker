@@ -21,7 +21,7 @@ router.route('/api/posts/:postId')
   .put(permission.Authorize, authCtrl.requireOwnership,postCtrl.editPost)
   .delete(permission.Authorize, authCtrl.requireOwnership,postCtrl.deletePost)
 
-router.route('/api/posts/:postId/comments')
+router.route('/api/:postId/comments')
   .get(permission.Authorize, postCtrl.listComments)
   .post(permission.Authorize, postCtrl.createComment)
 
