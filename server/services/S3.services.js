@@ -10,7 +10,7 @@ import StaticStrings from '../../config/StaticStrings';
 import config from '../../config/config';
 
 
-// Configure S3
+// Configure AWS
 aws.config.update({
   secretAccessKey: config.aws_config.aws_secret,
   accessKeyId: config.aws_config.aws_access_key,
