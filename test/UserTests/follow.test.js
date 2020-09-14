@@ -3,9 +3,10 @@ import chaiHttp from 'chai-http';
 
 import {app} from '../../server/server';
 import {UserData} from '../../development/user.data'
-import {drop_database} from  '../helper';
+import {drop_database, createUser} from  '../helper';
 import User from '../../server/models/user.model';
 import StaticStrings from '../../config/StaticStrings';
+import permissions from '../../server/permissions';
 
 chai.use(chaiHttp);
 chai.should();
@@ -16,33 +17,16 @@ const follow_test = () => {
         let agent = chai.request.agent(app);
         let token0,token1;
         describe('GET /api/users/:userID/follow', ()=>{
-            beforeEach( async () =>{
+            before( async () =>{
                 await drop_database();
-                let user = new User(UserData[0]);
-                await user.save();
-                user = new User(UserData[1]);
-                await user.save();
-                user = new User(UserData[2]);
-                await user.save();
-                await agent.get('/api/users').then(res=>{
-                    res.body.length.should.eql(3);
-                    res.body[0].username.should.eql(UserData[0].username)
-                    id0 = res.body[0]._id;
-                    id1 = res.body[1]._id;
-                    id2 = res.body[2]._id
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[0].email,
-                    password: UserData[0].password
-                }).then((res) => {
-                    token0 = res.body.token;
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[1].email,
-                    password: UserData[1].password
-                }).then((res) => {
-                    token1 = res.body.token;
-                });  
+                let user = await createUser(UserData[0]);
+                id0 = user._id;
+                token0 = user.access_token;
+                user = await createUser(UserData[1]);
+                token1 = user.access_token;
+                id1 = user._id;
+                user = await createUser(UserData[2]);
+                id2 = user._id
             });
             it("Get someone else's follower/following (should succeed) and be empty",async ()=>{
                 return agent.get(`/api/users/${id1}/follow?access_token=${token0}`)
@@ -77,41 +61,14 @@ const follow_test = () => {
             it("Invalid permissions (should fail)", async()=>{
                 await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':[]},{new:true});
                 return agent.get(`/api/users/${id1}/follow?access_token=${token0}`)
-                .then(res=>{
+                .then(async res=>{
                     res.status.should.eql(403);
                     res.body.error.should.eql(StaticStrings.InsufficientPermissionsError)
+                    await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':permissions.get_permission_array('user')},{new:true});
                 });
             });
         });
         describe('PUT /api/users/:userID/follow', ()=>{
-            beforeEach( async () =>{
-                await drop_database();
-                let user = new User(UserData[0]);
-                await user.save();
-                user = new User(UserData[1]);
-                await user.save();
-                user = new User(UserData[2]);
-                await user.save();
-                await agent.get('/api/users').then(res=>{
-                    res.body.length.should.eql(3);
-                    res.body[0].username.should.eql(UserData[0].username)
-                    id0 = res.body[0]._id;
-                    id1 = res.body[1]._id;
-                    id2 = res.body[2]._id
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[0].email,
-                    password: UserData[0].password
-                }).then((res) => {
-                    token0 = res.body.token;
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[1].email,
-                    password: UserData[1].password
-                }).then((res) => {
-                    token1 = res.body.token;
-                });  
-            });
             it("Follow someone else (both should properly update)",async ()=>{
                 return agent.put(`/api/users/${id1}/follow?access_token=${token0}`)
                 .then(res=>{
@@ -172,41 +129,14 @@ const follow_test = () => {
             it("Invalid permissions (should fail)", async()=>{
                 await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':[]},{new:true});
                 return agent.get(`/api/users/${id1}/follow?access_token=${token0}`)
-                .then(res=>{
+                .then(async res=>{
                     res.status.should.eql(403);
-                    res.body.error.should.eql(StaticStrings.InsufficientPermissionsError)
+                    res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
+                    await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':permissions.get_permission_array('user')},{new:true});
                 });
             });
         });
         describe('DELETE /api/users/:userID/follow', ()=>{
-            beforeEach( async () =>{
-                await drop_database();
-                let user = new User(UserData[0]);
-                await user.save();
-                user = new User(UserData[1]);
-                await user.save();
-                user = new User(UserData[2]);
-                await user.save();
-                await agent.get('/api/users').then(res=>{
-                    res.body.length.should.eql(3);
-                    res.body[0].username.should.eql(UserData[0].username)
-                    id0 = res.body[0]._id;
-                    id1 = res.body[1]._id;
-                    id2 = res.body[2]._id
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[0].email,
-                    password: UserData[0].password
-                }).then((res) => {
-                    token0 = res.body.token;
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[1].email,
-                    password: UserData[1].password
-                }).then((res) => {
-                    token1 = res.body.token;
-                });  
-            });
             it("Follow someone else and then unfollow them (both should update)",async ()=>{
                 return agent.put(`/api/users/${id1}/follow?access_token=${token0}`)
                 .then(res=>{
@@ -267,43 +197,30 @@ const follow_test = () => {
             it("Invalid permissions (should fail)", async()=>{
                 await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':[]},{new:true});
                 return agent.delete(`/api/users/${id1}/follow?access_token=${token0}`)
-                .then(res=>{
+                .then(async res=>{
                     res.status.should.eql(403);
                     res.body.error.should.eql(StaticStrings.InsufficientPermissionsError)
+                    await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':permissions.get_permission_array('user')},{new:true});
                 });
             });
         });
         describe('Scenario: User A follows User B and User C and then deletes their account', ()=>{
-            beforeEach( async () =>{
+            before( async () =>{
                 await drop_database();
-                let user = new User(UserData[0]);
-                await user.save();
-                user = new User(UserData[1]);
-                await user.save();
-                user = new User(UserData[2]);
-                await user.save();
-                await agent.get('/api/users').then(res=>{
-                    res.body.length.should.eql(3);
-                    res.body[0].username.should.eql(UserData[0].username)
-                    id0 = res.body[0]._id;
-                    id1 = res.body[1]._id;
-                    id2 = res.body[2]._id
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[0].email,
-                    password: UserData[0].password
-                }).then((res) => {
-                    token0 = res.body.token;
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[1].email,
-                    password: UserData[1].password
-                }).then((res) => {
-                    token1 = res.body.token;
-                });
+                let user = await createUser(UserData[0]);
+                id0 = user._id;
+                token0 = user.access_token;
+                user = await createUser(UserData[1]);
+                token1 = user.access_token;
+                id1 = user._id;
+                user = await createUser(UserData[2]);
+                id2 = user._id
                 await agent.put(`/api/users/${id1}/follow?access_token=${token0}`);
                 await agent.put(`/api/users/${id2}/follow?access_token=${token0}`)
             });
+            after( async ()=>{
+                await drop_database();
+            })
             it("Circular references properly removed", async()=>{
                 return agent.get(`/api/users/${id0}/follow?access_token=${token0}`)
                 .then(res=>{
@@ -329,28 +246,20 @@ const follow_test = () => {
             });
         });
         describe('Scenario: User A deletes their account and their token is no longer valid', ()=>{
-            beforeEach( async () =>{
+            before( async () =>{
                 await drop_database();
-                let user = new User(UserData[0]);
-                await user.save();
-                user = new User(UserData[1]);
-                await user.save();
-                user = new User(UserData[2]);
-                await user.save();
-                await agent.get('/api/users').then(res=>{
-                    res.body.length.should.eql(3);
-                    res.body[0].username.should.eql(UserData[0].username)
-                    id0 = res.body[0]._id;
-                    id1 = res.body[1]._id;
-                    id2 = res.body[2]._id
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[0].email,
-                    password: UserData[0].password
-                }).then((res) => {
-                    token0 = res.body.token;
-                });
+                let user = await createUser(UserData[0]);
+                id0 = user._id;
+                token0 = user.access_token;
+                user = await createUser(UserData[1]);
+                token1 = user.access_token;
+                id1 = user._id;
+                user = await createUser(UserData[2]);
+                id2 = user._id
             });
+            after( async ()=>{
+                await drop_database();
+            })
             it("Should fail", async()=>{
                 return agent.delete(`/api/users/${id0}?access_token=${token0}`)
                 .then(res=>{

@@ -2,17 +2,17 @@ import chai  from 'chai';
 import chaiHttp from 'chai-http';
 import {app} from '../../server/server';
 import {UserData} from '../../development/user.data';
-import {PostData,ReactionData} from '../../development/post.data';
+import {PostData} from '../../development/post.data';
 import User from '../../server/models/user.model';
 import Media from '../../server/models/media.model';
-import Comment from '../../server/models/comment.model';
 import Post from '../../server/models/post.model';
 import StaticStrings from '../../config/StaticStrings';
 const fs = require('fs').promises
 import S3_Services from '../../server/services/S3.services';
 import fetch from 'node-fetch';
-import {drop_database,buffer_equality} from  '../helper';
+import {drop_database,buffer_equality, createUser} from  '../helper';
 import _ from 'lodash';
+import permissions from '../../server/permissions';
 
 chai.use(chaiHttp);
 chai.should();
@@ -75,31 +75,16 @@ const content_post_test_basics = () => {
             let userId0,userId1,userId2;
             let agent = chai.request.agent(app);
             let userToken0,userToken1;
-            beforeEach(async()=>{
+            before (async()=>{
                 await drop_database();
-                for (let user of UserData){
-                    let new_user = new User(user);
-                    await new_user.save()
-                }
-                await agent.get('/api/users').then(res=>{
-                    res.body.length.should.eql(3);
-                    res.body[0].username.should.eql(UserData[0].username)
-                    userId0 = res.body[0]._id;
-                    userId1 = res.body[1]._id;
-                    userId2 = res.body[2]._id
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[0].email,
-                    password: UserData[0].password
-                }).then((res) => {
-                    userToken0 = res.body.token;
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[1].email,
-                    password: UserData[1].password
-                }).then((res) => {
-                    userToken1 = res.body.token;
-                });  
+                let user = await createUser(UserData[0]);
+                userId0 = user._id;
+                userToken0 = user.access_token;
+                user = await createUser(UserData[1]);
+                userId1 = user._id;
+                userToken1 = user.access_token;
+                user = await createUser(UserData[2]);
+                userId2 = user._id;  
             });
             afterEach(async()=>{ 
                 let posts = await Post.find();
@@ -140,6 +125,7 @@ const content_post_test_basics = () => {
                     .field(post_data)
                     .then(async res=>{
                         await on_failure_to_create(res,403,StaticStrings.InsufficientPermissionsError);
+                        await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':permissions.get_permission_array('user')},{new:true});
                 });  
             });
             it("Not logged in: (should fail)",async()=>{
@@ -299,7 +285,7 @@ const content_post_test_basics = () => {
                     });
                 });  
             })
-            it("Clean up: User is deleted and so is",async()=>{
+            it("Clean up: User is deleted and so is media",async()=>{
                 return agent.post(`/api/posts?access_token=${userToken0}&type=ContentPost`)
                     .attach("media",video)
                     .field(PostData[0])
@@ -314,13 +300,13 @@ const content_post_test_basics = () => {
                 });  
             });
             it("Clean up: Post is deleted and media is cleaned up",async()=>{
-                return agent.post(`/api/posts?access_token=${userToken0}&type=ContentPost`)
+                return agent.post(`/api/posts?access_token=${userToken1}&type=ContentPost`)
                     .attach("media",video)
                     .field(PostData[0])
                     .then(async res=>{
-                        let media = await Media.findOne({'uploadedBy':userId0});
+                        let media = await Media.findOne({'uploadedBy':userId1});
                         let key = media.key;
-                        return agent.delete(`/api/users/${userId0}?access_token=${userToken0}`)
+                        return agent.delete(`/api/users/${userId1}?access_token=${userToken1}`)
                         .then(res=>{
                             res.status.should.eql(200);
                             return on_success_cleanup(key);
@@ -332,31 +318,16 @@ const content_post_test_basics = () => {
             let userId0,userId1,userId2;
             let agent = chai.request.agent(app);
             let userToken0,userToken1;
-            beforeEach(async()=>{
+            before(async()=>{
                 await drop_database();
-                for (let user of UserData){
-                    let new_user = new User(user);
-                    await new_user.save()
-                }
-                await agent.get('/api/users').then(res=>{
-                    res.body.length.should.eql(3);
-                    res.body[0].username.should.eql(UserData[0].username)
-                    userId0 = res.body[0]._id;
-                    userId1 = res.body[1]._id;
-                    userId2 = res.body[2]._id
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[0].email,
-                    password: UserData[0].password
-                }).then((res) => {
-                    userToken0 = res.body.token;
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[1].email,
-                    password: UserData[1].password
-                }).then((res) => {
-                    userToken1 = res.body.token;
-                });  
+                let user = await createUser(UserData[0]);
+                userId0 = user._id;
+                userToken0 = user.access_token;
+                user = await createUser(UserData[1]);
+                userId1 = user._id;
+                userToken1 = user.access_token;
+                user = await createUser(UserData[2]);
+                userId2 = user._id;  
             });
             afterEach(async()=>{ 
                 let posts = await Post.find();
@@ -403,8 +374,9 @@ const content_post_test_basics = () => {
                         let postId = res.body._id;
                         await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':["user:read"]},{new:true});
                         return agent.get(`/api/posts/${postId}?access_token=${userToken0}`)
-                        .then(res=>{
+                        .then(async res=>{
                             res.status.should.eql(403);
+                            await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':permissions.get_permission_array('user')},{new:true});
                         });                
                 });  
             });
@@ -497,9 +469,10 @@ const content_post_test_basics = () => {
                         let postId = res.body._id;
                         await User.findOneAndUpdate({'username':UserData[1].username},{'permissions':["user:read"]},{new:true});
                         return agent.delete(`/api/posts/${postId}?access_token=${userToken1}`)
-                        .then(res=>{
+                        .then(async res=>{
                             res.status.should.eql(403);
                             res.body.error.should.eql(StaticStrings.InsufficientPermissionsError)
+                            await User.findOneAndUpdate({'username':UserData[1].username},{'permissions':permissions.get_permission_array('user')},{new:true});
                     });
                 });  
             });
@@ -525,43 +498,28 @@ const content_post_test_basics = () => {
             let postId;
             beforeEach(async()=>{
                 await drop_database();
-                for (let user of UserData){
-                    let new_user = new User(user);
-                    await new_user.save()
-                }
-                await agent.get('/api/users').then(res=>{
-                    res.body.length.should.eql(3);
-                    res.body[0].username.should.eql(UserData[0].username)
-                    userId0 = res.body[0]._id;
-                    userId1 = res.body[1]._id;
-                    userId2 = res.body[2]._id
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[0].email,
-                    password: UserData[0].password
-                }).then((res) => {
-                    userToken0 = res.body.token;
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[1].email,
-                    password: UserData[1].password
-                }).then((res) => {
-                    userToken1 = res.body.token;
-                });  
+                let user = await createUser(UserData[0]);
+                userId0 = user._id;
+                userToken0 = user.access_token;
+                user = await createUser(UserData[1]);
+                userId1 = user._id;
+                userToken1 = user.access_token;
+                user = await createUser(UserData[2]);
+                userId2 = user._id;
                 await agent.post(`/api/posts?access_token=${userToken0}&type=ContentPost`)
-                    .attach("media",image1)
-                    .field(PostData[0])
-                    .then((res)=>{
-                        res.status.should.eql(200);
-                        postId = res.body._id;
-                    })
+                .attach("media",image1)
+                .field(PostData[0])
+                .then((res)=>{
+                    res.status.should.eql(200);
+                    postId = res.body._id;
+                })
             });
             afterEach(async()=>{ 
                 let posts = await Post.find();
                 for (let post of posts){
                     await post.deleteOne();
                 }
-            });
+            });  
             it("Successfully edit caption and tags (should succeed)",async()=>{
                 let new_caption = "new caption";
                 let new_tags = 'goodtag,anothertag,finaltag';
@@ -690,6 +648,7 @@ const content_post_test_basics = () => {
                     .then(async (res)=>{
                         res.status.should.eql(403);
                         res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
+                        await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':permissions.get_permission_array('user')},{new:true});
                 });  
             });
             it("Wrong post id: (should fail w/ 404)",async()=>{

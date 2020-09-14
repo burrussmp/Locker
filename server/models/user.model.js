@@ -1,47 +1,27 @@
-import mongoose from 'mongoose'
-import crypto from 'crypto'
+"use strict";
 
-import {isValidEmail,isValidUsername,isValidPhoneNumber,isValidPassword} from '../services/validators';
+import mongoose from 'mongoose'
 import permissionCtrl from '../permissions';
 import StaticStrings from '../../config/StaticStrings';
-import S3_Services from '../services/S3.services';
+import CognitoServices from '../services/Cognito.services';
+import validators from '../services/validators';
 
 const UserSchema = new mongoose.Schema({
+  cognito_username: {
+    type: String,
+    trim: true,
+    index: true,
+    unique: true,
+    required: StaticStrings.UserModelErrors.CognitoUsernameRequired,
+  },
   first_name: {
     type: String,
     trim: true,
-    required: StaticStrings.UserModelErrors.FirstNameRequired
-  },
-  phone_number: {
-    type: String,
-    trim: true,
-    required: StaticStrings.UserModelErrors.PhoneNumberRequired,
-    unique: true
   },
   last_name: {
     type: String,
     trim: true,
-    required: StaticStrings.UserModelErrors.LastNameRequired,
   },
-  username: {
-    type: String,
-    trim: true,
-    unique: true,
-    required: StaticStrings.UserModelErrors.UsernameRequired,
-    maxlength: [32,StaticStrings.UserModelErrors.UsernameExceedLength]
-  },
-  email: {
-    type: String,
-    trim: true,
-    lowercase: true,
-    unique: true,
-    required: StaticStrings.UserModelErrors.EmailRequired
-  },
-  hashed_password: {
-    type: String,
-    required: StaticStrings.UserModelErrors.PasswordRequired,
-  },
-  salt: String,
   permissions: {
     type: [{type: String}],
     default: permissionCtrl.User_Role.permissions
@@ -49,6 +29,13 @@ const UserSchema = new mongoose.Schema({
   date_of_birth: {
     type: Date,
     trim: true
+  },
+  username: {
+    type: String,
+    trim: true,
+    unique: true,
+    required: StaticStrings.UserModelErrors.UsernameRequired,
+    maxlength: [32,StaticStrings.UserModelErrors.UsernameExceedLength]
   },
   gender: {
     type: String,
@@ -79,52 +66,15 @@ const create_validation_error = (message)=>{
   return validatorError;
 }
 
-UserSchema.virtual('password')
-  .set(function(password) {
-    if (!password){
-      let ValidationError = new mongoose.Error.ValidationError(null);
-      ValidationError.addError('password',create_validation_error(StaticStrings.UserModelErrors.PasswordRequired));
-      return ValidationError
-    }
-    this._password = password.trim();
-    let err = isValidPassword(this._password,this.isNew);
-    if (err) this.invalidate('password',err);
-    this.salt = this.makeSalt()
-    this.hashed_password = this.encryptPassword(password)
-  })
-  .get(function() {
-    return this._password
-  })
-
-
-UserSchema.path('email').validate(async function (value) {
-  const count = await mongoose.models.User.countDocuments({email: value });
-  let isUnique = this ? count == 0 || !this.isModified('email') : count == 0;
-  if (!isUnique)
-    throw create_validation_error(StaticStrings.UserModelErrors.EmailAlreadyExists);
-  if (!isValidEmail(value))
-    throw create_validation_error(StaticStrings.UserModelErrors.InvalidEmail);
-}, null);
-
-UserSchema.path('phone_number').validate(async function (value){
-  const count = await mongoose.models.User.countDocuments({phone_number: value });
-  let isUnique = this ? count == 0 || !this.isModified('phone_number') : count == 0;
-  if (!isUnique) 
-    throw create_validation_error(StaticStrings.UserModelErrors.PhoneNumberAlreadyExists);
-  if (!isValidPhoneNumber(value))
-    throw create_validation_error(StaticStrings.UserModelErrors.InvalidPhoneNumber);
-}, null);
-
-
 UserSchema.path('username').validate(async function (value) {
   const count = await mongoose.models.User.countDocuments({username: value });
   let isUnique = this ? count == 0 || !this.isModified('username') : count == 0;
   if (!isUnique)
     throw create_validation_error(StaticStrings.UserModelErrors.UsernameAlreadyExists)
-  if (!isValidUsername(value)) 
-    throw create_validation_error(StaticStrings.UserModelErrors.InvalidUsername);
+  let invalid_error = validators.isValidUsername(value);
+  if (invalid_error) 
+    throw create_validation_error(invalid_error);
 }, null);
-
 
 UserSchema.pre("save", function(next){
   // sanitize
@@ -133,7 +83,7 @@ UserSchema.pre("save", function(next){
   next();
 })
 
-UserSchema.pre("deleteOne",{document: true,query:false },async function(){
+UserSchema.pre("deleteOne",{document: true,query:false }, async function(){
   // clean up profile photo
   let media = await mongoose.models.Media.findById(this.profile_photo);
   if (media){
@@ -148,6 +98,14 @@ UserSchema.pre("deleteOne",{document: true,query:false },async function(){
   for (let followingID of this.following){ // remove from list of who they follow
     await mongoose.models.User.findOneAndUpdate({'_id' : followingID}, {$pull: {followers: this._id}})
   }
+
+  // clean up user pool
+  try {
+    await CognitoServices.deleteCognitoUser(this.cognito_username);
+  } catch(err){
+    console.log(err);
+  }
+
   // clean up comments I DONT THINK WE SHOULD DO THIS TBH
   // let comments = await mongoose.models.Comment.find({'postedBy':this._id});
   // for (let comment of comments){
@@ -174,52 +132,6 @@ UserSchema.pre("findOneAndUpdate", async function(){
   if(update.last_name){
     update.last_name = update.last_name.replace(/<(?:.|\n)*?>/gm, "");
   }
-
-  // update password
-  if (update.password && update.old_password){
-    if (!doc.authenticate(update.old_password)){
-      let ValidationError = new mongoose.Error.ValidationError(null);
-      ValidationError.addError('password',create_validation_error(StaticStrings.UserModelErrors.PasswordUpdateIncorrectError));
-      throw ValidationError;
-    }
-    if (doc.authenticate(update.password)){
-      let ValidationError = new mongoose.Error.ValidationError(null);
-      ValidationError.addError('password',create_validation_error(StaticStrings.UserModelErrors.PasswordUpdateSame));
-      throw ValidationError;
-    }
-    let err = isValidPassword(update.password,false);
-    if (err){
-      let ValidationError = new mongoose.Error.ValidationError(null);
-      ValidationError.addError('password',create_validation_error(err));
-      throw ValidationError;
-    }
-    doc.salt = doc.makeSalt();
-    doc.hashed_password = doc.encryptPassword(update.password);
-    return doc.save()
-  }
 })
-
-
-
-
-UserSchema.methods = {
-  authenticate: function(plainText) {
-    return this.encryptPassword(plainText) === this.hashed_password
-  },
-  encryptPassword: function(password) {
-    if (!password) return ''
-    try {
-      return crypto
-        .createHmac('sha1', this.salt)
-        .update(password)
-        .digest('hex')
-    } catch (err) {
-      return ''
-    }
-  },
-  makeSalt: function() {
-    return Math.round((new Date().valueOf() * Math.random())) + ''
-  }
-}
 
 export default mongoose.model('User', UserSchema)

@@ -105,7 +105,6 @@ const CreateComment = async (data, postId, token) => {
     const result = await res.json();
     return result._id;
   } else {
-      console.log(res)
     throw await handleError(res);
   }
 };

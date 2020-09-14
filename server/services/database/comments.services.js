@@ -22,6 +22,7 @@ const fetchReplies = async (commentId,reqId,replyId=undefined) => {
             "text" : "$replies.text",
             "postedBy" : "$replies.postedBy",
             "createdAt" : "$replies.createdAt",
+            "_id" : "$replies._id",
             "likes": {$cond: { if: { $isArray: "$replies.likes" }, then: { $size: "$replies.likes" }, else: 0}},
             "liked": {$cond: { if: { $and : [{$isArray: "$replies.likes" },{ $in: [ reqId, "$replies.likes" ] }	]}, then: true, else: false}},
             }

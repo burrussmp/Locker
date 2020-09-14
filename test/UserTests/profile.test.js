@@ -3,7 +3,7 @@ import chaiHttp from 'chai-http';
 
 import {app} from '../../server/server';
 import {UserData} from '../../development/user.data'
-import {drop_database} from  '../helper';
+import {drop_database, createUser,getAccessToken} from  '../helper';
 import User from '../../server/models/user.model';
 import StaticStrings from '../../config/StaticStrings';
 chai.use(chaiHttp);
@@ -12,333 +12,234 @@ chai.should();
 const profile_test = () => {
     describe("Profile Tests'", ()=>{
         describe("Failure cases", ()=>{
+            let id0,id1;
+            let access_token0,access_token1;
             before( async () =>{
                 await drop_database();
-                let userA = UserData[1];
-                let user = new User(userA);
-                user = await user.save();
-                let user2 = new User(UserData[0]);
-                user2 = await user2.save()
+                let user = await createUser(UserData[0]);
+                id0 = user._id;
+                access_token0 = user.access_token;
+                user = await createUser(UserData[1]);
+                id1 = user._id;
+                access_token1 = user.access_token;
             });
             after(async () =>{
                 await drop_database();
             })
             let agent = chai.request.agent(app);
-            it("/GET Attempt w/out login", (done)=>{
-                agent.get('/api/users')
+            it("/GET Attempt w/out login", async ()=>{
+                return agent.get('/api/users')
                 .then((res) => {
                     res.body.length.should.be.at.least(1);
                     res.body[0].should.have.property('_id');
-                    let id = res.body[0]._id;
-                    agent.get(`/api/users/${id}`)
-                    .end((err,res) => {
+                    return agent.get(`/api/users/${id0}`)
+                    .then((res) => {
                         res.should.have.status(401);
                         res.body.error.should.be.eql(StaticStrings.UnauthorizedMissingTokenError);
-                        done();
                     });
                 });
             });
-            it("/GET Attempt w/ incorrect login", (done)=>{
-                let user = UserData[1];
-                let login_user = {
-                    login: user.email,
-                    password: user.password
-                };
-                agent.post('/auth/login')
-                    .send(login_user)
-                    .then((res) => {
-                        res.should.have.status(200);
-                        res.body.should.have.property('token');
-                        return agent.get(`/api/users/wrong`)
-                            .set('Authorization',`Bearer ${res.body.token}`)
-                            .then((res)=>{
-                                res.should.have.status(404);
-                                res.body.error.should.be.eql(StaticStrings.UserNotFoundError);
-                                done()
-                            })
-                    });
+            it("/GET Attempt where user ID doesn't exist", async ()=>{
+                return agent.get(`/api/users/wrong`)
+                    .set('Authorization',`Bearer ${access_token0}`)
+                    .then((res)=>{
+                        res.should.have.status(404);
+                        res.body.error.should.be.eql(StaticStrings.UserNotFoundError);
+                    })
             });
-            it("/PUT Attempt to modify resource not owned", (done)=>{
-                let user = UserData[1];
-                let login_user = {
-                    login: user.email,
-                    password: user.password
-                };
-                User.findOne({"username":UserData[0].username},(err,doc) =>{
-                    agent.post('/auth/login')
-                        .send(login_user)
-                        .then((res) => {
-                            res.should.have.status(200);
-                            res.body.should.have.property('token');
-                            agent.put(`/api/users/${doc._id}`)
-                                .set('Authorization',`Bearer ${res.body.token}`)
-                                .send({first_name:'new_first_name'})
-                                .then((res)=>{
-                                    res.should.have.status(403);
-                                    res.body.error.should.be.eql(StaticStrings.NotOwnerError);
-                                    done();
-                                })
-                        });
-                })
+            it("/PUT Attempt to modify resource not owned", async ()=>{
+                return agent.put(`/api/users/${id0}`)
+                    .set('Authorization',`Bearer ${access_token1}`)
+                    .send({first_name:'new_first_name'})
+                    .then((res)=>{
+                        res.should.have.status(403);
+                        res.body.error.should.be.eql(StaticStrings.NotOwnerError);
+                    })
             });
-            it("/DELETE Attempt to delete resource not owned", (done)=>{
-                let user = UserData[1];
-                let login_user = {
-                    login: user.email,
-                    password: user.password
-                };
-                User.findOne({"username":UserData[0].username},(err,doc) =>{
-                    agent.post('/auth/login')
-                        .send(login_user)
-                        .then((res) => {
-                            res.should.have.status(200);
-                            res.body.should.have.property('token');
-                            agent.delete(`/api/users/${doc._id}`)
-                                .set('Authorization',`Bearer ${res.body.token}`)
-                                .then((res)=>{
-                                    res.should.have.status(403);
-                                    res.body.error.should.be.eql(StaticStrings.NotOwnerError);
-                                    done();
-                                })
-                        });
-                })
+            it("/DELETE Attempt to delete resource not owned", async ()=>{
+                return agent.delete(`/api/users/${id0}`)
+                    .set('Authorization',`Bearer ${access_token1}`)
+                    .then((res)=>{
+                        res.should.have.status(403);
+                        res.body.error.should.be.eql(StaticStrings.NotOwnerError);
+                    })
             });
             it("/GET Attempt w/ incorrect privileges (none)", async ()=>{
-                let user = UserData[1];
-                let login_user = {
-                    login: user.email,
-                    password: user.password
-                };
-                await User.findOneAndUpdate({'username':user.username},{'permissions':[]},{new:true});
-                return agent.post('/auth/login')
-                    .send(login_user)
-                    .then((res) => {
-                        res.should.have.status(200);
-                        res.body.should.have.property('token');
-                        res.body.user.should.have.property('_id');
-                        return agent.get(`/api/users/${res.body.user._id}`)
-                            .set('Authorization',`Bearer ${res.body.token}`)
-                            .then((res)=>{
-                                res.should.have.status(403);
-                                res.body.error.should.be.eql(StaticStrings.InsufficientPermissionsError);
-                            })
-                    });
+                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':[]},{new:true});
+                return agent.get(`/api/users/${id0}`)
+                    .set('Authorization',`Bearer ${access_token0}`)
+                    .then((res)=>{
+                        res.should.have.status(403);
+                        res.body.error.should.be.eql(StaticStrings.InsufficientPermissionsError);
+                    })
             });
             it("/PUT Attempt w/ incorrect privileges (user:read)", async ()=>{
-                let user = UserData[1];
-                let login_user = {
-                    login: user.email,
-                    password: user.password
-                };
-                await User.findOneAndUpdate({'username':user.username},{'permissions':["user:read"]},{new:true});
-                return agent.post('/auth/login')
-                    .send(login_user)
-                    .then((res) => {
-                        res.should.have.status(200);
-                        res.body.should.have.property('token');
-                        res.body.user.should.have.property('_id');
-                        return agent.delete(`/api/users/${res.body.user._id}`)
-                            .set('Authorization',`Bearer ${res.body.token}`)
-                            .then((res)=>{
-                                res.should.have.status(403);
-                                res.body.error.should.be.eql(StaticStrings.InsufficientPermissionsError);
-                            })
-                    });
+                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':[]},{new:true});
+                return agent.delete(`/api/users/${id0}`)
+                    .set('Authorization',`Bearer ${access_token0}`)
+                    .then((res)=>{
+                        res.should.have.status(403);
+                        res.body.error.should.be.eql(StaticStrings.InsufficientPermissionsError);
+                    })
             });
         });
         describe("GET/PUT/DELETE /api/users/:userId", ()=>{
-            beforeEach( async () =>{
+            let id1;
+            let access_token1;
+            before( async () =>{
                 await drop_database();
-                let userA = UserData[1];
-                let user = new User(userA);
-                user = await user.save();
+                let user = await createUser(UserData[1]);
+                id1 = user._id;
+                access_token1 = user.access_token;
             });
             after(async () =>{
                 await drop_database();
             })
             let agent = chai.request.agent(app);
-            let user = UserData[1];
-            let login_user = {
-                login: user.email,
-                password: user.password
-            };
             it("/GET w/ correct privileges", async ()=>{
-                return agent.post('/auth/login')
-                    .send(login_user)
-                    .then((res) => {
-                        return agent.get(`/api/users/${res.body.user._id}`)
-                            .set('Authorization',`Bearer ${res.body.token}`)
-                            .then((res)=>{
-                                res.should.have.status(200);
-                            })
-                    });
+                return agent.get(`/api/users/${id1}`)
+                    .set('Authorization',`Bearer ${access_token1}`)
+                    .then((res)=>{
+                        res.should.have.status(200);
+                    })
             });
             it("/DELETE w/ correct privileges", async ()=>{
-                return agent.get('/api/users')
-                    .then(res=>{
-                    res.body.length.should.eql(1);
-                    return agent.post('/auth/login')
-                        .send(login_user)
-                        .then((res) => {
-                            return agent.delete(`/api/users/${res.body.user._id}`)
-                                .set('Authorization',`Bearer ${res.body.token}`)
-                                .then((res)=>{
-                                    res.body.username.should.eql(user.username);
-                                    return agent.get('/api/users')
-                                        .then(res=>{
-                                            res.body.length.should.eql(0);
-                                        })
-                                });
-                        });
+            return agent.delete(`/api/users/${id1}`)
+                .set('Authorization',`Bearer ${access_token1}`)
+                .then((res)=>{
+                    res.status.should.eql(200);
+                    return agent.get('/api/users')
+                        .then(res=>{
+                            res.body.length.should.eql(0);
+                        })
                 });
             });
             it("/PUT w/ correct privileges", async ()=>{
-                return agent.get('/api/users')
-                    .then(res=>{
-                    res.body.length.should.eql(1);
-                    return agent.post('/auth/login')
-                        .send(login_user)
-                        .then((res) => {
-                        return agent.put(`/api/users/${res.body.user._id}`)
-                            .send({'username':'new_username','first_name':'new_firstname'})
-                            .set('Authorization',`Bearer ${res.body.token}`)
-                            .then((res)=>{
-                                res.status.should.eql(200);
-                                res.body.username.should.eql('new_username');
-                                res.body.first_name.should.eql('new_firstname')
-                            });
-                });
+            let user = await createUser(UserData[1]);
+            id1 = user._id;
+            access_token1 = user.access_token;
+            return agent.put(`/api/users/${id1}`)
+                .send({'username':'new_username','first_name':'new_firstname'})
+                .set('Authorization',`Bearer ${access_token1}`)
+                .then((res)=>{
+                    res.status.should.eql(200);
+                    res.body.username.should.eql('new_username');
+                    res.body.first_name.should.eql('new_firstname')
                 });
             });
             it("/PUT w/ same username (should fail)", async ()=>{
                 let userA = UserData[2];
-                userA.username = 'new_username';
-                let user = new User(userA);
-                user = await user.save();                
-                return agent.get('/api/users')
-                    .then(res=>{
-                    res.body.length.should.eql(2);
-                    return agent.post('/auth/login')
-                        .send(login_user)
-                        .then((res) => {
-                        return agent.put(`/api/users/${res.body.user._id}`)
-                            .send({'username':'new_username'})
-                            .set('Authorization',`Bearer ${res.body.token}`)
-                            .then((res)=>{
-                                res.status.should.eql(400);
-                                res.body.error.should.eql(StaticStrings.UserModelErrors.UsernameAlreadyExists);
-                            });
+                userA.username = 'bad';
+                await createUser(userA);
+                return agent.put(`/api/users/${id1}`)
+                    .send({'username':'bad'})
+                    .set('Authorization',`Bearer ${access_token1}`)
+                    .then((res)=>{
+                        res.status.should.eql(400);
                     });
-                });
+            });
+            it("/PUT update user name and try to login with new username (should succeed)", async ()=>{
+                return agent.put(`/api/users/${id1}`)
+                    .send({'username':'different'})
+                    .set('Authorization',`Bearer ${access_token1}`)
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                        let data = {
+                            login: 'different',
+                            password: UserData[1].password
+                        }
+                        return getAccessToken(data);
+                    });
+            });
+            it("/PUT update email and try to login with new email (should succeed)", async ()=>{
+                return agent.put(`/api/users/${id1}`)
+                    .send({'email':'test@gmail.com'})
+                    .set('Authorization',`Bearer ${access_token1}`)
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                        let data = {
+                            login: 'test@gmail.com',
+                            password: UserData[1].password
+                        }
+                        return getAccessToken(data);
+                    });
+            });
+            it("/PUT update phone number and try to login with new # (should succeed)", async ()=>{
+                return agent.put(`/api/users/${id1}`)
+                    .send({'phone_number':'+12345678900'})
+                    .set('Authorization',`Bearer ${access_token1}`)
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                        let data = {
+                            login: '+12345678900',
+                            password: UserData[1].password
+                        }
+                        return getAccessToken(data);
+                    });
             });
             it("/PUT w/ invalid email (should fail)", async ()=>{
-                let userA = UserData[2];
-                userA.username = 'new_username';
-                let user = new User(userA);
-                user = await user.save();                
-                return agent.get('/api/users')
-                    .then(res=>{
-                    res.body.length.should.eql(2);
-                    return agent.post('/auth/login')
-                        .send(login_user)
-                        .then((res) => {
-                        return agent.put(`/api/users/${res.body.user._id}`)
-                            .send({'email':'error'})
-                            .set('Authorization',`Bearer ${res.body.token}`)
-                            .then((res)=>{
-                                res.body.error.should.eql(StaticStrings.UserModelErrors.InvalidEmail);
-                                res.status.should.eql(400);
-                            });
-                    });
-                });
+            return agent.put(`/api/users/${id1}`)
+                .send({'email':'error'})
+                .set('Authorization',`Bearer ${access_token1}`)
+                .then((res)=>{
+                    res.body.error.toLowerCase().should.include('email');
+                    res.status.should.eql(400);
+                });                
             });
-            it("/PUT all possible mutable fields (except password and photo)", (done)=>{
+            it("/PUT all possible mutable fields (except password and photo)", async ()=>{
                 let data = {
                     'first_name': 'test',
                     'last_name' : 'test',
                     'username' : 'test',
                     'gender' : 'male',
-                    'email' : 'new@mail.com',
                     'date_of_birth' : new Date(2006,6,18,18,7),
                     'about':'test',
-                    'phone_number': '345-323-3421'
                 }
-                agent.get('/api/users')
-                    .then(res=>{
-                    res.body.length.should.eql(1);
-                    agent.post('/auth/login')
-                        .send(login_user)
-                        .then((res) => {
-                        agent.put(`/api/users/${res.body.user._id}`)
-                            .send(data)
-                            .set('Authorization',`Bearer ${res.body.token}`)
-                            .then(async (res)=>{
-                                let info = await User.findOne({'username':'test'}).select(Object.keys(data));
-                                for (let key of Object.keys(data)){
-                                    info[key].should.eql(data[key]);
-                                }
-                                res.status.should.eql(200);
-                                done()
-                            });
+                return agent.put(`/api/users/${id1}`)
+                    .send(data)
+                    .set('Authorization',`Bearer ${access_token1}`)
+                    .then(async (res)=>{
+                        let info = await User.findOne({'username':'test'}).select(Object.keys(data));
+                        for (let key of Object.keys(data)){
+                            info[key].should.eql(data[key]);
+                        }
+                        res.status.should.eql(200);
                     });
-                });
             });
-            it("/PUT all possible mutable fields (except password and photo), but invalid gender", (done)=>{
+            it("/PUT all possible mutable fields (except password and photo), but invalid gender", async ()=>{
                 let data = {
                     'first_name': 'test',
                     'last_name' : 'test',
                     'username' : 'test',
                     'gender' : 'fdafas',
-                    'email' : 'new@mail.com',
                     'date_of_birth' : new Date(2006,6,18,18,7),
                     'about':'test',
-                    'phone_number': '345-323-3421'
                 }
-                agent.get('/api/users')
-                    .then(res=>{
-                    res.body.length.should.eql(1);
-                    agent.post('/auth/login')
-                        .send(login_user)
-                        .then((res) => {
-                        agent.put(`/api/users/${res.body.user._id}`)
-                            .send(data)
-                            .set('Authorization',`Bearer ${res.body.token}`)
-                            .then(async (res)=>{
-                                res.status.should.eql(400);
-                                res.body.error.should.eql(StaticStrings.UserModelErrors.InvalidGender)
-                                done()
-                            });
+                return agent.put(`/api/users/${id1}`)
+                    .send(data)
+                    .set('Authorization',`Bearer ${access_token1}`)
+                    .then(async (res)=>{
+                        res.status.should.eql(400);
+                        res.body.error.should.eql(StaticStrings.UserModelErrors.InvalidGender)
                     });
-                });
             });
-            it("/PUT with incorrect field (password) should fail", (done)=>{
+            it("/PUT with incorrect field (password) should fail", async ()=>{
                 let data = {
                     'first_name': 'test',
                     'last_name' : 'test',
                     'username' : 'test',
-                    'email' : 'new@mail.com',
                     'date_of_birth' : new Date(2006,6,18,18,7),
                     'about':'test',
-                    'phone_number': '345-323-3421',
                     'password' : 'MWAHAHAH'
 
                 }
-                agent.get('/api/users')
-                    .then(res=>{
-                    res.body.length.should.eql(1);
-                    agent.post('/auth/login')
-                        .send(login_user)
-                        .then((res) => {
-                        agent.put(`/api/users/${res.body.user._id}`)
-                            .send(data)
-                            .set('Authorization',`Bearer ${res.body.token}`)
-                            .then(async (res)=>{
-                                res.status.should.eql(422);
-                                res.body.error.should.eql(StaticStrings.BadRequestInvalidFields + ' password')
-                                done()
-                            });
+                return agent.put(`/api/users/${id1}`)
+                    .send(data)
+                    .set('Authorization',`Bearer ${access_token1}`)
+                    .then(async (res)=>{
+                        res.status.should.eql(422);
+                        res.body.error.should.eql(StaticStrings.BadRequestInvalidFields + ' password')
                     });
-                });
             });
         });
     });

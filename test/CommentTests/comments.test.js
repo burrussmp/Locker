@@ -8,8 +8,9 @@ import User from '../../server/models/user.model';
 import Comment from '../../server/models/comment.model';
 import Post from '../../server/models/post.model';
 import StaticStrings from '../../config/StaticStrings';
-import {drop_database} from  '../helper';
+import {drop_database, createUser} from  '../helper';
 import _ from 'lodash';
+import permissions from '../../server/permissions';
 
 let image1 = process.cwd() + '/test/resources/profile1.png';
 let video = process.cwd() + '/test/resources/sample_vid.mp4';
@@ -25,31 +26,16 @@ const comments_test = () => {
             let agent = chai.request.agent(app);
             let userToken0,userToken1;
             let postId0,postId1;
-            beforeEach(async()=>{
+            before (async()=>{
                 await drop_database();
-                for (let user of UserData){
-                    let new_user = new User(user);
-                    await new_user.save()
-                }
-                await agent.get('/api/users').then(res=>{
-                    res.body.length.should.eql(3);
-                    res.body[0].username.should.eql(UserData[0].username)
-                    userId0 = res.body[0]._id;
-                    userId1 = res.body[1]._id;
-                    userId2 = res.body[2]._id
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[0].email,
-                    password: UserData[0].password
-                }).then((res) => {
-                    userToken0 = res.body.token;
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[1].email,
-                    password: UserData[1].password
-                }).then((res) => {
-                    userToken1 = res.body.token;
-                });
+                let user = await createUser(UserData[0]);
+                userId0 = user._id;
+                userToken0 = user.access_token;
+                user = await createUser(UserData[1]);
+                userId1 = user._id;
+                userToken1 = user.access_token;
+                user = await createUser(UserData[2]);
+                userId2 = user._id;  
                 await agent.post(`/api/posts?access_token=${userToken0}&type=ContentPost`)
                     .attach("media",image1)
                     .field(PostData[0])
@@ -66,15 +52,17 @@ const comments_test = () => {
                     })
             });
             afterEach(async()=>{ 
-                let posts = await Post.find();
-                for (let post of posts){
-                    await post.deleteOne();
-                }
                 let comments = await Comment.find();
                 for (let comment of comments){
                     await comment.deleteOne();
                 }
             });
+            after(async()=>{
+                let posts = await Post.find();
+                for (let post of posts){
+                    await post.deleteOne();
+                }
+            })
             it("Create two comments by two different users, check if the post has two comments with the right content from the right user",async()=>{
                 return agent.post(`/api/${postId0}/comments?access_token=${userToken0}`)
                     .send({text: CommentData[0].text})
@@ -98,13 +86,14 @@ const comments_test = () => {
                                 comment1.text.should.eql(CommentData[0].text);
                                 comment2.text.should.eql(CommentData[1].text)
                                 let post = await Post.findById(postId0);
+                                post.comments.length.should.eql(2);
                                 post.comments[0].should.eql(comment1._id);
                                 post.comments[1].should.eql(comment2._id);
                         });       
                     });  
                 });  
             })
-            it("Create two comments by same, check if the post has two comments with the right content from the right user",async()=>{
+            it("Create two comments by same user, check if the post has two comments with the right content from the right user",async()=>{
                 return agent.post(`/api/${postId0}/comments?access_token=${userToken0}`)
                     .send({text: CommentData[2].text})
                     .then(async res=>{
@@ -127,6 +116,7 @@ const comments_test = () => {
                                 comment1.text.should.eql(CommentData[2].text);
                                 comment2.text.should.eql(CommentData[3].text)
                                 let post = await Post.findById(postId0);
+                                post.comments.length.should.eql(2);
                                 post.comments[0].should.eql(comment1._id);
                                 post.comments[1].should.eql(comment2._id);
                         });       
@@ -217,7 +207,8 @@ const comments_test = () => {
                         return agent.get(`/api/${postId1}/comments?access_token=${userToken0}`)
                         .then(async res=>{
                             res.status.should.eql(403);
-                            res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);        
+                            res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
+                            await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':permissions.get_permission_array('user')},{new:true});        
                     });      
                 });  
             })
@@ -241,38 +232,24 @@ const comments_test = () => {
             let userToken0,userToken1;
             let postId0;
             let commentId0,commentId1;
-            beforeEach(async()=>{
+            before (async()=>{
                 await drop_database();
-                for (let user of UserData){
-                    let new_user = new User(user);
-                    await new_user.save()
-                }
-                await agent.get('/api/users').then(res=>{
-                    res.body.length.should.eql(3);
-                    res.body[0].username.should.eql(UserData[0].username)
-                    userId0 = res.body[0]._id;
-                    userId1 = res.body[1]._id;
-                    userId2 = res.body[2]._id
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[0].email,
-                    password: UserData[0].password
-                }).then((res) => {
-                    userToken0 = res.body.token;
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[1].email,
-                    password: UserData[1].password
-                }).then((res) => {
-                    userToken1 = res.body.token;
-                });
+                let user = await createUser(UserData[0]);
+                userId0 = user._id;
+                userToken0 = user.access_token;
+                user = await createUser(UserData[1]);
+                userId1 = user._id;
+                userToken1 = user.access_token;
+                user = await createUser(UserData[2]);
+                userId2 = user._id;  
+            beforeEach(async()=>{
                 await agent.post(`/api/posts?access_token=${userToken0}&type=ContentPost`)
-                    .attach("media",image1)
-                    .field(PostData[0])
-                    .then((res)=>{
-                        res.status.should.eql(200);
-                        postId0 = res.body._id;
-                    })
+                .attach("media",image1)
+                .field(PostData[0])
+                .then((res)=>{
+                    res.status.should.eql(200);
+                    postId0 = res.body._id;
+                })
                 await agent.post(`/api/${postId0}/comments?access_token=${userToken1}`)
                     .send({text:CommentData[0].text})
                     .then((res)=>{
@@ -290,7 +267,8 @@ const comments_test = () => {
                         res.status.should.eql(200);
                     })     
                 });
-            afterEach(async()=>{ 
+            })
+            after(async()=>{
                 let posts = await Post.find();
                 for (let post of posts){
                     await post.deleteOne();
@@ -299,7 +277,7 @@ const comments_test = () => {
                 for (let comment of comments){
                     await comment.deleteOne();
                 }
-            });
+            })
             it("Delete twice (first succeeds and second 404s)",async()=>{
                 return agent.delete(`/api/comments/${commentId1}?access_token=${userToken0}`)
                     .then(async res=>{
@@ -345,14 +323,7 @@ const comments_test = () => {
                     .then(async res=>{
                         res.status.should.eql(403);
                         res.body.error.should.eql(StaticStrings.InsufficientPermissionsError) 
-                });  
-            })
-            it("Bad Permissions (should fail)",async()=>{
-                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':["user:read"]},{new:true});
-                return agent.delete(`/api/comments/${commentId1}?access_token=${userToken0}`)
-                    .then(async res=>{
-                        res.status.should.eql(403);
-                        res.body.error.should.eql(StaticStrings.InsufficientPermissionsError) 
+                        await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':permissions.get_permission_array('user')},{new:true});
                 });  
             })
             it("Get comment that you haven't liked and see if it shows that (should succeed)",async()=>{
@@ -396,7 +367,6 @@ const comments_test = () => {
                 return agent.get(`/api/comments/${commentId0}?access_token=${userId0}`)
                     .then(async res=>{
                         res.status.should.eql(401);
-                        res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError)
                     });  
             });
             it("No permissions",async()=>{
@@ -405,6 +375,7 @@ const comments_test = () => {
                     .then(async res=>{
                         res.status.should.eql(403);
                         res.body.error.should.eql(StaticStrings.InsufficientPermissionsError)
+                        await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':permissions.get_permission_array('user')},{new:true});
                     });  
             });
         });

@@ -275,4 +275,5 @@ const Authorize = (req,res,next) => {
 export default {
     User_Role,
     Authorize,
+    get_permission_array
 };

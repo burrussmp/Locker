@@ -27,9 +27,11 @@ const getErrorMessage = (err) => {
                 message = getUniqueErrorMessage(err)
                 break
             default:
-                message = 'Something went wrong'
+                message = err.message
         }
-    } else {
+    } else if (typeof err == "string" || err instanceof String){
+        return err
+    }else {
         for (let errName in err.errors) {
             if (err.errors[errName].message)
                 message = err.errors[errName].message

@@ -1,12 +1,17 @@
 import chai  from 'chai';
 import chaiHttp from 'chai-http';
 import {app} from '../../server/server';
-import {Setup} from '../../development/comments.data';
+import {Setup,CommentData} from '../../development/comments.data';
 import {UserData} from '../../development/user.data';
-import {drop_database} from  '../helper';
+import {drop_database,createUser} from  '../helper';
 import User from '../../server/models/user.model';
 import Comment from '../../server/models/comment.model';
 import StaticStrings from '../../config/StaticStrings';
+import {PostData,ReactionData} from '../../development/post.data';
+import permissions from '../../server/permissions';
+
+let image1 = process.cwd() + '/test/resources/profile1.png';
+let video = process.cwd() + '/test/resources/sample_vid.mp4';
 
 chai.use(chaiHttp);
 chai.should();
@@ -17,14 +22,45 @@ const reply_test = () => {
             let comment_id_array;
             let userId0,userId1,userId2;
             let agent = chai.request.agent(app);
-            let userToken0,userToken1;
-            beforeEach(async()=>{
+            let userToken0,userToken1,userToken2;
+            let postId0;
+            before (async()=>{
                 await drop_database();
-                await Setup();
-                let num_comments = await Comment.countDocuments();
-                num_comments.should.eql(UserData.length);
+                let user = await createUser(UserData[0]);
+                userId0 = user._id;
+                userToken0 = user.access_token;
+                user = await createUser(UserData[1]);
+                userId1 = user._id;
+                userToken1 = user.access_token;
+                user = await createUser(UserData[2]);
+                userId2 = user._id;
+                userToken2=user.access_token;
+                await agent.post(`/api/posts?access_token=${userToken0}&type=ContentPost`)
+                    .attach("media",image1)
+                    .field(PostData[0])
+                    .then((res)=>{
+                        console.log(res.body.error)
+                        res.status.should.eql(200);
+                        postId0 = res.body._id;
+                    })
+                await agent.post(`/api/${postId0}/comments?access_token=${userToken1}`)
+                    .send({text:CommentData[0].text})
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                })  
+                await agent.post(`/api/${postId0}/comments?access_token=${userToken0}`)
+                    .send({text:CommentData[1].text})
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                })
+                await agent.post(`/api/${postId0}/comments?access_token=${userToken2}`)
+                    .send({text:CommentData[2].text})
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                })
                 comment_id_array = await Comment.find().select('_id').distinct('_id');
                 let user_id_array = await User.find().select('_id').distinct('_id');
+                let num_comments = comment_id_array.length;
                 // add some replies
                 for (let i = 0; i < num_comments; i++){
                     for (let j = 0; j<i*2; j++){
@@ -47,26 +83,10 @@ const reply_test = () => {
                     let  comment = await Comment.findById({'_id':comment_id_array[i]});
                     comment.replies.length.should.eql(i*2)
                 }
-                await agent.get('/api/users').then(res=>{
-                    res.body.length.should.eql(3);
-                    res.body[0].username.should.eql(UserData[0].username)
-                    userId0 = res.body[0]._id;
-                    userId1 = res.body[1]._id;
-                    userId2 = res.body[2]._id
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[0].email,
-                    password: UserData[0].password
-                }).then((res) => {
-                    userToken0 = res.body.token;
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[1].email,
-                    password: UserData[1].password
-                }).then((res) => {
-                    userToken1 = res.body.token;
-                });  
             });
+            after(async()=>{
+                await drop_database()
+            })
             it("See if all replies are of the proper length",async()=>{
                 return agent.get(`/api/${comment_id_array[0]}/replies?access_token=${userToken0}`)
                 .then(res=>{
@@ -116,24 +136,54 @@ const reply_test = () => {
             let comment_id_array;
             let userId0,userId1,userId2;
             let agent = chai.request.agent(app);
-            let userToken0,userToken1;
-            beforeEach(async()=>{
+            let userToken0,userToken1,userToken2;
+            let postId0;
+            before (async()=>{
                 await drop_database();
-                await Setup();
-                let num_comments = await Comment.countDocuments();
-                num_comments.should.eql(UserData.length);
+                let user = await createUser(UserData[0]);
+                userId0 = user._id;
+                userToken0 = user.access_token;
+                user = await createUser(UserData[1]);
+                userId1 = user._id;
+                userToken1 = user.access_token;
+                user = await createUser(UserData[2]);
+                userId2 = user._id;
+                userToken2=user.access_token;
+                await agent.post(`/api/posts?access_token=${userToken0}&type=ContentPost`)
+                    .attach("media",image1)
+                    .field(PostData[0])
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                        postId0 = res.body._id;
+                    })
+                await agent.post(`/api/${postId0}/comments?access_token=${userToken1}`)
+                    .send({text:CommentData[0].text})
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                })  
+                await agent.post(`/api/${postId0}/comments?access_token=${userToken0}`)
+                    .send({text:CommentData[1].text})
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                })
+                await agent.post(`/api/${postId0}/comments?access_token=${userToken2}`)
+                    .send({text:CommentData[2].text})
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                })
                 comment_id_array = await Comment.find().select('_id').distinct('_id');
                 let user_id_array = await User.find().select('_id').distinct('_id');
+                let num_comments = comment_id_array.length;
                 // add some replies
                 for (let i = 0; i < num_comments; i++){
                     for (let j = 0; j<i*2; j++){
                     let like_array = [];
                         for (let k = 0; k < (i+5)*j;k++){
-                            like_array.push(user_id_array[(j+1)%num_comments]);
+                            like_array.push(user_id_array[(k+1)%num_comments]);
                         }
                     await Comment.findOneAndUpdate(
                         {'_id':comment_id_array[i]},{$push: { replies:{
-                            text: "new text",
+                            text: `Original reply ${i}`,
                             postedBy: user_id_array[j%num_comments],
                             likes: like_array
                             }
@@ -141,30 +191,15 @@ const reply_test = () => {
                         },{runValidators:true,new:true});
                     }
                 }
+                // check number of comment replies
                 for (let i = 0; i < num_comments; i++){
                     let  comment = await Comment.findById({'_id':comment_id_array[i]});
                     comment.replies.length.should.eql(i*2)
                 }
-                await agent.get('/api/users').then(res=>{
-                    res.body.length.should.eql(3);
-                    res.body[0].username.should.eql(UserData[0].username)
-                    userId0 = res.body[0]._id;
-                    userId1 = res.body[1]._id;
-                    userId2 = res.body[2]._id
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[0].email,
-                    password: UserData[0].password
-                }).then((res) => {
-                    userToken0 = res.body.token;
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[1].email,
-                    password: UserData[1].password
-                }).then((res) => {
-                    userToken1 = res.body.token;
-                });  
             });
+            after(async()=>{
+                await drop_database()
+            })
             let new_reply = "This is a new reply";
             it("Correctly posts reply",async()=>{
                 return agent.post(`/api/${comment_id_array[0]}/replies?access_token=${userToken0}`)
@@ -173,11 +208,16 @@ const reply_test = () => {
                     res.status.should.eql(200);
                     res.body.should.have.property('id')
                     return agent.get(`/api/${comment_id_array[0]}/replies?access_token=${userToken1}`)
-                        .then(res=>{
+                        .then(async res=>{
+                            let reply_index = 0;
                             res.body.data.length.should.eql(1);
-                            res.body.data[0].postedBy.should.eql(userId0);
-                            res.body.data[0].text.should.eql(new_reply);
-                            res.body.data[0].likes.should.eql(0);
+                            res.body.data[reply_index].postedBy.should.eql(userId0);
+                            res.body.data[reply_index].text.should.eql(new_reply);
+                            res.body.data[reply_index].likes.should.eql(reply_index);
+                            let id = res.body.data[reply_index]._id;
+                            return agent.delete(`/api/${comment_id_array[0]}/replies/${id}?access_token=${userToken0}`).then(res=>{
+                                res.status.should.eql(200);
+                            });
                         })
                 });  
             })
@@ -189,10 +229,15 @@ const reply_test = () => {
                     res.body.should.have.property('id')
                     return agent.get(`/api/${comment_id_array[0]}/replies?access_token=${userToken1}`)
                         .then(res=>{
+                            let reply_index = 0;
                             res.body.data.length.should.eql(1);
-                            res.body.data[0].postedBy.should.eql(userId0);
-                            res.body.data[0].text.should.eql(new_reply);
-                            res.body.data[0].likes.should.eql(0);
+                            res.body.data[reply_index].postedBy.should.eql(userId0);
+                            res.body.data[reply_index].text.should.eql(new_reply);
+                            res.body.data[reply_index].likes.should.eql(0);
+                            let id = res.body.data[reply_index]._id;
+                            return agent.delete(`/api/${comment_id_array[0]}/replies/${id}?access_token=${userToken0}`).then(res=>{
+                                res.status.should.eql(200);
+                            });                        
                         })
                 });  
             })
@@ -252,9 +297,10 @@ const reply_test = () => {
                 await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':[]},{new:true});
                 return agent.post(`/api/${comment_id_array[1]}/replies?access_token=${userToken0}`)
                 .send({text: new_reply})
-                .then(res=>{
+                .then(async res=>{
                     res.status.should.eql(403);
-                    res.body.error.should.eql(StaticStrings.InsufficientPermissionsError); 
+                    res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
+                    await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':permissions.get_permission_array('user')},{new:true});
                 });  
             })
         });
@@ -262,24 +308,54 @@ const reply_test = () => {
             let comment_id_array;
             let userId0,userId1,userId2;
             let agent = chai.request.agent(app);
-            let userToken0,userToken1;
-            beforeEach(async()=>{
+            let userToken0,userToken1,userToken2;
+            let postId0;
+            before (async()=>{
                 await drop_database();
-                await Setup();
-                let num_comments = await Comment.countDocuments();
-                num_comments.should.eql(UserData.length);
+                let user = await createUser(UserData[0]);
+                userId0 = user._id;
+                userToken0 = user.access_token;
+                user = await createUser(UserData[1]);
+                userId1 = user._id;
+                userToken1 = user.access_token;
+                user = await createUser(UserData[2]);
+                userId2 = user._id;
+                userToken2=user.access_token;
+                await agent.post(`/api/posts?access_token=${userToken0}&type=ContentPost`)
+                    .attach("media",image1)
+                    .field(PostData[0])
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                        postId0 = res.body._id;
+                    })
+                await agent.post(`/api/${postId0}/comments?access_token=${userToken1}`)
+                    .send({text:CommentData[0].text})
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                })  
+                await agent.post(`/api/${postId0}/comments?access_token=${userToken0}`)
+                    .send({text:CommentData[1].text})
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                })
+                await agent.post(`/api/${postId0}/comments?access_token=${userToken2}`)
+                    .send({text:CommentData[2].text})
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                })
                 comment_id_array = await Comment.find().select('_id').distinct('_id');
                 let user_id_array = await User.find().select('_id').distinct('_id');
+                let num_comments = comment_id_array.length;
                 // add some replies
                 for (let i = 0; i < num_comments; i++){
                     for (let j = 0; j<i*2; j++){
                     let like_array = [];
                         for (let k = 0; k < (i+5)*j;k++){
-                            like_array.push(user_id_array[(j+1)%num_comments]);
+                            like_array.push(user_id_array[(k+1)%num_comments]);
                         }
                     await Comment.findOneAndUpdate(
                         {'_id':comment_id_array[i]},{$push: { replies:{
-                            text: "new text",
+                            text: `Original reply ${i}`,
                             postedBy: user_id_array[j%num_comments],
                             likes: like_array
                             }
@@ -287,30 +363,15 @@ const reply_test = () => {
                         },{runValidators:true,new:true});
                     }
                 }
+                // check number of comment replies
                 for (let i = 0; i < num_comments; i++){
                     let  comment = await Comment.findById({'_id':comment_id_array[i]});
                     comment.replies.length.should.eql(i*2)
                 }
-                await agent.get('/api/users').then(res=>{
-                    res.body.length.should.eql(3);
-                    res.body[0].username.should.eql(UserData[0].username)
-                    userId0 = res.body[0]._id;
-                    userId1 = res.body[1]._id;
-                    userId2 = res.body[2]._id
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[0].email,
-                    password: UserData[0].password
-                }).then((res) => {
-                    userToken0 = res.body.token;
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[1].email,
-                    password: UserData[1].password
-                }).then((res) => {
-                    userToken1 = res.body.token;
-                });  
             });
+            after(async()=>{
+                await drop_database()
+            })
             it("Like a comment twice (should succeed and only place 1 like)",async()=>{
                 return agent.put(`/api/${comment_id_array[0]}/likes?access_token=${userToken0}`)
                 .then((res)=>{
@@ -378,9 +439,10 @@ const reply_test = () => {
                     res.status.should.eql(403);
                     res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
                     return agent.put(`/api/${comment_id_array[1]}/likes?access_token=${userToken0}`)
-                    .then(res=>{
+                    .then(async res=>{
                         res.status.should.eql(403);
-                        res.body.error.should.eql(StaticStrings.InsufficientPermissionsError); 
+                        res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
+                        await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':permissions.get_permission_array('user')},{new:true});
                     });  
                 });  
             })
@@ -389,24 +451,54 @@ const reply_test = () => {
             let comment_id_array;
             let userId0,userId1,userId2;
             let agent = chai.request.agent(app);
-            let userToken0,userToken1;
-            beforeEach(async()=>{
+            let userToken0,userToken1,userToken2;
+            let postId0;
+            before (async()=>{
                 await drop_database();
-                await Setup();
-                let num_comments = await Comment.countDocuments();
-                num_comments.should.eql(UserData.length);
+                let user = await createUser(UserData[0]);
+                userId0 = user._id;
+                userToken0 = user.access_token;
+                user = await createUser(UserData[1]);
+                userId1 = user._id;
+                userToken1 = user.access_token;
+                user = await createUser(UserData[2]);
+                userId2 = user._id;
+                userToken2=user.access_token;
+                await agent.post(`/api/posts?access_token=${userToken0}&type=ContentPost`)
+                    .attach("media",image1)
+                    .field(PostData[0])
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                        postId0 = res.body._id;
+                    })
+                await agent.post(`/api/${postId0}/comments?access_token=${userToken1}`)
+                    .send({text:CommentData[0].text})
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                })  
+                await agent.post(`/api/${postId0}/comments?access_token=${userToken0}`)
+                    .send({text:CommentData[1].text})
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                })
+                await agent.post(`/api/${postId0}/comments?access_token=${userToken2}`)
+                    .send({text:CommentData[2].text})
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                })
                 comment_id_array = await Comment.find().select('_id').distinct('_id');
                 let user_id_array = await User.find().select('_id').distinct('_id');
+                let num_comments = comment_id_array.length;
                 // add some replies
                 for (let i = 0; i < num_comments; i++){
                     for (let j = 0; j<i*2; j++){
                     let like_array = [];
                         for (let k = 0; k < (i+5)*j;k++){
-                            like_array.push(user_id_array[(j+1)%num_comments]);
+                            like_array.push(user_id_array[(k+1)%num_comments]);
                         }
                     await Comment.findOneAndUpdate(
                         {'_id':comment_id_array[i]},{$push: { replies:{
-                            text: "new text",
+                            text: `Original reply ${i}`,
                             postedBy: user_id_array[j%num_comments],
                             likes: like_array
                             }
@@ -414,30 +506,15 @@ const reply_test = () => {
                         },{runValidators:true,new:true});
                     }
                 }
+                // check number of comment replies
                 for (let i = 0; i < num_comments; i++){
                     let  comment = await Comment.findById({'_id':comment_id_array[i]});
                     comment.replies.length.should.eql(i*2)
                 }
-                await agent.get('/api/users').then(res=>{
-                    res.body.length.should.eql(3);
-                    res.body[0].username.should.eql(UserData[0].username)
-                    userId0 = res.body[0]._id;
-                    userId1 = res.body[1]._id;
-                    userId2 = res.body[2]._id
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[0].email,
-                    password: UserData[0].password
-                }).then((res) => {
-                    userToken0 = res.body.token;
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[1].email,
-                    password: UserData[1].password
-                }).then((res) => {
-                    userToken1 = res.body.token;
-                });  
             });
+            after(async()=>{
+                await drop_database()
+            })
             it("Get a specific reply (should succeed)",async()=>{
                 return agent.post(`/api/${comment_id_array[0]}/replies?access_token=${userToken0}`)
                 .send({text:"What a reply!"})
@@ -500,11 +577,14 @@ const reply_test = () => {
                     .then(async res=>{
                         res.status.should.eql(403);
                         res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
+                        await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':permissions.get_permission_array('user')},{new:true});
                     });
                 });  
             })
         });
-        
+        /**
+         * * Purposefully commented out. This API no longer exists
+         */
         // describe("PUT '/api/:commentId/replies/:replyId'",()=>{
         //     let comment_id_array;
         //     let userId0,userId1,userId2;
@@ -549,13 +629,13 @@ const reply_test = () => {
         //             login: UserData[0].email,
         //             password: UserData[0].password
         //         }).then((res) => {
-        //             userToken0 = res.body.token;
+        //             userToken0 = res.body.access_token;
         //         });
         //         await agent.post('/auth/login').send({
         //             login: UserData[1].email,
         //             password: UserData[1].password
         //         }).then((res) => {
-        //             userToken1 = res.body.token;
+        //             userToken1 = res.body.access_token;
         //         });  
         //     });
         //     it("Edit a reply (should succeed)",async()=>{
@@ -694,24 +774,54 @@ const reply_test = () => {
             let comment_id_array;
             let userId0,userId1,userId2;
             let agent = chai.request.agent(app);
-            let userToken0,userToken1;
-            beforeEach(async()=>{
+            let userToken0,userToken1,userToken2;
+            let postId0;
+            before (async()=>{
                 await drop_database();
-                await Setup();
-                let num_comments = await Comment.countDocuments();
-                num_comments.should.eql(UserData.length);
+                let user = await createUser(UserData[0]);
+                userId0 = user._id;
+                userToken0 = user.access_token;
+                user = await createUser(UserData[1]);
+                userId1 = user._id;
+                userToken1 = user.access_token;
+                user = await createUser(UserData[2]);
+                userId2 = user._id;
+                userToken2=user.access_token;
+                await agent.post(`/api/posts?access_token=${userToken0}&type=ContentPost`)
+                    .attach("media",image1)
+                    .field(PostData[0])
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                        postId0 = res.body._id;
+                    })
+                await agent.post(`/api/${postId0}/comments?access_token=${userToken1}`)
+                    .send({text:CommentData[0].text})
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                })  
+                await agent.post(`/api/${postId0}/comments?access_token=${userToken0}`)
+                    .send({text:CommentData[1].text})
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                })
+                await agent.post(`/api/${postId0}/comments?access_token=${userToken2}`)
+                    .send({text:CommentData[2].text})
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                })
                 comment_id_array = await Comment.find().select('_id').distinct('_id');
                 let user_id_array = await User.find().select('_id').distinct('_id');
+                let num_comments = comment_id_array.length;
                 // add some replies
                 for (let i = 0; i < num_comments; i++){
                     for (let j = 0; j<i*2; j++){
                     let like_array = [];
                         for (let k = 0; k < (i+5)*j;k++){
-                            like_array.push(user_id_array[(j+1)%num_comments]);
+                            like_array.push(user_id_array[(k+1)%num_comments]);
                         }
                     await Comment.findOneAndUpdate(
                         {'_id':comment_id_array[i]},{$push: { replies:{
-                            text: "new text",
+                            text: `Original reply ${i}`,
                             postedBy: user_id_array[j%num_comments],
                             likes: like_array
                             }
@@ -719,30 +829,15 @@ const reply_test = () => {
                         },{runValidators:true,new:true});
                     }
                 }
+                // check number of comment replies
                 for (let i = 0; i < num_comments; i++){
                     let  comment = await Comment.findById({'_id':comment_id_array[i]});
                     comment.replies.length.should.eql(i*2)
                 }
-                await agent.get('/api/users').then(res=>{
-                    res.body.length.should.eql(3);
-                    res.body[0].username.should.eql(UserData[0].username)
-                    userId0 = res.body[0]._id;
-                    userId1 = res.body[1]._id;
-                    userId2 = res.body[2]._id
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[0].email,
-                    password: UserData[0].password
-                }).then((res) => {
-                    userToken0 = res.body.token;
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[1].email,
-                    password: UserData[1].password
-                }).then((res) => {
-                    userToken1 = res.body.token;
-                });  
             });
+            after(async()=>{
+                await drop_database()
+            })
             it("Delete a reply (should succeed)",async()=>{
                 return agent.post(`/api/${comment_id_array[0]}/replies?access_token=${userToken0}`)
                 .send({text:"What a reply!"})
@@ -815,6 +910,7 @@ const reply_test = () => {
                     return agent.delete(`/api/${comment_id_array[0]}/replies/${replyId}?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(403);
+                        await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':permissions.get_permission_array('user')},{new:true});
                     });
                 });  
             })
@@ -823,24 +919,54 @@ const reply_test = () => {
             let comment_id_array;
             let userId0,userId1,userId2;
             let agent = chai.request.agent(app);
-            let userToken0,userToken1;
-            beforeEach(async()=>{
+            let userToken0,userToken1,userToken2;
+            let postId0;
+            before (async()=>{
                 await drop_database();
-                await Setup();
-                let num_comments = await Comment.countDocuments();
-                num_comments.should.eql(UserData.length);
+                let user = await createUser(UserData[0]);
+                userId0 = user._id;
+                userToken0 = user.access_token;
+                user = await createUser(UserData[1]);
+                userId1 = user._id;
+                userToken1 = user.access_token;
+                user = await createUser(UserData[2]);
+                userId2 = user._id;
+                userToken2=user.access_token;
+                await agent.post(`/api/posts?access_token=${userToken0}&type=ContentPost`)
+                    .attach("media",image1)
+                    .field(PostData[0])
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                        postId0 = res.body._id;
+                    })
+                await agent.post(`/api/${postId0}/comments?access_token=${userToken1}`)
+                    .send({text:CommentData[0].text})
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                })  
+                await agent.post(`/api/${postId0}/comments?access_token=${userToken0}`)
+                    .send({text:CommentData[1].text})
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                })
+                await agent.post(`/api/${postId0}/comments?access_token=${userToken2}`)
+                    .send({text:CommentData[2].text})
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                })
                 comment_id_array = await Comment.find().select('_id').distinct('_id');
                 let user_id_array = await User.find().select('_id').distinct('_id');
+                let num_comments = comment_id_array.length;
                 // add some replies
                 for (let i = 0; i < num_comments; i++){
                     for (let j = 0; j<i*2; j++){
                     let like_array = [];
                         for (let k = 0; k < (i+5)*j;k++){
-                            like_array.push(user_id_array[(j+1)%num_comments]);
+                            like_array.push(user_id_array[(k+1)%num_comments]);
                         }
                     await Comment.findOneAndUpdate(
                         {'_id':comment_id_array[i]},{$push: { replies:{
-                            text: "new text",
+                            text: `Original reply ${i}`,
                             postedBy: user_id_array[j%num_comments],
                             likes: like_array
                             }
@@ -848,30 +974,15 @@ const reply_test = () => {
                         },{runValidators:true,new:true});
                     }
                 }
+                // check number of comment replies
                 for (let i = 0; i < num_comments; i++){
                     let  comment = await Comment.findById({'_id':comment_id_array[i]});
                     comment.replies.length.should.eql(i*2)
                 }
-                await agent.get('/api/users').then(res=>{
-                    res.body.length.should.eql(3);
-                    res.body[0].username.should.eql(UserData[0].username)
-                    userId0 = res.body[0]._id;
-                    userId1 = res.body[1]._id;
-                    userId2 = res.body[2]._id
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[0].email,
-                    password: UserData[0].password
-                }).then((res) => {
-                    userToken0 = res.body.token;
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[1].email,
-                    password: UserData[1].password
-                }).then((res) => {
-                    userToken1 = res.body.token;
-                });  
             });
+            after(async()=>{
+                await drop_database()
+            })
             it("Like a reply (should succeed)",async()=>{
                 return agent.post(`/api/${comment_id_array[0]}/replies?access_token=${userToken0}`)
                 .send({text:"What a reply!"})
@@ -996,6 +1107,7 @@ const reply_test = () => {
                     return agent.put(`/api/${comment_id_array[0]}/replies/${replyId}/likes?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(403);
+                        await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':permissions.get_permission_array('user')},{new:true});
                     });
                 });   
             })
@@ -1045,6 +1157,7 @@ const reply_test = () => {
                     return agent.delete(`/api/${comment_id_array[0]}/replies/${replyId}/likes?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(403);
+                        await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':permissions.get_permission_array('user')},{new:true});
                     });
                 });   
             })

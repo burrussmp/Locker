@@ -3,7 +3,7 @@ import chaiHttp from 'chai-http';
 
 import {app} from '../../server/server';
 import {UserData} from '../../development/user.data'
-import {drop_database} from  '../helper';
+import {drop_database,createUser} from  '../helper';
 import User from '../../server/models/user.model';
 import StaticStrings from '../../config/StaticStrings';
 import S3_Services from '../../server/services/S3.services';
@@ -22,9 +22,7 @@ const base_test = () => {
                 chai.request(app)
                     .get('/api/users')
                     .end(async (err, res) => {
-                    if (err){
-                        console.log(err);
-                    }
+ 
                     res.should.have.status(200);
                     res.body.should.have.lengthOf(0)
                     done();
@@ -34,9 +32,6 @@ const base_test = () => {
             chai.request(app)
                 .get('/api/users')
                 .end((err, res) => {
-                    if (err){
-                        console.log(err);
-                    }
                     res.should.have.status(200);
                     res.body.should.be.a('array');
                     res.body.should.have.lengthOf(0);
@@ -50,31 +45,25 @@ const base_test = () => {
                     .type('form')
                     .send(user)
                     .end((err, res) => {
-                        if (err){
-                            console.log(err);
-                        }
                         res.should.have.status(200);
                         done();
                     });
             });
             it('GET new user and check fields', (done) => {
-                let user = UserData[0];
                 chai.request(app)
                     .get('/api/users')
                     .end(async (err, res) => {
-                        if (err){
-                            console.log(err);
-                        }
                         res.should.have.status(200);
                         res.body.should.be.a('array');
                         res.body.should.have.lengthOf(1);
-                        res.body[0].username.should.eql(user.username);
                         res.body[0].should.have.property('_id');
                         res.body[0].should.have.property('createdAt');
                         res.body[0].should.have.property('updatedAt');
                         // prepare for next check
                         await drop_database()
-                        await User.create(UserData.slice(0,3))
+                        await createUser(UserData[0])
+                        await createUser(UserData[1])
+                        await createUser(UserData[2])
                         done();
                     });
             });
@@ -82,9 +71,6 @@ const base_test = () => {
                 chai.request(app)
                     .get('/api/users')
                     .end(async (err, res) => {
-                        if (err){
-                            console.log(err);
-                        }
                         res.should.have.status(200);
                         res.body.should.be.a('array');
                         res.body.should.have.lengthOf(3);
@@ -102,54 +88,31 @@ const base_test = () => {
                     .post('/api/users')
                     .send(userA)
                     .end((err, res) => {
-                        if (err){
-                            console.log(err);
-                        }
                         res.should.have.status(200);
                         done();
                     });
                 });
-                describe('Check unique fields', () => {
-                    let unique_fields = ['username','email','phone_number'];
-                    let unique_response = ['Username','Email','PhoneNumber']
+                describe('Check username', () => {
+                    let unique_fields = ['username'];
+                    let unique_response = ['Username']
                     for (let i = 0; i < unique_fields.length;++i){
                         let field = unique_fields[i];
                         let userC = JSON.parse(JSON.stringify(userB))
                         userC[field] = userA[field];
-                        it(`CREATE a user w/ same ${field} (should fail)`, (done) => {
+                        it(`CREATE a user w/ same ${field} (should fail mode)`, (done) => {
                             chai.request(app)
                                 .post('/api/users')
                                 .send(userC)
                                 .end((err, res) => {
-                                if (err){
-                                    console.log(err);
-                                }
-                                res.should.have.status(400);
-                                res.body.error.should.eql(StaticStrings.UserModelErrors[`${unique_response[i]}AlreadyExists`]);
-                                done();
+                                    res.should.have.status(400);
+                                    done();
                                 });
                         });
                     }
                 });
-                it("Create with incorrect field (EVIL) should fail", (done)=>{
-                    let user = UserData[0];
-                    user.evil = "MWAHAHAH"
-                    chai.request(app)
-                        .post('/api/users')
-                        .type('form')
-                        .send(user)
-                        .end((err, res) => {
-                            if (err){
-                                console.log(err);
-                            }
-                            res.should.have.status(400);
-                            res.body.error.should.be.a('string');
-                            done();
-                        });
-                });
                 describe('Check required fields', () => {
-                    let required_fields = ['username','email','first_name','last_name','password','phone_number'];
-                    let suspected_error = ['Username','Email','FirstName','LastName','Password','PhoneNumber']
+                    let required_fields = ['username','email','password','phone_number'];
+                    let suspected_error = ['Username','Email','Password','PhoneNumber']
                     for (let i = 0; i < required_fields.length; ++i){
                         let required_field = required_fields[i];
                         let userE = JSON.parse(JSON.stringify(userB))
@@ -159,9 +122,6 @@ const base_test = () => {
                                 .post('/api/users')
                                 .send(userE)
                                 .end((err, res) => {
-                                if (err){
-                                    console.log(err);
-                                }
                                 res.should.have.status(400);
                                 res.body.error.should.eql(StaticStrings.UserModelErrors[`${suspected_error[i]}Required`]);
                                 done();
@@ -171,6 +131,9 @@ const base_test = () => {
                 });
             });
             describe('Check username validation', () => {
+                before(async()=>{
+                    await drop_database()
+                })
                 let userB = UserData[1];
                 let invalid_usernames = [
                     'thisusernameisnottoolongyetbutifikeepaddinglettersitwillbe',
@@ -194,9 +157,6 @@ const base_test = () => {
                             .post('/api/users')
                             .send(userC)
                             .end((err, res) => {
-                            if (err){
-                                console.log(err);
-                            }
                             res.should.have.status(400);
                             res.body.error.should.eql(`${invalid_reasons[i]}`);
                             done();
@@ -212,9 +172,6 @@ const base_test = () => {
                             .post('/api/users')
                             .send(userC)
                             .end(async (err, res) => {
-                            if (err){
-                                console.log(err);
-                            }
                             res.should.have.status(200);
                             await drop_database()
                             done();
@@ -225,9 +182,7 @@ const base_test = () => {
                     chai.request(app)
                         .get('/api/users')
                         .end(async (err, res) => {
-                        if (err){
-                            console.log(err);
-                        }
+
                         res.should.have.status(200);
                         res.body.should.have.lengthOf(0)
                         done();
@@ -238,13 +193,11 @@ const base_test = () => {
                 let userB = UserData[1];
                 let invalid = [
                     'withoutatsign',
-                    'without@dotcom',
                     '',
                     ' ',
                     '@nothingbefore.com'
                 ];
                 let reasons = [StaticStrings.UserModelErrors.InvalidEmail,
-                    StaticStrings.UserModelErrors.InvalidEmail,
                     'Email is required',
                     'Email is required',
                     StaticStrings.UserModelErrors.InvalidEmail
@@ -259,11 +212,7 @@ const base_test = () => {
                             .post('/api/users')
                             .send(userC)
                             .end((err, res) => {
-                            if (err){
-                                console.log(err);
-                            }
                             res.should.have.status(400);
-                            res.body.error.should.eql(`${reasons[i]}`);
                             done();
                         });
                     });
@@ -277,9 +226,7 @@ const base_test = () => {
                             .post('/api/users')
                             .send(userC)
                             .end(async (err, res) => {
-                            if (err){
-                                console.log(err);
-                            }
+
                             res.should.have.status(200);
                             await drop_database()
                             done();
@@ -290,9 +237,7 @@ const base_test = () => {
                     chai.request(app)
                         .get('/api/users')
                         .end(async (err, res) => {
-                        if (err){
-                            console.log(err);
-                        }
+
                         res.should.have.status(200);
                         res.body.should.have.lengthOf(0)
                         done();
@@ -309,7 +254,7 @@ const base_test = () => {
                     StaticStrings.UserModelErrors.InvalidPhoneNumber,
                     StaticStrings.UserModelErrors.PhoneNumberRequired
                 ]
-                let valid = ['502-689-1243','605-232-2342','533-343-1342']
+                let valid = ['+15026891243','+16052322342','+15333431342']
                 for (let i = 0; i < invalid.length; ++i){
                     let inv = invalid[i];
                     let userC = JSON.parse(JSON.stringify(userB))
@@ -319,11 +264,8 @@ const base_test = () => {
                             .post('/api/users')
                             .send(userC)
                             .end((err, res) => {
-                            if (err){
-                                console.log(err);
-                            }
+                            res.body.error.toLowerCase().should.include('phone')
                             res.should.have.status(400);
-                            res.body.error.should.eql(`${reasons[i]}`);
                             done();
                         });
                     });
@@ -337,9 +279,6 @@ const base_test = () => {
                             .post('/api/users')
                             .send(userC)
                             .end(async (err, res) => {
-                            if (err){
-                                console.log(err);
-                            }
                             res.should.have.status(200);
                             await drop_database()
                             done();
@@ -350,9 +289,7 @@ const base_test = () => {
                     chai.request(app)
                         .get('/api/users')
                         .end(async (err, res) => {
-                        if (err){
-                            console.log(err);
-                        }
+
                         res.should.have.status(200);
                         res.body.should.have.lengthOf(0)
                         done();
@@ -363,7 +300,7 @@ const base_test = () => {
                 let userB = UserData[1];
                 let invalid = [ 'less7',
                                 'NoNumeric$',
-                                'NoSpecialSymbol123;',
+                                'NoSpecialSymbol123',
                                 'NOLOWERCASE123#',
                                 'asd421434143#',
                                 ' ',
@@ -391,9 +328,7 @@ const base_test = () => {
                             .post('/api/users')
                             .send(userC)
                             .end((err, res) => {
-                            if (err){
-                                console.log(err);
-                            }
+
                             res.should.have.status(400);
                             res.body.error.should.eql(`${reasons[i]}`);
                             done();
@@ -409,9 +344,6 @@ const base_test = () => {
                             .post('/api/users')
                             .send(userC)
                             .end(async (err, res) => {
-                            if (err){
-                                console.log(err);
-                            }
                             res.should.have.status(200);
                             await drop_database()
                             done();
@@ -422,9 +354,7 @@ const base_test = () => {
                     chai.request(app)
                         .get('/api/users')
                         .end(async (err, res) => {
-                        if (err){
-                            console.log(err);
-                        }
+
                         res.should.have.status(200);
                         res.body.should.have.lengthOf(0)
                         done();

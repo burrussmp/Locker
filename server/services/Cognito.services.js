@@ -8,6 +8,8 @@ import jwt from "jsonwebtoken";
 import jwkToPem from "jwk-to-pem";
 import aws from "aws-sdk";
 import config from "../../config/config";
+import validators from '../services/validators';
+import StaticStrings from  '../../config/StaticStrings';
 
 // Configure AWS
 aws.config.update({
@@ -55,7 +57,7 @@ fetch(
  * @param String tokenType : Useful in debugging
  * @return a promise
  */
-const verifyCognitoToken = (token, tokenType) => {
+const verifyToken = (token, tokenType) => {
   return new Promise((resolve, reject) => {
     let decodedJwt = jwt.decode(token, { complete: true });
     if (!decodedJwt) {
@@ -72,7 +74,7 @@ const verifyCognitoToken = (token, tokenType) => {
       if (err) {
         reject(`Public signature does not match ${tokenType} token`);
       } else {
-        resolve(token);
+        resolve(decodedJwt);
       }
     });
   });
@@ -117,7 +119,7 @@ const getAuthenticateUserAsync = (cognitoUsername, password) => {
  * @param CognitoUserSession session : The Cognito user session
  * @return an Object with idToken, accessToken, refreshToken keys and payload key with id and access sub-keys
  */
-const parseCognitoUserSession = (session) => {
+const parseSession = (session) => {
   let idToken = session.getIdToken();
   let accessToken = session.getAccessToken();
   let refreshToken = session.getRefreshToken();
@@ -138,7 +140,7 @@ const parseCognitoUserSession = (session) => {
  * @desc Get the Cognito username from a parsed session object
 */
 const getCognitoUsername = (session) => {
-  let parsed_session = parseCognitoUserSession(session)
+  let parsed_session = parseSession(session)
   return parsed_session.payloads.id["cognito:username"];
 };
 
@@ -149,13 +151,13 @@ const getCognitoUsername = (session) => {
  */
 const verifySession = async (session) => {
   try {
-    let parsedSession = parseCognitoUserSession(session);
+    let parsedSession = parseSession(session);
     let idToken = parsedSession.idToken;
     let accessToken = parsedSession.accessToken;
-    await verifyCognitoToken(idToken, "id");
-    await verifyCognitoToken(accessToken, "access");
+    await verifyToken(idToken, "id");
+    await verifyToken(accessToken, "access");
   } catch (err) {
-    throw new Error(err);
+    throw err;
   }
 };
 
@@ -184,14 +186,24 @@ const deleteCognitoUser = async (cognitoUsername) => {
 * @return A promise that resolves if successful
 */
 const updateCognitoUser = async (cognitoUsername, update) => {
+  const __cognito_can_update__ = ['username','email','phone_number']
   const values = Object.values(update);
-  const keys = Object.keys(update);
+  let keys = Object.keys(update);
   let attributeList = [];
   for (let i = 0; i < values.length; ++i) {
-    attributeList.push({
-      Name: keys[i],
-      Value: values[i],
-    });
+    if (__cognito_can_update__.includes(keys[i])){
+      if (keys[i] == 'username'){
+        keys[i] = 'preferred_username';
+        let username_error = validators.isValidUsername(values[i]);
+        if (username_error){
+          throw username_error;
+        }
+      }
+      attributeList.push({
+        Name: keys[i],
+        Value: values[i],
+      });
+    }
   }
   const UpdateAttributes = {
     UserAttributes: attributeList,
@@ -214,7 +226,20 @@ const updateCognitoUser = async (cognitoUsername, update) => {
 * @param String : phone_number : A valid phone number
 * @return A promise that resolves if successful to a session
 */
-const Signup = (username, password, email, phone_number) => {
+const Signup = async (username, password, email, phone_number) => {
+  if (!email){
+    throw StaticStrings.UserModelErrors.EmailRequired
+  } else if (!phone_number) {
+    throw StaticStrings.UserModelErrors.PhoneNumberRequired
+  }
+  let password_error = validators.isValidPassword(password);
+  if (password_error){
+    throw password_error;
+  }
+  let username_error = validators.isValidUsername(username);
+  if (username_error){
+    throw username_error;
+  }
   let attributeList = [];
   attributeList.push(
     new AmazonCognitoIdentity.CognitoUserAttribute({
@@ -239,8 +264,8 @@ const Signup = (username, password, email, phone_number) => {
         if (err) {
           reject(err);
         } else {
-          return updateCognitoUser(cognitoUsername, {
-            preferred_username: username,
+          updateCognitoUser(cognitoUsername, {
+            username: username,
           })
             .then(() => {
               return getCognitoSession(cognitoUsername,password);
@@ -282,6 +307,18 @@ const refreshSession = async (prevSession) => {
   });
 };
 
+const getUser = (cognito_username) => {
+  let params = {
+    Username : cognito_username,
+    UserPoolId: UserPoolConfig.UserPoolId
+  }
+  return new Promise((resolve,reject)=> {
+    CognitoServiceProvider.adminGetUser(params,(err,result)=>{
+      return err ? reject(err) : resolve(result);
+    })
+  })
+}
+
 /**
 * @desc See if user logged in
 * @param String : username : can be username, phone number, or email, or preferred_username
@@ -295,11 +332,11 @@ const getCognitoSession = async (username, password) => {
       password
     );
     if (newPasswordRequired) {
-      throw new Error("New password required");
+      throw "New password required";
     }
     return session;
   } catch (err) {
-    console.log(err);
+    throw err;
   }
 };
 
@@ -315,18 +352,117 @@ const Login = async (username,password) => {
     verifySession(session);
     return session;
   } catch(err) {
-    throw new Error(err);
+    throw err;
   }
+}
+
+/**
+ * @desc Confirm a user with a code sent to email or SMS
+ * @param String : session : Unparsed session
+ * @param String : code : Code that the user was sent
+ * @return Promise that resolves if user is confirmed
+ */
+const confirmUser = (session,code) => {
+  let username = getCognitoUsername(session);
+  let params = {
+    ClientId : UserPoolConfig.ClientId,
+    Username : username,
+    ConfirmationCode: code,
+    ForceAliasCreation : false,
+
+   }
+  return new Promise((resolve,reject)=>{
+    CognitoServiceProvider.confirmSignUp(params,(err,results)=>{
+      return err ? reject(err) : resolve(results);
+    })
+  });
+}
+
+/**
+ * @desc Resets password if forgotten by sending a temporary password
+ * @param String : session : Unparsed session
+ * @return Promise that resolves if user is confirmed
+ */
+const forgotPassword = (session) => {
+  let username = getCognitoUsername(session);
+  let params = {
+    ClientId : UserPoolConfig.ClientId,
+    Username : username,
+   }
+  return new Promise((resolve,reject)=>{
+    CognitoServiceProvider.forgotPassword(params,(err,results)=>{
+      return err ? reject(err) : resolve(results);
+    })
+  });
+}
+
+/**
+ * @desc Confirm the forgotten password by entering temporary and code
+ * @param String : session : session to decode
+ * @param String : password : the password sent to confirm
+ * @param String : code : The code sent to verify login
+ * @return Promise that resolves if password forgot has been confirmed
+ */
+const confirmForgotPassword = (session,password,code) => {
+  let username = getCognitoUsername(session);
+  let params = {
+    ClientId : UserPoolConfig.ClientId,
+    Username : username,
+    ConfirmationCode: code,
+    Password: password
+
+   }
+  return new Promise((resolve,reject)=>{
+    CognitoServiceProvider.confirmForgotPassword(params,(err,results)=>{
+      return err ? reject(err) : resolve(results);
+    })
+  });
+}
+
+/**
+ * @desc Change password. First verify the token and then ping Cognito API.
+ * @param String : access_token : Access token sent to user
+ * @param String : old_password :  The old password
+ * @param String : password : A valid new password
+ * @return Promise that resolves if the password has been changed
+ */
+const changePassword = async (access_token,old_password,password) => {
+  let password_error = validators.isValidPassword(password);
+  if (password_error){
+    throw password_error;
+  }
+  try {
+    await verifyToken(access_token);
+  } catch(err){
+    throw err;
+  }
+  let params = {
+    AccessToken: access_token,
+    PreviousPassword: old_password,
+    ProposedPassword: password
+   }
+  return new Promise((resolve,reject)=>{
+    CognitoServiceProvider.changePassword(params,(err,results)=>{
+      return err ? reject(err) : resolve(results);
+    })
+  });
 }
 
 export default {
   Login,
   Signup,
   verifySession,
+  verifyToken,
   refreshSession,
   updateCognitoUser,
   deleteCognitoUser,
-  getCognitoUsername
+  getCognitoUsername,
+  parseSession,
+  confirmUser,
+  forgotPassword,
+  confirmForgotPassword,
+  changePassword,
+  getUser
 }
 
 

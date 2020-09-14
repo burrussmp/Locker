@@ -41,7 +41,7 @@ const replyByID = async (req, res, next, id) => {
         return res.status(500).json({error:StaticStrings.UnknownServerError});
     }
     try {
-        let reply = await Comment.findOne({'_id':req.params.commentId,'replies._id':req.params.replyId});
+        let reply = req.comment.replies.id(id);
         if (!reply) {
             return res.status('404').json({
                 error: StaticStrings.CommentModelErrors.ReplyNotFound
@@ -82,7 +82,7 @@ const listReplies = async (req,res) => {
  */
 const getReply = async (req,res) => {
     try {
-        let replies = await Comment_Services.fetchReplies(req.params.commentId,req.auth._id,req.params.replyId);
+        let replies = await Comment_Services.fetchReplies(req.params.commentId, req.auth._id, req.params.replyId);
         return res.status(200).json(replies[0]);
     } catch (err) {
         return res.status(404).json({error: StaticStrings.CommentModelErrors.ReplyNotFound});
@@ -169,7 +169,6 @@ const likeReply = async (req,res) => {
         let reply = await Comment_Services.likeReply(req.params.commentId,req.params.replyId,req.auth._id);
         return res.status(200).json({id:reply._id});
     } catch (err){
-        console.log(err);
         return res.status(500).json({error: errorHandler.getErrorMessage(err)})
     }
 }

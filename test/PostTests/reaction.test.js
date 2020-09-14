@@ -9,9 +9,10 @@ import Media from '../../server/models/media.model';
 import Comment from '../../server/models/comment.model';
 import Post from '../../server/models/post.model';
 import StaticStrings from '../../config/StaticStrings';
-import {drop_database} from  '../helper';
-import _ from 'lodash';
+import {drop_database,createUser} from  '../helper';
+import _, { drop } from 'lodash';
 import mongoose from 'mongoose';
+import permissions from '../../server/permissions';
 
 const ReactionTypes = mongoose.models.Post.schema.tree.reactions[0].tree.type.enum.values;
 
@@ -31,39 +32,34 @@ const reaction_test = () => {
             let userId0,userId1,userId2;
             let agent = chai.request.agent(app);
             let userToken0,userToken1;
-            let postId0;
-            beforeEach(async()=>{
+            let postId0,postId1;
+            before (async()=>{
                 await drop_database();
-                for (let user of UserData){
-                    let new_user = new User(user);
-                    await new_user.save()
-                }
-                await agent.get('/api/users').then(res=>{
-                    res.body.length.should.eql(3);
-                    res.body[0].username.should.eql(UserData[0].username)
-                    userId0 = res.body[0]._id;
-                    userId1 = res.body[1]._id;
-                    userId2 = res.body[2]._id
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[0].email,
-                    password: UserData[0].password
-                }).then((res) => {
-                    userToken0 = res.body.token;
-                });
-                await agent.post('/auth/login').send({
-                    login: UserData[1].email,
-                    password: UserData[1].password
-                }).then((res) => {
-                    userToken1 = res.body.token;
-                });
+                let user = await createUser(UserData[0]);
+                userId0 = user._id;
+                userToken0 = user.access_token;
+                user = await createUser(UserData[1]);
+                userId1 = user._id;
+                userToken1 = user.access_token;
+                user = await createUser(UserData[2]);
+                userId2 = user._id;  
                 await agent.post(`/api/posts?access_token=${userToken0}&type=ContentPost`)
                     .attach("media",image1)
                     .field(PostData[0])
                     .then((res)=>{
                         res.status.should.eql(200);
                         postId0 = res.body._id;
-                    })
+                })
+                await agent.post(`/api/posts?access_token=${userToken1}&type=ContentPost`)
+                    .attach("media",video)
+                    .field(PostData[1])
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                        postId1 = res.body._id;
+                })
+            });
+            after(async()=>{ 
+                await drop_database();
             });
             it("See if all valid reactions work",async()=>{
                 for (let reaction of ReactionTypes){
@@ -115,12 +111,14 @@ const reaction_test = () => {
                 });
             });
             it("Delete before reaction (should fail)",async()=>{
-                return agent.delete(`/api/posts/${postId0}/reaction?access_token=${userToken0}`)
-                .then(async res=>{
-                    console.log(res.bd)
-                    res.status.should.eql(404);
-                    res.body.error.should.eql(StaticStrings.PostModelErrors.NoReactionToDelete);
-                });
+                return agent.delete(`/api/posts/${postId0}/reaction?access_token=${userToken0}`).then(()=>{
+                    return agent.delete(`/api/posts/${postId0}/reaction?access_token=${userToken0}`)
+                    .then(async res=>{
+                        res.status.should.eql(404);
+                        res.body.error.should.eql(StaticStrings.PostModelErrors.NoReactionToDelete);
+                    });
+                })
+
             });
             it("React, delete, and check if selected adjusted (should be fine)",async()=>{
                 return agent.put(`/api/posts/${postId0}/reaction?access_token=${userToken0}`)

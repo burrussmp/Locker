@@ -3,7 +3,7 @@ import chaiHttp from 'chai-http';
 
 import {app} from '../../server/server';
 import {UserData} from '../../development/user.data'
-import {drop_database} from  '../helper';
+import {drop_database, createUser, getAccessToken} from  '../helper';
 import User from '../../server/models/user.model';
 import StaticStrings from '../../config/StaticStrings';
 chai.use(chaiHttp);
@@ -14,31 +14,23 @@ const change_password_test = () => {
         describe('PUT /api/users/:userId/password', ()=>{
             let id0,id1;
             let agent = chai.request.agent(app);
-            let login_user = {
-                login: UserData[0].email,
-                password: UserData[0].password
-            };
-            let token;
             let valid_password = "myNewPassword12$";
             let invalid_password = "bad";
-            beforeEach( async () =>{
+            let access_token0,access_token1;
+            before( async () =>{
                 await drop_database();
-                let user = new User(UserData[0]);
-                await user.save();
-                user = new User(UserData[1]);
-                await user.save();
-                await agent.get('/api/users').then(res=>{
-                    res.body.length.should.eql(2);
-                    res.body[0].username.should.eql(UserData[0].username)
-                    id0 = res.body[0]._id;
-                    id1 = res.body[1]._id;
-                });
-                await agent.post('/auth/login').send(login_user).then((res) => {
-                    token = res.body.token;
-                });  
+                let user = await createUser(UserData[0]);
+                id0 = user._id;
+                access_token0 = user.access_token;
+                user = await createUser(UserData[1]);
+                access_token1 = user.access_token;
+                id1 = user._id;
             });
+            after( async ()=>{
+                await drop_database();
+            })
             it("Not owner (should fail)",async ()=>{
-                return agent.put(`/api/users/${id1}/password?access_token=${token}`)
+                return agent.put(`/api/users/${id1}/password?access_token=${access_token0}`)
                     .send({
                         'old_password' : UserData[0].password,
                         'password' : valid_password
@@ -60,7 +52,7 @@ const change_password_test = () => {
                 });
             });
             it("User does not exists (should fail)",async ()=>{
-                return agent.put(`/api/users/fdafd/password?access_token=${token}`)
+                return agent.put(`/api/users/fdafd/password?access_token=${access_token0}`)
                 .send({
                     'old_password' : UserData[0].password,
                     'password' : valid_password
@@ -71,19 +63,26 @@ const change_password_test = () => {
                 });
             });
             it("Invalid permissions (should fail)", async()=>{
-                let user = await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':["user:read"]},{new:true});
-                return agent.put(`/api/users/${id0}/password?access_token=${token}`)
+                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':["user:read"]},{new:true});
+                return agent.put(`/api/users/${id0}/password?access_token=${access_token0}`)
                 .send({
                     'old_password' : UserData[0].password,
                     'password' : valid_password
                 })
-                .then(res=>{
+                .then(async res=>{
                     res.status.should.eql(403);
                     res.body.error.should.eql(StaticStrings.InsufficientPermissionsError)
+                    await drop_database();
+                    let user = await createUser(UserData[0]);
+                    id0 = user._id;
+                    access_token0 = user.access_token;
+                    user = await createUser(UserData[1]);
+                    access_token1 = user.access_token;
+                    id1 = user._id;
                 });
             });
             it("/PUT w/ old password doesn't match current password (should fail)", async ()=>{
-                return agent.put(`/api/users/${id0}/password?access_token=${token}`)
+                return agent.put(`/api/users/${id0}/password?access_token=${access_token0}`)
                 .send({
                     'old_password' : UserData[1].password,
                     'password' : valid_password
@@ -94,7 +93,7 @@ const change_password_test = () => {
                 });
             });
             it("/PUT missing old password (should fail)", async ()=>{
-                return agent.put(`/api/users/${id0}/password?access_token=${token}`)
+                return agent.put(`/api/users/${id0}/password?access_token=${access_token0}`)
                 .send({
                     'password' : valid_password
                 })
@@ -104,7 +103,7 @@ const change_password_test = () => {
                 });
             });
             it("/PUT missing new password (should fail)", async ()=>{
-                return agent.put(`/api/users/${id0}/password?access_token=${token}`)
+                return agent.put(`/api/users/${id0}/password?access_token=${access_token0}`)
                 .send({
                     'old_password' : valid_password
                 })
@@ -113,8 +112,8 @@ const change_password_test = () => {
                     res.body.error.should.eql(StaticStrings.BadRequestFieldsNeeded + ' password')
                 });
             });
-            it("/PUT try to update with same, old password (should fail)", async ()=>{
-                return agent.put(`/api/users/${id0}/password?access_token=${token}`)
+            it("/PUT try to update with same, old password (should be fine)", async ()=>{
+                return agent.put(`/api/users/${id0}/password?access_token=${access_token0}`)
                 .send({
                     'old_password' : UserData[0].password,
                     'password' : UserData[0].password
@@ -125,7 +124,7 @@ const change_password_test = () => {
                 });
             });
             it("/PUT invalid new password (should fail)", async ()=>{
-                return agent.put(`/api/users/${id0}/password?access_token=${token}`)
+                return agent.put(`/api/users/${id0}/password?access_token=${access_token0}`)
                 .send({
                     'old_password' : UserData[0].password,
                     'password' : invalid_password
@@ -136,7 +135,7 @@ const change_password_test = () => {
                 });
             });
             it("/PUT tries to update different field other than password", async ()=>{
-                return agent.put(`/api/users/${id0}/password?access_token=${token}`)
+                return agent.put(`/api/users/${id0}/password?access_token=${access_token0}`)
                 .send({
                     'old_password' : UserData[0].password,
                     'password' : invalid_password,
@@ -147,8 +146,8 @@ const change_password_test = () => {
                     res.body.error.should.eql(StaticStrings.BadRequestInvalidFields + ' username')
                 });
             });
-            it("/PUT new password is valid, old password is correct, so password should update", async ()=>{
-                return agent.put(`/api/users/${id0}/password?access_token=${token}`)
+            it("/PUT new password is valid, old password is correct, so password should update and we can login with new password", async ()=>{
+                return agent.put(`/api/users/${id0}/password?access_token=${access_token0}`)
                 .send({
                     'old_password' : UserData[0].password,
                     'password' : valid_password,
@@ -156,8 +155,11 @@ const change_password_test = () => {
                 .then(async res=>{
                     res.status.should.eql(200);
                     res.body.message.should.eql(StaticStrings.UpdatedPasswordSuccess)
-                    let user_new_pass = await User.findOne({'username':UserData[0].username});
-                    user_new_pass.authenticate(valid_password).should.be.true;
+                    let login = {
+                        login: UserData[0].username,
+                        password:valid_password
+                    };
+                    return getAccessToken(login);
                 });
             });
         });

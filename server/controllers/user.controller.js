@@ -7,7 +7,8 @@ import S3_Services from '../services/S3.services';
 import _ from 'lodash';
 import fs from 'fs';
 import mediaController from './media.controller';
-import authController from './auth.controller';
+import CognitoServices from '../services/Cognito.services';
+import dbErrorHandler from '../services/dbErrorHandler';
 
 const DefaultProfilePhoto = process.cwd() + "/client/assets/images/profile-pic.png"
 
@@ -16,10 +17,6 @@ const DefaultProfilePhoto = process.cwd() + "/client/assets/images/profile-pic.p
   * @param Object User query result
 */ 
 const filter_user = (user) => {
-  user.hashed_password = undefined;
-  user.salt = undefined;
-  user.phone_number = undefined;
-  user.email = undefined;
   user.permissions = undefined;
   user.gender = undefined;
   user.__v = undefined;
@@ -32,30 +29,42 @@ const filter_user = (user) => {
   * @param Object res - HTTP response object
 */ 
 const create = async (req, res) => {
-  let new_user = {
-    first_name: req.body.first_name,
-    phone_number: req.body.phone_number,
-    last_name : req.body.last_name,
-    username : req.body.username,
-    gender : req.body.gender,
-    email : req.body.email,
-    date_of_birth : req.body.date_of_birth,
-    about : req.body.about,
-    password: req.body.password
-  }
-  try {
-    let user = new User(new_user)
-    await user.save()
-    let token = authController.createToken(user);
-    res.cookie("t", token, { // put in cookies
-      expire: new Date() + 9999
-    })
-    return res.status(200).json({
-      token : token,
-      _id : user._id
-    })
+  let {username,password,email,phone_number} = req.body;
+  let session,cognito_user;
+  try{
+    session = await CognitoServices.Signup(username,password,email,phone_number);
   } catch (err) {
     return res.status(400).json({error: errorHandler.getErrorMessage(err)})
+  }
+  try {
+    cognito_user = CognitoServices.getCognitoUsername(session);
+    let new_user = {
+      cognito_username: cognito_user,
+      username : username,
+      first_name: req.body.first_name,
+      last_name : req.body.last_name,
+      gender : req.body.gender,
+      date_of_birth : req.body.date_of_birth,
+      about : req.body.about,
+    }
+    let user = new User(new_user)
+    user = await user.save()
+    res.cookie("t", session, {
+      expire: new Date() + 9999
+    })
+    let parsed_session = CognitoServices.parseSession(session);
+    return res.json({
+      access_token: parsed_session.accessToken,
+      id_token : parsed_session.idToken,
+      refresh_token : parsed_session.refreshToken,
+      _id : user._id
+    })   
+  } catch (err) {
+    CognitoServices.deleteCognitoUser(cognito_user).then(()=>{
+      return res.status(400).json({error: errorHandler.getErrorMessage(err)})
+    }).catch(err=>{
+      return res.status(500).json({error:StaticStrings.UnknownServerError + err});
+    })
   }
 }
 
@@ -70,7 +79,7 @@ const userByID = async (req, res, next, id) => {
       .populate('following', '_id name')
       .populate('followers', '_id name')
       .populate("profile_photo",'_id key mimetype')
-      .exec()
+      .exec();
     if (!user)
       return res.status('404').json({
         error: StaticStrings.UserNotFoundError
@@ -90,7 +99,7 @@ const userByID = async (req, res, next, id) => {
 */ 
 const read = (req, res) => {
   req.profile = filter_user(req.profile);
-  return res.json(req.profile)
+  return res.status(200).json(req.profile)
 }
 
 /**
@@ -129,11 +138,9 @@ const update = async (req, res) => {
       return res.status(422).json({error:`${StaticStrings.BadRequestInvalidFields} ${invalid_fields}`})
     }
     try {
-      let query = {'_id' : req.params.userId};
-      let user = await User.findOneAndUpdate(query, req.body,{new:true,runValidators:true});
+      await CognitoServices.updateCognitoUser(req.auth.cognito_username,req.body)
+      let user = await User.findOneAndUpdate({'_id' : req.params.userId}, req.body,{new:true,runValidators:true});
       if (!user) return res.status(500).json({error:StaticStrings.UnknownServerError}) // possibly unable to fetch
-      res.hashed_password = undefined;
-      res.salt = undefined;
       return res.status(200).json(user)
     } catch (err) {
       return res.status(400).json({error: errorHandler.getErrorMessage(err)});
@@ -147,10 +154,7 @@ const update = async (req, res) => {
 */ 
 const remove = async (req, res) => {
   try {
-    let user = req.profile
-    let deletedUser = await user.deleteOne()
-    deletedUser.hashed_password = undefined
-    deletedUser.salt = undefined
+    let deletedUser = await req.profile.deleteOne()
     return res.json(deletedUser)
   } catch (err) {
     return res.status(500).json({error: errorHandler.getErrorMessage(err)});
@@ -178,17 +182,20 @@ const changePassword = async (req,res) => {
   if(fields_extra.length != 0){
     return res.status(422).json({error:`${StaticStrings.BadRequestInvalidFields} ${fields_extra}`})
   }
-  // to be safe
-  let update = {
-    'old_password' : req.body.old_password,
-    'password' : req.body.password
-  };
+  if (req.body.old_password == req.body.password) {
+    return res.status(400).json({error:StaticStrings.UserModelErrors.PasswordUpdateSame})
+  }
   try {
-    let query = {'_id' : req.params.userId};
-    await User.findOneAndUpdate(query, update,{new:true,runValidators:true});
+    await CognitoServices.changePassword(req.query.access_token,req.body.old_password,req.body.password)
     return res.status(200).json({message: StaticStrings.UpdatedPasswordSuccess});
   } catch (err) {
-    return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+    let errMessage = dbErrorHandler.getErrorMessage(err);
+    if (errMessage == 'Incorrect username or password.'){
+      res.status(400).json({error: StaticStrings.UserModelErrors.PasswordUpdateIncorrectError});
+    } else {
+      return res.status(400).json({error: errMessage});
+    }
+    
   }
 }
 
@@ -293,7 +300,7 @@ const Follow = async (req,res) => {
   if (!myID || !theirID){
     return res.status(400).json({error:StaticStrings.UserControllerErrors.FollowingMissingID});
   }
-  if (req.params.userId === myID){
+  if (req.params.userId == myID){
     return res.status(422).json({error: StaticStrings.UserControllerErrors.FollowSelfError}) // cannot follow self
   } else {
     try {
@@ -322,7 +329,7 @@ const Unfollow = async (req, res) => {
   if (!myID || !theirID){
     return res.status(400).json({error:StaticStrings.UserControllerErrors.FollowingMissingID});
   }
-  if (req.params.userId === myID){
+  if (req.params.userId == myID){
     return res.status(422).json({error: StaticStrings.UserControllerErrors.UnfollowSelfError}) // cannot follow self
   } else {
     try {

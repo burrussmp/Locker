@@ -43,7 +43,6 @@ const postByID = async (req,res,next,id) => {
     req.owner = post.postedBy.toString();
     next()
   } catch (err) {
-    console.log(err)
       return res.status(404).json({
           error: StaticStrings.PostModelErrors.PostNotFoundError
       })
@@ -171,7 +170,6 @@ const getComment = async (req,res) => {
     ])
     return res.status(200).json(comment[0]);
   }catch(err){
-    console.log(err);
     return res.status(500).json({error:errorHandler.getErrorMessage(err)})
   }
 }
@@ -186,7 +184,8 @@ const createComment = async (req,res) => {
   try {
     let comment_data = {
       text: req.body.text,
-      postedBy: req.auth._id
+      postedBy: req.auth._id,
+      postId: req.params.postId
     }
     let new_comment = new Comment(comment_data);
     new_comment = await new_comment.save();
@@ -244,7 +243,6 @@ const getReaction = async (req,res) => {
     }
     return res.status(200).json(reactionData);
   }catch(err){
-    console.log(err);
     return res.status(500).json({error:errorHandler.getErrorMessage(err)})
   }}
 
@@ -294,7 +292,6 @@ const removeReaction = async (req,res) => {
       return res.status(404).send({error:StaticStrings.PostModelErrors.NoReactionToDelete});
     }
   } catch (err){
-    console.log(err)
     return res.status(500).json({error:errorHandler.getErrorMessage(err)})
   }
 

@@ -2,7 +2,44 @@
 
 import mongoose from 'mongoose';
 
+import User from '../server/models/user.model'
+import Post from '../server/models/post.model';
+import fetch from 'node-fetch';
+
+const createUser = async (data) => {
+    return fetch('http://localhost:3000/api/users',{
+        'method' : 'POST',
+        'headers' : {
+            'Content-Type' : 'application/json'
+        },
+        body : JSON.stringify(data)
+    }).then(res=>res.json())
+}
+
+const getAccessToken = async (data) => {
+    let login_info = {
+        'login' : data.username,
+        'password' : data.password
+    };
+    let session =  await fetch('http://localhost:3000/auth/login',{
+        'method' : 'POST',
+        'headers' : {
+            'Content-Type' : 'application/json'
+        },
+        body : JSON.stringify(login_info)
+    }).then(res=>res.json());
+    return session.access_token;
+}
+
 const drop_database = async () => {
+    let cursor = User.find().cursor();
+    for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
+        await doc.deleteOne();
+    }
+    cursor = Post.find().cursor();
+    for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
+        await doc.deleteOne();
+    }
     return mongoose.connection.dropDatabase()
 };
 
@@ -24,6 +61,9 @@ const buffer_equality = (buf1, buf2) =>
 }
 
 export {
-    drop_database,drop_database2,
-    buffer_equality
+    drop_database,
+    drop_database2,
+    buffer_equality,
+    createUser,
+    getAccessToken
 }
