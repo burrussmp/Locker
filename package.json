@@ -18,7 +18,7 @@
   "homepage": "https://github.com/burrussmp/Locker.git",
   "main": "./dist/server.generated.js",
   "scripts": {
-    "test": "NODE_ENV=test mocha --timeout 10000 ./test/mochacfg.js --require @babel/register ./test/index.js",
+    "test": "NODE_ENV=test mocha --timeout 20000 ./test/mochacfg.js --require @babel/register ./test/index.js",
     "development": "nodemon",
     "build": "webpack --config webpack.config.client.production.js && webpack --mode=production --config webpack.config.server.js",
     "start": "NODE_ENV=production node ./dist/server.generated.js"

@@ -39,7 +39,6 @@ const reply_test = () => {
                     .attach("media",image1)
                     .field(PostData[0])
                     .then((res)=>{
-                        console.log(res.body.error)
                         res.status.should.eql(200);
                         postId0 = res.body._id;
                     })

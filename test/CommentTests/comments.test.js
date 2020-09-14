@@ -231,7 +231,7 @@ const comments_test = () => {
             let agent = chai.request.agent(app);
             let userToken0,userToken1;
             let postId0;
-            let commentId0,commentId1;
+            let commentId0,commentId1,commentId2;
             before (async()=>{
                 await drop_database();
                 let user = await createUser(UserData[0]);
@@ -242,7 +242,6 @@ const comments_test = () => {
                 userToken1 = user.access_token;
                 user = await createUser(UserData[2]);
                 userId2 = user._id;  
-            beforeEach(async()=>{
                 await agent.post(`/api/posts?access_token=${userToken0}&type=ContentPost`)
                 .attach("media",image1)
                 .field(PostData[0])
@@ -262,12 +261,17 @@ const comments_test = () => {
                         res.status.should.eql(200);
                         commentId1 = res.body._id;
                     })
+                await agent.post(`/api/${postId0}/comments?access_token=${userToken1}`)
+                    .send({text:"delete this one"})
+                    .then((res)=>{
+                        res.status.should.eql(200);
+                        commentId2 = res.body._id;
+                    })
                 await agent.put(`/api/${commentId0}/likes?access_token=${userToken1}`)
                     .then((res)=>{
                         res.status.should.eql(200);
                     })     
                 });
-            })
             after(async()=>{
                 let posts = await Post.find();
                 for (let post of posts){
@@ -277,13 +281,14 @@ const comments_test = () => {
                 for (let comment of comments){
                     await comment.deleteOne();
                 }
+                await drop_database()
             })
             it("Delete twice (first succeeds and second 404s)",async()=>{
-                return agent.delete(`/api/comments/${commentId1}?access_token=${userToken0}`)
+                return agent.delete(`/api/comments/${commentId2}?access_token=${userToken1}`)
                     .then(async res=>{
                         res.status.should.eql(200);
                         res.body.should.have.property('_id')
-                        return agent.delete(`/api/comments/${commentId1}?access_token=${userToken0}`)
+                        return agent.delete(`/api/comments/${commentId2}?access_token=${userToken1}`)
                         .then(async res=>{
                             res.status.should.eql(404);
                             res.body.error.should.eql(StaticStrings.CommentModelErrors.CommentNotFoundError);
@@ -311,12 +316,22 @@ const comments_test = () => {
                         res.body.error.should.eql(StaticStrings.NotOwnerError) 
                 });  
             })
-            it("Owner of comment but not post (should succeed)",async()=>{
+            it("Delete comment as owner of comment but not post, then repost comment and like it (should succeed)",async()=>{
                 return agent.delete(`/api/comments/${commentId0}?access_token=${userToken1}`)
                     .then(async res=>{
                         res.status.should.eql(200);
+                        return agent.post(`/api/${postId0}/comments?access_token=${userToken1}`)
+                        .send({text:CommentData[0].text})
+                        .then((res)=>{
+                            res.status.should.eql(200);
+                            commentId0 = res.body._id;
+                            return agent.put(`/api/${commentId0}/likes?access_token=${userToken1}`)
+                            .then((res)=>{
+                                res.status.should.eql(200);
+                            })     
+                        });
+                    }) 
                 });  
-            })
             it("Bad Permissions (should fail)",async()=>{
                 await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':["user:read"]},{new:true});
                 return agent.delete(`/api/comments/${commentId1}?access_token=${userToken0}`)
@@ -329,6 +344,7 @@ const comments_test = () => {
             it("Get comment that you haven't liked and see if it shows that (should succeed)",async()=>{
                 return agent.get(`/api/comments/${commentId0}?access_token=${userToken0}`)
                     .then(async res=>{
+                        console.log(res.body.error)
                         res.status.should.eql(200);
                         res.body.text.should.eql(CommentData[0].text);
                         res.body.postedBy.toString().should.eql(userId1);
