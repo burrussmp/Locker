@@ -102,7 +102,7 @@ const createReply = async (req,res) => {
     }
     try {
         let new_reply = await Comment_Services.addReply(req.params.commentId,reply);
-        return res.status(200).json({"id":new_reply._id});
+        return res.status(200).json({"_id":new_reply._id});
     } catch (err) {
         if (errorHandler.getErrorMessage(err).includes(StaticStrings.CommentModelErrors.ReplyTextRequired))
             return res.status(400).json({error: StaticStrings.CommentModelErrors.ReplyTextRequired}) 
@@ -125,7 +125,7 @@ const editReply = async (req,res) => {
         let reply = await Comment_Services.editReply(req.params.commentId,req.params.replyId,req.body.text);
         return res.status(200).json(
             {
-                'id' : reply._id,
+                '_id' : reply._id,
                 'text':reply.text
             }
         );
@@ -147,7 +147,7 @@ const deleteReply = async (req,res) => {
     try {
         let reply = await Comment_Services.deleteReply(req.params.commentId,req.params.replyId);
         return res.status(200).json({
-            'id' : reply._id
+            '_id' : reply._id
         });
     } catch (err) {
         if (errorHandler.getErrorMessage(err).includes(StaticStrings.CommentModelErrors.ReplyTextRequired))

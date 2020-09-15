@@ -359,7 +359,7 @@ const avatar_test = () => {
                             })
                     })
                 });
-            }).timeout(6000);
+            })
         });
         describe("/DELETE /api/users/:userId/avatar (A user has a non-default photo to begin each test)",()=>{
             let id0,id1;

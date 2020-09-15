@@ -205,7 +205,7 @@ const reply_test = () => {
                 .send({text: new_reply})
                 .then(res=>{
                     res.status.should.eql(200);
-                    res.body.should.have.property('id')
+                    res.body.should.have.property('_id')
                     return agent.get(`/api/${comment_id_array[0]}/replies?access_token=${userToken1}`)
                         .then(async res=>{
                             let reply_index = 0;
@@ -225,7 +225,7 @@ const reply_test = () => {
                 .send({text: new_reply,dumb_field:"hello"})
                 .then(res=>{
                     res.status.should.eql(200);
-                    res.body.should.have.property('id')
+                    res.body.should.have.property('_id')
                     return agent.get(`/api/${comment_id_array[0]}/replies?access_token=${userToken1}`)
                         .then(res=>{
                             let reply_index = 0;
@@ -519,7 +519,7 @@ const reply_test = () => {
                 .send({text:"What a reply!"})
                 .then((res)=>{
                     res.status.should.eql(200);
-                    let replyId = res.body.id;
+                    let replyId = res.body._id;
                     return agent.get(`/api/${comment_id_array[0]}/replies/${replyId}?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(200);
@@ -544,7 +544,7 @@ const reply_test = () => {
                 .send({text:"What a reply!"})
                 .then((res)=>{
                     res.status.should.eql(200);
-                    let replyId = res.body.id;
+                    let replyId = res.body._id;
                     return agent.get(`/api/${"jflksjflkdsjf"}/replies/${replyId}?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(404);
@@ -557,7 +557,7 @@ const reply_test = () => {
                 .send({text:"What a reply!"})
                 .then((res)=>{
                     res.status.should.eql(200);
-                    let replyId = res.body.id;
+                    let replyId = res.body._id;
                     return agent.get(`/api/${comment_id_array[0]}/replies/${replyId}`)
                     .then(async res=>{
                         res.status.should.eql(401);
@@ -570,7 +570,7 @@ const reply_test = () => {
                 .send({text:"What a reply!"})
                 .then(async (res)=>{
                     res.status.should.eql(200);
-                    let replyId = res.body.id;
+                    let replyId = res.body._id;
                     await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':["post:edit_content"]},{new:true});
                     return agent.get(`/api/${comment_id_array[0]}/replies/${replyId}?access_token=${userToken0}`)
                     .then(async res=>{
@@ -642,13 +642,13 @@ const reply_test = () => {
         //         .send({text:"What a reply!"})
         //         .then((res)=>{
         //             res.status.should.eql(200);
-        //             let replyId = res.body.id;
+        //             let replyId = res.body._id;
         //             return agent.put(`/api/${comment_id_array[0]}/replies/${replyId}?access_token=${userToken0}`)
         //             .send({text:"This should change!"})
         //             .then(async res=>{
         //                 res.status.should.eql(200);
         //                 res.body.text.should.eql("This should change!");
-        //                 res.body.should.have.property('id')
+        //                 res.body.should.have.property('_id')
         //             });
         //         });  
         //     })
@@ -657,7 +657,7 @@ const reply_test = () => {
         //         .send({text:"What a reply!"})
         //         .then(async (res)=>{
         //             res.status.should.eql(200);
-        //             let replyId = res.body.id;
+        //             let replyId = res.body._id;
         //             let comment = await Comment.findById(comment_id_array[0]);
         //             userId0.should.eql(comment.postedBy.toString());
         //             return agent.put(`/api/${comment_id_array[0]}/replies/${replyId}?access_token=${userToken1}`)
@@ -673,7 +673,7 @@ const reply_test = () => {
         //         .send({text:"What a reply!"})
         //         .then((res)=>{
         //             res.status.should.eql(200);
-        //             let replyId = res.body.id;
+        //             let replyId = res.body._id;
         //             return agent.put(`/api/${comment_id_array[0]}/replies/${replyId}?access_token=${userToken0}`)
         //             .send({text:"   "})
         //             .then(async res=>{
@@ -687,7 +687,7 @@ const reply_test = () => {
         //         .send({text:"What a reply!"})
         //         .then((res)=>{
         //             res.status.should.eql(200);
-        //             let replyId = res.body.id;
+        //             let replyId = res.body._id;
         //             return agent.put(`/api/${comment_id_array[0]}/replies/${replyId}?access_token=${userToken0}`)
         //             .send({other_field:""})
         //             .then(async res=>{
@@ -702,7 +702,7 @@ const reply_test = () => {
         //         .send({text:"hi"})
         //         .then((res)=>{
         //             res.status.should.eql(200);
-        //             let replyId = res.body.id;
+        //             let replyId = res.body._id;
         //             return agent.put(`/api/${comment_id_array[0]}/replies/${replyId}?access_token=${userToken0}`)
         //             .send({text:new_text})
         //             .then(async res=>{
@@ -716,7 +716,7 @@ const reply_test = () => {
         //         .send({text:"hi"})
         //         .then((res)=>{
         //             res.status.should.eql(200);
-        //             let replyId = res.body.id;
+        //             let replyId = res.body._id;
         //             return agent.put(`/api/${comment_id_array[0]}/replies/${"dummy"}?access_token=${userToken0}`)
         //             .send({text:"new text"})
         //             .then(async res=>{
@@ -730,7 +730,7 @@ const reply_test = () => {
         //         .send({text:"hi"})
         //         .then((res)=>{
         //             res.status.should.eql(200);
-        //             let replyId = res.body.id;
+        //             let replyId = res.body._id;
         //             return agent.put(`/api/${"dumb"}/replies/${replyId}?access_token=${userToken0}`)
         //             .send({text:"new text"})
         //             .then(async res=>{
@@ -744,7 +744,7 @@ const reply_test = () => {
         //         .send({text:"hi"})
         //         .then((res)=>{
         //             res.status.should.eql(200);
-        //             let replyId = res.body.id;
+        //             let replyId = res.body._id;
         //             return agent.put(`/api/${comment_id_array[0]}/replies/${replyId}`)
         //             .send({text:"new text"})
         //             .then(async res=>{
@@ -758,7 +758,7 @@ const reply_test = () => {
         //         .send({text:"hi"})
         //         .then(async (res)=>{
         //             res.status.should.eql(200);
-        //             let replyId = res.body.id;
+        //             let replyId = res.body._id;
         //             await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':["post:edit_content"]},{new:true});
         //             return agent.put(`/api/${comment_id_array[0]}/replies/${replyId}?access_token=${userToken0}`)
         //             .send({text:"new text"})
@@ -842,7 +842,7 @@ const reply_test = () => {
                 .send({text:"What a reply!"})
                 .then((res)=>{
                     res.status.should.eql(200);
-                    let replyId = res.body.id;
+                    let replyId = res.body._id;
                     return agent.delete(`/api/${comment_id_array[0]}/replies/${replyId}?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(200);
@@ -856,7 +856,7 @@ const reply_test = () => {
                 .send({text:"What a reply!"})
                 .then((res)=>{
                     res.status.should.eql(200);
-                    let replyId = res.body.id;
+                    let replyId = res.body._id;
                     return agent.delete(`/api/${comment_id_array[0]}/replies/${replyId}?access_token=${userToken1}`)
                     .then(async res=>{
                         res.status.should.eql(403);
@@ -868,7 +868,7 @@ const reply_test = () => {
                 .send({text:"What a reply!"})
                 .then((res)=>{
                     res.status.should.eql(200);
-                    let replyId = res.body.id;
+                    let replyId = res.body._id;
                     return agent.delete(`/api/${comment_id_array[0]}/replies/${"dumb"}?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(404);
@@ -880,7 +880,7 @@ const reply_test = () => {
                 .send({text:"What a reply!"})
                 .then((res)=>{
                     res.status.should.eql(200);
-                    let replyId = res.body.id;
+                    let replyId = res.body._id;
                     return agent.delete(`/api/${"dumb"}/replies/${replyId}?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(404);
@@ -892,7 +892,7 @@ const reply_test = () => {
                 .send({text:"What a reply!"})
                 .then((res)=>{
                     res.status.should.eql(200);
-                    let replyId = res.body.id;
+                    let replyId = res.body._id;
                     return agent.delete(`/api/${comment_id_array[0]}/replies/${replyId}`)
                     .then(async res=>{
                         res.status.should.eql(401);
@@ -904,7 +904,7 @@ const reply_test = () => {
                 .send({text:"What a reply!"})
                 .then(async (res)=>{
                     res.status.should.eql(200);
-                    let replyId = res.body.id;
+                    let replyId = res.body._id;
                     await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':["post:edit_content"]},{new:true});
                     return agent.delete(`/api/${comment_id_array[0]}/replies/${replyId}?access_token=${userToken0}`)
                     .then(async res=>{
@@ -987,11 +987,11 @@ const reply_test = () => {
                 .send({text:"What a reply!"})
                 .then((res)=>{
                     res.status.should.eql(200);
-                    let replyId = res.body.id;
+                    let replyId = res.body._id;
                     return agent.put(`/api/${comment_id_array[0]}/replies/${replyId}/likes?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(200);
-                        res.body.id.should.eql(replyId);
+                        res.body._id.should.eql(replyId);
                         return agent.get(`/api/${comment_id_array[0]}/replies/${replyId}?access_token=${userToken0}`)
                             .then((res)=>{
                                 res.status.should.eql(200);
@@ -1005,11 +1005,11 @@ const reply_test = () => {
                 .send({text:"What a reply!"})
                 .then((res)=>{
                     res.status.should.eql(200);
-                    let replyId = res.body.id;
+                    let replyId = res.body._id;
                     return agent.delete(`/api/${comment_id_array[0]}/replies/${replyId}/likes?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(200);
-                        res.body.id.should.eql(replyId);
+                        res.body._id.should.eql(replyId);
                         return agent.get(`/api/${comment_id_array[0]}/replies/${replyId}?access_token=${userToken0}`)
                             .then((res)=>{
                                 res.status.should.eql(200);
@@ -1023,13 +1023,13 @@ const reply_test = () => {
                 .send({text:"What a reply!"})
                 .then((res)=>{
                     res.status.should.eql(200);
-                    let replyId = res.body.id;
+                    let replyId = res.body._id;
                     return agent.put(`/api/${comment_id_array[0]}/replies/${replyId}/likes?access_token=${userToken0}`)
                         .then(()=>{
                             return agent.put(`/api/${comment_id_array[0]}/replies/${replyId}/likes?access_token=${userToken0}`)
                             .then(async res=>{
                                 res.status.should.eql(200);
-                                res.body.id.should.eql(replyId);
+                                res.body._id.should.eql(replyId);
                                 return agent.get(`/api/${comment_id_array[0]}/replies/${replyId}?access_token=${userToken0}`)
                                     .then((res)=>{
                                         res.status.should.eql(200);
@@ -1044,13 +1044,13 @@ const reply_test = () => {
                 .send({text:"What a reply!"})
                 .then((res)=>{
                     res.status.should.eql(200);
-                    let replyId = res.body.id;
+                    let replyId = res.body._id;
                     return agent.put(`/api/${comment_id_array[1]}/replies/${replyId}/likes?access_token=${userToken0}`)
                         .then(()=>{
                             return agent.delete(`/api/${comment_id_array[1]}/replies/${replyId}/likes?access_token=${userToken0}`)
                             .then(async res=>{
                                 res.status.should.eql(200);
-                                res.body.id.should.eql(replyId);
+                                res.body._id.should.eql(replyId);
                                 return agent.get(`/api/${comment_id_array[1]}/replies/${replyId}?access_token=${userToken0}`)
                                     .then((res)=>{
                                         res.status.should.eql(200);
@@ -1065,7 +1065,7 @@ const reply_test = () => {
                 .send({text:"What a reply!"})
                 .then((res)=>{
                     res.status.should.eql(200);
-                    let replyId = res.body.id;
+                    let replyId = res.body._id;
                     return agent.put(`/api/${comment_id_array[0]}/replies/${"dumb"}/likes?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(404);
@@ -1077,7 +1077,7 @@ const reply_test = () => {
                 .send({text:"What a reply!"})
                 .then((res)=>{
                     res.status.should.eql(200);
-                    let replyId = res.body.id;
+                    let replyId = res.body._id;
                     return agent.put(`/api/${"Dumb"}/replies/${replyId}/likes?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(404);
@@ -1089,7 +1089,7 @@ const reply_test = () => {
                 .send({text:"What a reply!"})
                 .then((res)=>{
                     res.status.should.eql(200);
-                    let replyId = res.body.id;
+                    let replyId = res.body._id;
                     return agent.put(`/api/${comment_id_array[0]}/replies/${replyId}/likes?access_token=NotValid`)
                     .then(async res=>{
                         res.status.should.eql(401);
@@ -1101,7 +1101,7 @@ const reply_test = () => {
                 .send({text:"What a reply!"})
                 .then(async (res)=>{
                     res.status.should.eql(200);
-                    let replyId = res.body.id;
+                    let replyId = res.body._id;
                     await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':["post:edit_content"]},{new:true});
                     return agent.put(`/api/${comment_id_array[0]}/replies/${replyId}/likes?access_token=${userToken0}`)
                     .then(async res=>{
@@ -1115,7 +1115,7 @@ const reply_test = () => {
                 .send({text:"What a reply!"})
                 .then((res)=>{
                     res.status.should.eql(200);
-                    let replyId = res.body.id;
+                    let replyId = res.body._id;
                     return agent.delete(`/api/${comment_id_array[0]}/replies/${"dumb"}/likes?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(404);
@@ -1127,7 +1127,7 @@ const reply_test = () => {
                 .send({text:"What a reply!"})
                 .then((res)=>{
                     res.status.should.eql(200);
-                    let replyId = res.body.id;
+                    let replyId = res.body._id;
                     return agent.delete(`/api/${"Dumb"}/replies/${replyId}/likes?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(404);
@@ -1139,7 +1139,7 @@ const reply_test = () => {
                 .send({text:"What a reply!"})
                 .then((res)=>{
                     res.status.should.eql(200);
-                    let replyId = res.body.id;
+                    let replyId = res.body._id;
                     return agent.delete(`/api/${comment_id_array[0]}/replies/${replyId}/likes?access_token=NotValid`)
                     .then(async res=>{
                         res.status.should.eql(401);
@@ -1151,7 +1151,7 @@ const reply_test = () => {
                 .send({text:"What a reply!"})
                 .then(async (res)=>{
                     res.status.should.eql(200);
-                    let replyId = res.body.id;
+                    let replyId = res.body._id;
                     await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':["post:edit_content"]},{new:true});
                     return agent.delete(`/api/${comment_id_array[0]}/replies/${replyId}/likes?access_token=${userToken0}`)
                     .then(async res=>{
