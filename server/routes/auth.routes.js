@@ -12,4 +12,7 @@ router.route('/auth/login')
 router.route('/auth/logout')
   .get(authCtrl.logout);
 
+router.route('/auth/verify_token')
+  .head(authCtrl.verifyToken);
+
 export default router

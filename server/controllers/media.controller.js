@@ -1,12 +1,7 @@
-import express from 'express';
-import postCtrl from '../controllers/post.controller';
-import commentCtrl from '../controllers/comment.controller';
 "use strict";
 
 // imports
 import StaticStrings from '../../config/StaticStrings';
-import errorHandler from '../services/dbErrorHandler'
-import fs from 'fs'
 import S3_Services from '../services/S3.services';
 
 

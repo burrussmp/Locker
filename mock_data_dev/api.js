@@ -35,7 +35,7 @@ const SignUp = async (data) => {
   if (res.ok) {
     const result = await res.json();
     return {
-      token: result.token,
+      token: result.access_token,
       _id: result._id,
     };
   } else {

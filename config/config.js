@@ -17,13 +17,16 @@ const get_aws_config = () => {
     return {
       aws_access_key: process.env.AWS_ACCESS_KEY_ID_DEV,
       aws_secret: process.env.AWS_SECRET_ACCESS_KEY_DEV,
-      aws_s3_region: process.env.AWS_S3_REGION_TEST
+      aws_s3_region: process.env.AWS_S3_REGION_DEV,
+      aws_user_pool_id: process.env.AWS_USER_POOL_ID_DEV,
+      aws_user_pool_client_id : process.env.AWS_USER_POOL_CLIENT_ID_DEV,
+      aws_user_pool_region : process.env.AWS_USER_POOL_REGION_DEV
     }
   } else if (process.env.NODE_ENV == 'test'){
     return {
       aws_access_key: process.env.AWS_ACCESS_KEY_ID_TEST,
       aws_secret: process.env.AWS_SECRET_ACCESS_KEY_TEST,
-      aws_s3_region: process.env.AWS_S3_REGION_DEV,
+      aws_s3_region: process.env.AWS_S3_REGION_TEST,
       aws_user_pool_id: process.env.AWS_USER_POOL_ID_TEST,
       aws_user_pool_client_id : process.env.AWS_USER_POOL_CLIENT_ID_TEST,
       aws_user_pool_region : process.env.AWS_USER_POOL_REGION_TEST
@@ -37,7 +40,6 @@ const config = {
   env: process.env.NODE_ENV || 'development',
   port: process.env.PORT || 3000,
   mongoUri: get_mongodb_uri(),
-  jwtSecret: process.env.JWT_SECRET,
   bucket_name: process.env.NODE_ENV == 'development' ? "locker-media-storage-dev" : "locker-media-storage-test",
   aws_config: get_aws_config()
 }

@@ -6,6 +6,61 @@ import CognitoServices from '../services/Cognito.services';
 import dbErrorHandler from '../services/dbErrorHandler';
 
 /**
+  * @desc Helper function to get access token from query param or Authorization header
+  * @param Object : HTTP request
+  * @return The access token or undefined if not found
+*/ 
+const retrieveAccessToken = (req) =>{
+  let access_token;
+  if (req.headers['authorization']){
+    access_token = req.headers['authorization'].split(' ')[1];
+  }
+  if (req.query.access_token){
+    access_token = req.query.access_token;
+  }
+  return access_token;
+}
+
+/**
+  * @desc Helper function to extract access_token from either query parameter or from Authorization header
+  * and verify that the token is valid
+  * @param Object req - HTTP request
+  * @param Object res - res.locals.require_login determines if login necessary
+  * @param Function next - call back function (next middleware)
+*/
+const checkAccessToken = (req,res,next) => {
+  let access_token =retrieveAccessToken(req);
+  if (!access_token){
+    return res.status(401).json({"error" : StaticStrings.UnauthorizedMissingTokenError})
+  }
+  CognitoServices.verifyToken(access_token,'access').then((decoded_token)=>{
+    req.auth = {
+      'cognito_username' : decoded_token.payload.username
+    }
+    next(req,res,next)
+  }).catch(err=>{
+    return res.status(401).json({error:err});
+  })
+}
+
+/**
+  * @desc Login controller: If successful, provides user a JWT token
+  * used for permissions, authorization, authentication, and to stay logged in
+  * @param Object req - HTTP request
+  * @param Object res - HTTP response
+*/
+const verifyToken = (req,res) => {
+  let token = req.query.token;
+  return CognitoServices.verifyToken(token,'access').then((decoded_token)=>{
+    return res.status(200).send();
+  }).catch(err=>{
+    console.log(err);
+    return res.status(401).json({error:err});
+  })
+}
+
+
+/**
   * @desc Login controller: If successful, provides user a JWT token
   * used for permissions, authorization, authentication, and to stay logged in
   * @param Object req - HTTP request
@@ -133,26 +188,11 @@ const checkPermissions = async (req,res,next) => {
 */
 const checkLogin = (req,res,next) => {
   if(!isAdmin(req) && res.locals.require_login){
-    let access_token;
-    if (req.headers['authorization']){
-      access_token = req.headers['authorization'].split(' ')[1];
-    }
-    if (req.query.access_token){
-      access_token = req.query.access_token;
-    }
-    if (!access_token){
-      return res.status(401).json({"error" : StaticStrings.UnauthorizedMissingTokenError})
-    }
-    CognitoServices.verifyToken(access_token,'access').then((decoded_token)=>{
-      req.auth = {
-        'cognito_username' : decoded_token.payload.username
-      }
+    checkAccessToken(req,res,(req,res,next)=> {
       checkPermissions(req,res,next)
-    }).catch(err=>{
-      return res.status(401).json({error:err});
-    })
+    });
   } else {
-    checkPermissions(req,res,next)
+    checkPermissions(req,res,next);
   }
 }
 
@@ -162,4 +202,6 @@ export default {
   checkLogin,
   isAdmin,
   requireOwnership,
+  checkAccessToken,
+  verifyToken
 }

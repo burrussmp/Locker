@@ -1,5 +1,10 @@
 "use strict";
 
+import User from '../server/models/user.model';
+import Post from '../server/models/post.model';
+import Media from '../server/models/media.model';
+import mongoose from 'mongoose';
+
 const filter_user_signup = (data) => {
   return {
     username: data.username,
@@ -32,7 +37,20 @@ const filter_reply_create = (data) => {
   };
 };
 
+const drop_database = async () => {
+  let cursor = User.find().cursor();
+  for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
+      await doc.deleteOne();
+  }
+  cursor = Post.find().cursor();
+  for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
+      await doc.deleteOne();
+  }
+  return mongoose.connection.dropDatabase()
+};
+
 exports.filter_user_signup = filter_user_signup;
 exports.filter_content_post_create = filter_content_post_create;
 exports.filter_comment_create = filter_comment_create;
 exports.filter_reply_create = filter_reply_create;
+exports.drop_database = drop_database;

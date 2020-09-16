@@ -1,4 +1,5 @@
 'use strict';
+
 const mongoose = require('mongoose');
 require('dotenv').config();
 const mongoURI = `mongodb+srv://MatthewBurruss:${process.env.MONGO_DEV_PASSWORD}@devopenmarket.mhwca.mongodb.net/${process.env.MONGO_DEV_DB_NAME}?retryWrites=true&w=majority`;
@@ -16,7 +17,7 @@ let helper = require('./helper');
 
 (async () => {
     console.log('Dropping data base...');
-    await mongoose.connection.dropDatabase();
+    await helper.drop_database()
     console.log('Populating with users and adding their profile photos...');
     for (let i = 0; i < Users.data.length; ++i){
         let user_signup = helper.filter_user_signup(Users.data[i]); // signup

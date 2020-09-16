@@ -11,7 +11,7 @@ import mongoose from 'mongoose';
 
 const ReactionTypes = mongoose.models.Post.schema.tree.reactions[0].tree.type.enum.values;
 
-// The way privacy will worCommentk
+// The way privacy will work
 //  1. Want to retrieve a post or comment or reply
 //  2. When retrieving the key, check who it is posted by
 //  3. If their account is public or if you are a follower of this person
