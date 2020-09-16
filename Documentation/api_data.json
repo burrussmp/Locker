@@ -41,6 +41,51 @@
     ]
   },
   {
+    "type": "head",
+    "url": "/auth/verify_token?token=<YOUR_TOKEN>",
+    "title": "Verify JWT Token",
+    "description": "<p>Verifies token query parameter</p>",
+    "name": "HeadAuthVerifyToken",
+    "group": "Auth",
+    "version": "0.1.0",
+    "permission": [
+      {
+        "name": "none"
+      }
+    ],
+    "success": {
+      "fields": {
+        "2xx": [
+          {
+            "group": "2xx",
+            "optional": false,
+            "field": "200",
+            "description": "<p>Token is verified</p>"
+          }
+        ]
+      }
+    },
+    "error": {
+      "fields": {
+        "4xx": [
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "401",
+            "description": "<p>Token is not verified</p>"
+          }
+        ]
+      }
+    },
+    "filename": "_api_doc/_auth_api_doc.js",
+    "groupTitle": "Auth",
+    "sampleRequest": [
+      {
+        "url": "http://localhost:3000/auth/verify_token?token=<YOUR_TOKEN>"
+      }
+    ]
+  },
+  {
     "type": "post",
     "url": "/auth/login",
     "title": "Login",

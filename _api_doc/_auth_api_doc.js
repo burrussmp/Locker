@@ -67,3 +67,14 @@
             "message": "Logged out"
         }
  */
+
+  /**
+ * @api {head} /auth/verify_token?token=<YOUR_TOKEN> Verify JWT Token
+ * @apiDescription Verifies token query parameter
+ * @apiName HeadAuthVerifyToken
+ * @apiGroup Auth
+ * @apiVersion 0.1.0
+ * @apiPermission none
+ * @apiSuccess  (2xx) 200 Token is verified  
+ * @apiError (4xx) 401 Token is not verified
+ */
