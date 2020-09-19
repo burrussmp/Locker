@@ -1430,7 +1430,7 @@
       "examples": [
         {
           "title": "Response (example):",
-          "content": "    HTTP/1.1 200 OK\n  [\n      {\n        \"_id\": \"5f41ed74c025ae6116189890\",\n        \"createdAt\": \"2020-08-23T04:15:48.491Z\"\n      },\n      {\n        \"_id\": \"5f41ed7fc025ae6116189891\",\n        \"createdAt\": \"2020-08-23T04:15:59.824Z\"\n      }\n]",
+          "content": "HTTP/1.1 200 OK\n   [\n       {\n         \"_id\": \"5f41ed74c025ae6116189890\",\n         \"createdAt\": \"2020-08-23T04:15:48.491Z\"\n       },\n       {\n         \"_id\": \"5f41ed7fc025ae6116189891\",\n         \"createdAt\": \"2020-08-23T04:15:59.824Z\"\n       }\n   ]",
           "type": "json"
         }
       ]
