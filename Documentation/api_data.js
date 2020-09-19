@@ -1451,7 +1451,7 @@ define({ "api": [
       "examples": [
         {
           "title": "Response (example):",
-          "content": "  HTTP/1.1 200 OK\nwith the right content from the right user (54ms)\n  [\n    {\n      text: 'What the heck @someperson comments',\n      postedBy: 5f65925c10264630c624150b,\n      createdAt: 2020-09-19T05:08:48.350Z,\n      _id: 5f65926010264630c6241516,\n      likes: 0,\n      liked: false\n    },\n    {\n      text: 'New comment 1',\n      postedBy: 5f65925c10264630c624150b,\n      createdAt: 2020-09-19T05:08:48.358Z,\n      _id: 5f65926010264630c6241517,\n      likes: 0,\n      liked: false\n    }\n  ]",
+          "content": "HTTP/1.1 200 OK\n[\n  {\n    text: 'What the heck @someperson comments',\n    postedBy: 5f65925c10264630c624150b,\n    createdAt: 2020-09-19T05:08:48.350Z,\n    _id: 5f65926010264630c6241516,\n    likes: 0,\n    liked: false\n  },\n  {\n    text: 'New comment 1',\n    postedBy: 5f65925c10264630c624150b,\n    createdAt: 2020-09-19T05:08:48.358Z,\n    _id: 5f65926010264630c6241517,\n    likes: 0,\n    liked: false\n  }\n]",
           "type": "json"
         }
       ]

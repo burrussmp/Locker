@@ -41,7 +41,7 @@
 
 
  /**
- * @api {put} /api/:commentId/likes Like
+ * @api {put} /api/comments/:commentId/likes Like
  * @apiDescription Like a comment
  * @apiName PutApiCommentIdLikes
  * @apiGroup Comment
@@ -63,7 +63,7 @@
  */
 
 /**
- * @api {delete} /api/:commentId/likes Unlike
+ * @api {delete} /api/comments/:commentId/likes Unlike
  * @apiDescription Unlike a comment
  * @apiName DeleteApiCommentIdLikes
  * @apiGroup Comment
