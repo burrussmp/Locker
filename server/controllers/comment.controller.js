@@ -67,9 +67,7 @@ const replyByID = async (req, res, next, id) => {
 const listReplies = async (req,res) => {
     try {
         let replies = await Comment_Services.fetchReplies(req.params.commentId,req.auth._id);
-        return res.status(200).json({
-            data: replies
-        });
+        return res.status(200).json(replies);
     } catch (err) {
         return res.status(500).json({error:err.message});
     }

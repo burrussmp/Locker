@@ -128,30 +128,12 @@
   * @apiUse LoginError
   * @apiPermission PostDelete
   * @apiUse PermissionError
-  * @apiSuccess  (200) {Object} DeletedPost See the example response for format
+  * @apiSuccess  (200) {String} ID The ID of the deleted post
   *
   * @apiSuccessExample Response (example):
-  *   HTTP/1.1 200 OK
+    HTTP/1.1 200 OK
     {
-        "caption": "Let's put this caption",
-        "comments": [],
-        "tags": [
-            "tag",
-            "tag",
-            "tag",
-            "tag",
-            "tag",
-            "tag",
-            "tag"
-        ],
         "_id": "5f41ea00c025ae611618988c",
-        "type": "ContentPost",
-        "content": "5f41ea00c025ae611618988b",
-        "postedBy": "5f41e9f1c025ae6116189888",
-        "reactions": [],
-        "createdAt": "2020-08-23T04:01:04.988Z",
-        "updatedAt": "2020-08-23T04:01:04.988Z",
-        "__v": 0
     }
  * @apiUse PostNotFound
   */

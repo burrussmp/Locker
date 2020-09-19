@@ -521,14 +521,14 @@
             "type": "Boolean",
             "optional": false,
             "field": "data.liked",
-            "description": "<p>Whether or not the requester liked this response or not</p>"
+            "description": "<p>Whether or not the requester liked this reply or not</p>"
           }
         ]
       },
       "examples": [
         {
           "title": "Response (example):",
-          "content": "    HTTP/1.1 200 OK\n[\n  {\n    text: \"This is a new reply\",\n    postedBy: 5f3ff3c98edf7e37fc3a5810,\n    createdAt: 2020-08-21T16:18:17.617Z,\n    likes: 0,\n    liked: false\n  }\n]\n          ✓ Correctly posts reply\n[\n  {\n    text: \"This is a new reply\",\n    postedBy: 5f3ff3c98edf7e37fc3a581d,\n    createdAt: 2020-08-21T16:18:17.678Z,\n    likes: 0,\n    liked: false\n  }\n]",
+          "content": "HTTP/1.1 200 OK\n[\n  {\n    text: 'new text',\n    postedBy: '5f65880f1c64cf1cd2a91610',\n    createdAt: '2020-09-19T04:24:50.244Z',\n    _id: '5f6588121c64cf1cd2a91619',\n    likes: 0,\n    liked: false\n  },\n  {\n    text: 'new text',\n    postedBy: '5f6588101c64cf1cd2a91611',\n    createdAt: '2020-09-19T04:24:50.247Z',\n    _id: '5f6588121c64cf1cd2a9161a',\n    likes: 6,\n    liked: true\n  }\n]",
           "type": "json"
         }
       ]
@@ -1155,17 +1155,17 @@
         "200": [
           {
             "group": "200",
-            "type": "Object",
+            "type": "String",
             "optional": false,
-            "field": "DeletedPost",
-            "description": "<p>See the example response for format</p>"
+            "field": "ID",
+            "description": "<p>The ID of the deleted post</p>"
           }
         ]
       },
       "examples": [
         {
           "title": "Response (example):",
-          "content": "HTTP/1.1 200 OK\n  {\n      \"caption\": \"Let's put this caption\",\n      \"comments\": [],\n      \"tags\": [\n          \"tag\",\n          \"tag\",\n          \"tag\",\n          \"tag\",\n          \"tag\",\n          \"tag\",\n          \"tag\"\n      ],\n      \"_id\": \"5f41ea00c025ae611618988c\",\n      \"type\": \"ContentPost\",\n      \"content\": \"5f41ea00c025ae611618988b\",\n      \"postedBy\": \"5f41e9f1c025ae6116189888\",\n      \"reactions\": [],\n      \"createdAt\": \"2020-08-23T04:01:04.988Z\",\n      \"updatedAt\": \"2020-08-23T04:01:04.988Z\",\n      \"__v\": 0\n  }",
+          "content": "HTTP/1.1 200 OK\n{\n    \"_id\": \"5f41ea00c025ae611618988c\",\n}",
           "type": "json"
         }
       ]
@@ -1378,7 +1378,7 @@
   },
   {
     "type": "get",
-    "url": "/api/:postId/comments",
+    "url": "/api/posts/:postId/comments",
     "title": "List Post Comments",
     "description": "<p>Comment on a post</p>",
     "name": "GetApiPostIdComments",
@@ -1424,13 +1424,34 @@
             "optional": false,
             "field": "data.createdAt",
             "description": "<p>The timestamp of when the comment was posted</p>"
+          },
+          {
+            "group": "200",
+            "type": "postedBy",
+            "optional": false,
+            "field": "data.postedBy",
+            "description": "<p>Who posted the comment (the user ID)</p>"
+          },
+          {
+            "group": "200",
+            "type": "Number",
+            "optional": false,
+            "field": "data.likes",
+            "description": "<p>The number of likes</p>"
+          },
+          {
+            "group": "200",
+            "type": "liked",
+            "optional": false,
+            "field": "data.liked",
+            "description": "<p>Whether or not the caller liked the comment</p>"
           }
         ]
       },
       "examples": [
         {
           "title": "Response (example):",
-          "content": "HTTP/1.1 200 OK\n   [\n       {\n         \"_id\": \"5f41ed74c025ae6116189890\",\n         \"createdAt\": \"2020-08-23T04:15:48.491Z\"\n       },\n       {\n         \"_id\": \"5f41ed7fc025ae6116189891\",\n         \"createdAt\": \"2020-08-23T04:15:59.824Z\"\n       }\n   ]",
+          "content": "  HTTP/1.1 200 OK\nwith the right content from the right user (54ms)\n  [\n    {\n      text: 'What the heck @someperson comments',\n      postedBy: 5f65925c10264630c624150b,\n      createdAt: 2020-09-19T05:08:48.350Z,\n      _id: 5f65926010264630c6241516,\n      likes: 0,\n      liked: false\n    },\n    {\n      text: 'New comment 1',\n      postedBy: 5f65925c10264630c624150b,\n      createdAt: 2020-09-19T05:08:48.358Z,\n      _id: 5f65926010264630c6241517,\n      likes: 0,\n      liked: false\n    }\n  ]",
           "type": "json"
         }
       ]
@@ -1439,7 +1460,7 @@
     "groupTitle": "Post",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/:postId/comments"
+        "url": "http://localhost:3000/api/posts/:postId/comments"
       }
     ],
     "header": {

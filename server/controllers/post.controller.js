@@ -126,7 +126,7 @@ const deletePost = async (req,res) => {
   try {
     let post = await Post.findById(req.params.postId);
     await post.deleteOne();
-    return res.status(200).send(post);
+    return res.status(200).send({'_id':post._id});
   } catch (err){
     return res.status(500).send({error: StaticStrings.UnknownServerError+'\nReason: '+err.message});
   }
@@ -139,11 +139,31 @@ const deletePost = async (req,res) => {
  */
 const listComments = async (req,res) => {
   try {
-    let post = await Post.findById(req.params.postId).populate({
-      path: 'comments',
-      select: 'createdAt'
-    }).exec();
-    return res.status(200).json(post.comments);
+    const postId = mongoose.Types.ObjectId(req.params.postId);
+    const reqId = mongoose.Types.ObjectId(req.auth._id);
+    const pipeline = [
+      { "$match": { "_id" : postId } },
+      { "$lookup": {
+        "from": "comments",
+        "foreignField": "_id",
+        "localField": "comments",
+        "as": "comments"
+      }},
+      { "$project" : {"_id":0, "comments": "$comments" }},
+      { "$unwind" : "$comments"},
+      {
+        "$project": {
+        "text" : "$comments.text",
+        "postedBy" : "$comments.postedBy",
+        "createdAt" : "$comments.createdAt",
+        "_id" : "$comments._id",
+        "likes": {$cond: { if: { $isArray: "$comments.likes" }, then: { $size: "$comments.likes" }, else: 0}},
+        "liked": {$cond: { if: { $and : [{$isArray: "$comments.likes" },{ $in: [ reqId, "$comments.likes" ] }	]}, then: true, else: false}},
+        }
+      }
+    ];
+    let comments = await Post.aggregate(pipeline).exec();
+    return res.status(200).json(comments);
   }catch(err){
     return res.status(500).json({error:errorHandler.getErrorMessage(err)})
   }}

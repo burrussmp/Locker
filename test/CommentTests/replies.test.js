@@ -90,20 +90,20 @@ const reply_test = () => {
                 return agent.get(`/api/${comment_id_array[0]}/replies?access_token=${userToken0}`)
                 .then(res=>{
                     res.status.should.eql(200);
-                    res.body.data.length.should.eql(0);
+                    res.body.length.should.eql(0);
                     return agent.get(`/api/${comment_id_array[1]}/replies?access_token=${userToken1}`)
                     .then(res=>{
                         // console.log(util.inspect(res.body, false, null, true /* enable colors */))
                         res.status.should.eql(200);
-                        res.body.data[0].should.have.property('text'); // the required
-                        res.body.data[0].should.have.property('postedBy'); // the required
-                        res.body.data[0].should.have.property('createdAt'); // the required
-                        res.body.data[1].likes.should.eql(6);
-                        res.body.data.length.should.eql(2);
+                        res.body[0].should.have.property('text'); // the required
+                        res.body[0].should.have.property('postedBy'); // the required
+                        res.body[0].should.have.property('createdAt'); // the required
+                        res.body[1].likes.should.eql(6);
+                        res.body.length.should.eql(2);
                         return agent.get(`/api/${comment_id_array[2]}/replies?access_token=${userToken1}`)
                         .then(res=>{
                             res.status.should.eql(200);
-                            res.body.data.length.should.eql(4);
+                            res.body.length.should.eql(4);
                         });
                     }); 
                 });  
@@ -209,11 +209,11 @@ const reply_test = () => {
                     return agent.get(`/api/${comment_id_array[0]}/replies?access_token=${userToken1}`)
                         .then(async res=>{
                             let reply_index = 0;
-                            res.body.data.length.should.eql(1);
-                            res.body.data[reply_index].postedBy.should.eql(userId0);
-                            res.body.data[reply_index].text.should.eql(new_reply);
-                            res.body.data[reply_index].likes.should.eql(reply_index);
-                            let id = res.body.data[reply_index]._id;
+                            res.body.length.should.eql(1);
+                            res.body[reply_index].postedBy.should.eql(userId0);
+                            res.body[reply_index].text.should.eql(new_reply);
+                            res.body[reply_index].likes.should.eql(reply_index);
+                            let id = res.body[reply_index]._id;
                             return agent.delete(`/api/${comment_id_array[0]}/replies/${id}?access_token=${userToken0}`).then(res=>{
                                 res.status.should.eql(200);
                             });
@@ -229,11 +229,11 @@ const reply_test = () => {
                     return agent.get(`/api/${comment_id_array[0]}/replies?access_token=${userToken1}`)
                         .then(res=>{
                             let reply_index = 0;
-                            res.body.data.length.should.eql(1);
-                            res.body.data[reply_index].postedBy.should.eql(userId0);
-                            res.body.data[reply_index].text.should.eql(new_reply);
-                            res.body.data[reply_index].likes.should.eql(0);
-                            let id = res.body.data[reply_index]._id;
+                            res.body.length.should.eql(1);
+                            res.body[reply_index].postedBy.should.eql(userId0);
+                            res.body[reply_index].text.should.eql(new_reply);
+                            res.body[reply_index].likes.should.eql(0);
+                            let id = res.body[reply_index]._id;
                             return agent.delete(`/api/${comment_id_array[0]}/replies/${id}?access_token=${userToken0}`).then(res=>{
                                 res.status.should.eql(200);
                             });                        
@@ -248,7 +248,7 @@ const reply_test = () => {
                     res.body.error.should.eql(StaticStrings.CommentModelErrors.ReplyTextRequired)
                     return agent.get(`/api/${comment_id_array[0]}/replies?access_token=${userToken1}`)
                         .then(res=>{
-                            res.body.data.length.should.eql(0);
+                            res.body.length.should.eql(0);
                         })
                 });  
             })
@@ -260,7 +260,7 @@ const reply_test = () => {
                     res.body.error.should.eql(StaticStrings.CommentModelErrors.ReplyTextRequired)
                     return agent.get(`/api/${comment_id_array[0]}/replies?access_token=${userToken1}`)
                         .then(res=>{
-                            res.body.data.length.should.eql(0);
+                            res.body.length.should.eql(0);
                         })
                 });  
             })
@@ -272,7 +272,7 @@ const reply_test = () => {
                     res.body.error.should.eql(StaticStrings.CommentModelErrors.ReplyTextRequired)
                     return agent.get(`/api/${comment_id_array[0]}/replies?access_token=${userToken1}`)
                         .then(res=>{
-                            res.body.data.length.should.eql(0);
+                            res.body.length.should.eql(0);
                         })
                 });  
             })

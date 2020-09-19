@@ -15,29 +15,28 @@
  * @apiSuccess (200) {ObjectID} data.postedBy The ID of the replier
  * @apiSuccess (200) {Date}     data.createdAt The timestamp the reply was posted 
  * @apiSuccess (200) {Number}   data.likes  Number of likes
- * @apiSuccess (200) {Boolean}   data.liked  Whether or not the requester liked this response or not
+ * @apiSuccess (200) {Boolean}   data.liked  Whether or not the requester liked this reply or not
  * @apiSuccessExample Response (example):
- *     HTTP/1.1 200 OK
-[
-  {
-    text: "This is a new reply",
-    postedBy: 5f3ff3c98edf7e37fc3a5810,
-    createdAt: 2020-08-21T16:18:17.617Z,
-    likes: 0,
-    liked: false
-  }
-]
-          ✓ Correctly posts reply
-[
-  {
-    text: "This is a new reply",
-    postedBy: 5f3ff3c98edf7e37fc3a581d,
-    createdAt: 2020-08-21T16:18:17.678Z,
-    likes: 0,
-    liked: false
-  }
-]
- * @apiUse CommentNotFound
+  HTTP/1.1 200 OK
+  [
+    {
+      text: 'new text',
+      postedBy: '5f65880f1c64cf1cd2a91610',
+      createdAt: '2020-09-19T04:24:50.244Z',
+      _id: '5f6588121c64cf1cd2a91619',
+      likes: 0,
+      liked: false
+    },
+    {
+      text: 'new text',
+      postedBy: '5f6588101c64cf1cd2a91611',
+      createdAt: '2020-09-19T04:24:50.247Z',
+      _id: '5f6588121c64cf1cd2a9161a',
+      likes: 6,
+      liked: true
+    }
+  ]
+* @apiUse CommentNotFound
  */
 
 
@@ -119,20 +118,32 @@
  * @apiPermission PostRead
  * @apiPermission CommentRead
  * @apiUse PermissionError
- * @apiSuccess (200) {Object[]} data                  A list of the comments on the post
- * @apiSuccess (200) {ObjectID} data._id       The ID of the comment
- * @apiSuccess (200) {Date}     data.createdAt The timestamp of when the comment was posted
+ * @apiSuccess (200) {Object[]} data            A list of the comments on the post
+ * @apiSuccess (200) {ObjectID} data._id        The ID of the comment
+ * @apiSuccess (200) {Date}     data.createdAt  The timestamp of when the comment was posted
+ * @apiSuccess (200) {postedBy} data.postedBy   Who posted the comment (the user ID)
+ * @apiSuccess (200) {Number}   data.likes      The number of likes
+ * @apiSuccess (200) {liked}    data.liked      Whether or not the caller liked the comment
+
  * @apiSuccessExample Response (example):
   HTTP/1.1 200 OK
   [
-      {
-        "_id": "5f41ed74c025ae6116189890",
-        "createdAt": "2020-08-23T04:15:48.491Z"
-      },
-      {
-        "_id": "5f41ed7fc025ae6116189891",
-        "createdAt": "2020-08-23T04:15:59.824Z"
-      }
+    {
+      text: 'What the heck @someperson comments',
+      postedBy: 5f65925c10264630c624150b,
+      createdAt: 2020-09-19T05:08:48.350Z,
+      _id: 5f65926010264630c6241516,
+      likes: 0,
+      liked: false
+    },
+    {
+      text: 'New comment 1',
+      postedBy: 5f65925c10264630c624150b,
+      createdAt: 2020-09-19T05:08:48.358Z,
+      _id: 5f65926010264630c6241517,
+      likes: 0,
+      liked: false
+    }
   ]
 */
  
