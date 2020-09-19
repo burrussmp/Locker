@@ -167,7 +167,7 @@ const deleteReply = async (req,res) => {
 const likeReply = async (req,res) => {
     try {
         let reply = await Comment_Services.likeReply(req.params.commentId,req.params.replyId,req.auth._id);
-        return res.status(200).json({id:reply._id});
+        return res.status(200).json({_id:reply._id});
     } catch (err){
         return res.status(500).json({error: errorHandler.getErrorMessage(err)})
     }
@@ -181,7 +181,7 @@ const likeReply = async (req,res) => {
 const unlikeReply = async (req,res) => {
     try {
         let reply = await Comment_Services.unlikeReply(req.params.commentId,req.params.replyId,req.auth._id);
-        return res.status(200).json({id : reply._id});
+        return res.status(200).json({_id : reply._id});
     } catch (err){
         return res.status(500).json({error: errorHandler.getErrorMessage(err)})
     } 

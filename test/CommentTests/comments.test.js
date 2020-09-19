@@ -77,8 +77,8 @@ const comments_test = () => {
                             return agent.get(`/api/${postId0}/comments?access_token=${userToken1}`)
                             .then(async res=>{
                                 res.status.should.eql(200);
-                                res.body.data[0]._id.should.eql(comment_id_1);
-                                res.body.data[1]._id.should.eql(comment_id_2)
+                                res.body[0]._id.should.eql(comment_id_1);
+                                res.body[1]._id.should.eql(comment_id_2)
                                 let comment1 = await Comment.findById(comment_id_1);
                                 let comment2 = await Comment.findById(comment_id_2);
                                 comment1.postedBy.toString().should.eql(userId0);
@@ -107,8 +107,8 @@ const comments_test = () => {
                             return agent.get(`/api/${postId0}/comments?access_token=${userToken1}`)
                             .then(async res=>{
                                 res.status.should.eql(200);
-                                res.body.data[0]._id.should.eql(comment_id_1);
-                                res.body.data[1]._id.should.eql(comment_id_2)
+                                res.body[0]._id.should.eql(comment_id_1);
+                                res.body[1]._id.should.eql(comment_id_2)
                                 let comment1 = await Comment.findById(comment_id_1);
                                 let comment2 = await Comment.findById(comment_id_2);
                                 comment1.postedBy.toString().should.eql(userId0);
@@ -155,7 +155,7 @@ const comments_test = () => {
                 return agent.get(`/api/${postId0}/comments?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(200);
-                        res.body.data.length.should.eql(0);        
+                        res.body.length.should.eql(0);        
                 });  
             })
             it("No comments (should succeed but be empty)",async()=>{
@@ -163,14 +163,14 @@ const comments_test = () => {
                 return agent.get(`/api/${postId0}/comments?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(200);
-                        res.body.data.length.should.eql(0);        
+                        res.body.length.should.eql(0);        
                 });  
             })
             it("No comments (should succeed but be empty)",async()=>{
                 return agent.get(`/api/${postId0}/comments?access_token=${userToken0}`)
                     .then(async res=>{
                         res.status.should.eql(200);
-                        res.body.data.length.should.eql(0);        
+                        res.body.length.should.eql(0);        
                 });  
             })
             it("Post doesn't exist (should fail)",async()=>{

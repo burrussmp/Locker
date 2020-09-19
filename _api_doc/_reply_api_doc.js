@@ -15,7 +15,7 @@
  * @apiSuccessExample Response (example):
  *     HTTP/1.1 200 OK
   {
-    "id" : "5f400fb18b012a65ef46044b"
+    "_id" : "5f400fb18b012a65ef46044b"
   }
  * @apiUse CommentNotFound
  * @apiUse ReplyNotFound
@@ -78,7 +78,7 @@
  *     HTTP/1.1 200 OK
   {
     text: "Updated Text",
-    "id": "5f400fb18b012a65ef46044b",
+    "_id": "5f400fb18b012a65ef46044b",
   }
  * @apiUse CommentNotFound
  * @apiUse ReplyNotFound
@@ -102,7 +102,7 @@
  * @apiSuccessExample Response (example):
  *     HTTP/1.1 200 OK
   {
-    "id": "5f400fb18b012a65ef46044b",
+    "_id": "5f400fb18b012a65ef46044b",
   }
  * @apiUse CommentNotFound
  * @apiUse ReplyNotFound
@@ -124,7 +124,7 @@
  * @apiSuccessExample Response (example):
  *     HTTP/1.1 200 OK
   {
-    "id": "5f400fb18b012a65ef46044b",
+    "_id": "5f400fb18b012a65ef46044b",
   }
  * @apiUse CommentNotFound
  * @apiUse ReplyNotFound
@@ -146,7 +146,7 @@
  * @apiSuccessExample Response (example):
  *     HTTP/1.1 200 OK
   {
-    "id": "5f400fb18b012a65ef46044b",
+    "_id": "5f400fb18b012a65ef46044b",
   }
  * @apiUse CommentNotFound
  * @apiUse ReplyNotFound

@@ -11,12 +11,12 @@ const UserData = [{
         password: 'Admin123$',
     },
     {
-        username: 'matthewpburruss',
+        username: 'mattthewpburruss',
         first_name: 'Matthew',
         phone_number: '+15023541823',
         last_name: 'Burruss',
         email: 'matthew@mail.com',
-        password: 'Admin124$',
+        password: 'Pass@123',
     },
     {
         username: 'paulsullivan',

@@ -27,7 +27,7 @@
       "examples": [
         {
           "title": "Response (example):",
-          "content": "HTTP/1.1 200 OK\n{\n        \"message\": \"Logged out\"\n    }",
+          "content": "HTTP/1.1 200 OK\n{\n    \"message\": \"Logged out\"\n}",
           "type": "json"
         }
       ]
@@ -1415,15 +1415,22 @@
             "group": "200",
             "type": "ObjectID",
             "optional": false,
-            "field": "data[index]",
-            "description": "<p>._id       The ID of the comment</p>"
+            "field": "data._id",
+            "description": "<p>The ID of the comment</p>"
+          },
+          {
+            "group": "200",
+            "type": "Date",
+            "optional": false,
+            "field": "data.createdAt",
+            "description": "<p>The timestamp of when the comment was posted</p>"
           }
         ]
       },
       "examples": [
         {
           "title": "Response (example):",
-          "content": "  HTTP/1.1 200 OK\n{\n  \"data\": [\n    {\n      \"_id\": \"5f41ed74c025ae6116189890\",\n      \"createdAt\": \"2020-08-23T04:15:48.491Z\"\n    },\n    {\n      \"_id\": \"5f41ed7fc025ae6116189891\",\n      \"createdAt\": \"2020-08-23T04:15:59.824Z\"\n    }\n  ] \n}",
+          "content": "  HTTP/1.1 200 OK\n{\n    {\n      \"_id\": \"5f41ed74c025ae6116189890\",\n      \"createdAt\": \"2020-08-23T04:15:48.491Z\"\n    },\n    {\n      \"_id\": \"5f41ed7fc025ae6116189891\",\n      \"createdAt\": \"2020-08-23T04:15:59.824Z\"\n    }\n}",
           "type": "json"
         }
       ]
@@ -2161,7 +2168,7 @@
       "examples": [
         {
           "title": "Response (example):",
-          "content": "  HTTP/1.1 200 OK\n{\n  \"id\": \"5f400fb18b012a65ef46044b\",\n}",
+          "content": "  HTTP/1.1 200 OK\n{\n  \"_id\": \"5f400fb18b012a65ef46044b\",\n}",
           "type": "json"
         }
       ]
@@ -2276,7 +2283,7 @@
       "examples": [
         {
           "title": "Response (example):",
-          "content": "  HTTP/1.1 200 OK\n{\n  \"id\": \"5f400fb18b012a65ef46044b\",\n}",
+          "content": "  HTTP/1.1 200 OK\n{\n  \"_id\": \"5f400fb18b012a65ef46044b\",\n}",
           "type": "json"
         }
       ]
@@ -2536,7 +2543,7 @@
       "examples": [
         {
           "title": "Response (example):",
-          "content": "  HTTP/1.1 200 OK\n{\n  \"id\" : \"5f400fb18b012a65ef46044b\"\n}",
+          "content": "  HTTP/1.1 200 OK\n{\n  \"_id\" : \"5f400fb18b012a65ef46044b\"\n}",
           "type": "json"
         }
       ]
@@ -2657,7 +2664,7 @@
       "examples": [
         {
           "title": "Response (example):",
-          "content": "  HTTP/1.1 200 OK\n{\n  \"id\": \"5f400fb18b012a65ef46044b\",\n}",
+          "content": "  HTTP/1.1 200 OK\n{\n  \"_id\": \"5f400fb18b012a65ef46044b\",\n}",
           "type": "json"
         }
       ]
@@ -3440,6 +3447,13 @@
             "group": "200",
             "type": "String",
             "optional": false,
+            "field": "cognito_username",
+            "description": "<p>The username of the person in Cognito</p>"
+          },
+          {
+            "group": "200",
+            "type": "String",
+            "optional": false,
             "field": "username",
             "description": "<p>Username of user</p>"
           },
@@ -3498,13 +3512,20 @@
             "optional": false,
             "field": "createdAt",
             "description": "<p>Timestamp of when user was created</p>"
+          },
+          {
+            "group": "200",
+            "type": "Object[]",
+            "optional": false,
+            "field": "profile_photo",
+            "description": "<p>Not present if there is no profile photo but otherwise looks like the example</p>"
           }
         ]
       },
       "examples": [
         {
           "title": "Response (example):",
-          "content": "HTTP/1.1 200 OK\n{\n    \"about\" :   \"Hi I am John Doe!\"\n    \"following\": [],\n    \"followers\": [],\n    \"_id\": \"5f3ac37951772102cbb2ce58\",\n    \"username\": \"JohnDoe\",\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\",\n    \"createdAt\": \"2020-08-17T17:50:49.777Z\",\n    \"updatedAt\": \"2020-08-17T17:50:49.777Z\"\n}",
+          "content": "HTTP/1.1 200 OK\n   {\n       \"about\": \"This is a bio\",\n       \"following\": [{\n           \"_id\" : \"5f6565f0c1708f4ad08477c7\",\n           \"username\" : \"user1\"\n       }],\n       \"followers\": [],\n       \"_id\": \"5f6565f0c1708f4ad08477c7\",\n       \"cognito_username\": \"5627cc28-bb8f-4806-9cc9-30e2f4d042ed\",\n       \"username\": \"matthew5\",\n       \"first_name\": \"matt\",\n       \"last_name\": \"burr\",\n       \"createdAt\": \"2020-09-19T01:59:12.041Z\",\n       \"updatedAt\": \"2020-09-19T02:00:28.398Z\",\n       \"profile_photo\": {\n           \"_id\": \"5f65663cc1708f4ad08477c8\",\n           \"key\": \"397fec5422857e916e1fa0abeea28e32_profile_photo\",\n           \"mimetype\": \"image/jpeg\"\n   }",
           "type": "json"
         }
       ]

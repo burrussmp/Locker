@@ -143,7 +143,7 @@ const listComments = async (req,res) => {
       path: 'comments',
       select: 'createdAt'
     }).exec();
-    return res.status(200).json({data:post.comments});
+    return res.status(200).json(post.comments);
   }catch(err){
     return res.status(500).json({error:errorHandler.getErrorMessage(err)})
   }}

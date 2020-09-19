@@ -18,7 +18,6 @@
  * @apiSuccess (200) {Boolean}   data.liked  Whether or not the requester liked this response or not
  * @apiSuccessExample Response (example):
  *     HTTP/1.1 200 OK
-{
 [
   {
     text: "This is a new reply",
@@ -38,7 +37,6 @@
     liked: false
   }
 ]
-}
  * @apiUse CommentNotFound
  */
 
@@ -122,12 +120,11 @@
  * @apiPermission CommentRead
  * @apiUse PermissionError
  * @apiSuccess (200) {Object[]} data                  A list of the comments on the post
- * @apiSuccess (200) {ObjectID} data[index]._id       The ID of the comment
- * @apiSuccess (200) {Date}     data[index].createdAt The timestamp of when the comment was posted
+ * @apiSuccess (200) {ObjectID} data._id       The ID of the comment
+ * @apiSuccess (200) {Date}     data.createdAt The timestamp of when the comment was posted
  * @apiSuccessExample Response (example):
  *     HTTP/1.1 200 OK
-  {
-    "data": [
+  [
       {
         "_id": "5f41ed74c025ae6116189890",
         "createdAt": "2020-08-23T04:15:48.491Z"
@@ -136,8 +133,7 @@
         "_id": "5f41ed7fc025ae6116189891",
         "createdAt": "2020-08-23T04:15:59.824Z"
       }
-    ] 
-  }
+]
 */
  
   /**

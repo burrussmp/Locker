@@ -106,7 +106,8 @@
  * @apiSuccess (200) {ObjectId}     _id                 MongoDB ID
  * @apiSuccess (200) {String}       about               About the user
  * @apiSuccess (200) {String}       first_name          First name of user
- * @apiSuccess (200) {String}       last_name           Last name of user 
+ * @apiSuccess (200) {String}       last_name           Last name of user
+ * @apiSuccess (200) {String}       cognito_username    The username of the person in Cognito
  * @apiSuccess (200) {String}       username            Username of user 
  * @apiSuccess (200) {Object[]}     following           Array of who user followers
  * @apiSuccess (200) {ObjectId}     following._id       MongoDB ID of user following
@@ -115,19 +116,28 @@
  * @apiSuccess (200) {ObjectId}     followers._id       MongoDB ID of follower
  * @apiSuccess (200) {String}       followers._username Username of follower 
  * @apiSuccess (200) {Date}         updatedAt           Timestamp of last update to user profile
- * @apiSuccess (200) {Date}         createdAt           Timestamp of when user was created  
+ * @apiSuccess (200) {Date}         createdAt           Timestamp of when user was created
+ * @apiSuccess (200) {Object[]}     profile_photo       Not present if there is no profile photo but otherwise looks like the example
  * @apiSuccessExample Response (example):
- *     HTTP/1.1 200 OK
+ *  HTTP/1.1 200 OK
     {
-        "about" :   "Hi I am John Doe!"
-        "following": [],
+        "about": "This is a bio",
+        "following": [{
+            "_id" : "5f6565f0c1708f4ad08477c7",
+            "username" : "user1"
+        }],
         "followers": [],
-        "_id": "5f3ac37951772102cbb2ce58",
-        "username": "JohnDoe",
-        "first_name": "John",
-        "last_name": "Doe",
-        "createdAt": "2020-08-17T17:50:49.777Z",
-        "updatedAt": "2020-08-17T17:50:49.777Z"
+        "_id": "5f6565f0c1708f4ad08477c7",
+        "cognito_username": "5627cc28-bb8f-4806-9cc9-30e2f4d042ed",
+        "username": "matthew5",
+        "first_name": "matt",
+        "last_name": "burr",
+        "createdAt": "2020-09-19T01:59:12.041Z",
+        "updatedAt": "2020-09-19T02:00:28.398Z",
+        "profile_photo": {
+            "_id": "5f65663cc1708f4ad08477c8",
+            "key": "397fec5422857e916e1fa0abeea28e32_profile_photo",
+            "mimetype": "image/jpeg"
     }
  */
 

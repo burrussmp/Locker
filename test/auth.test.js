@@ -19,7 +19,7 @@ const auth_tests = () => {
             await createUser(UserData[2]);
         });
         after(async () =>{
-            await drop_database();
+            // await drop_database();
         });
         it(`Check if User Collection Has 2 users`, (done) => {
             chai.request(app)
