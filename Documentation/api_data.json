@@ -528,7 +528,7 @@
       "examples": [
         {
           "title": "Response (example):",
-          "content": "    HTTP/1.1 200 OK\n{\n[\n  {\n    text: \"This is a new reply\",\n    postedBy: 5f3ff3c98edf7e37fc3a5810,\n    createdAt: 2020-08-21T16:18:17.617Z,\n    likes: 0,\n    liked: false\n  }\n]\n          ✓ Correctly posts reply\n[\n  {\n    text: \"This is a new reply\",\n    postedBy: 5f3ff3c98edf7e37fc3a581d,\n    createdAt: 2020-08-21T16:18:17.678Z,\n    likes: 0,\n    liked: false\n  }\n]\n}",
+          "content": "    HTTP/1.1 200 OK\n[\n  {\n    text: \"This is a new reply\",\n    postedBy: 5f3ff3c98edf7e37fc3a5810,\n    createdAt: 2020-08-21T16:18:17.617Z,\n    likes: 0,\n    liked: false\n  }\n]\n          ✓ Correctly posts reply\n[\n  {\n    text: \"This is a new reply\",\n    postedBy: 5f3ff3c98edf7e37fc3a581d,\n    createdAt: 2020-08-21T16:18:17.678Z,\n    likes: 0,\n    liked: false\n  }\n]",
           "type": "json"
         }
       ]
@@ -1430,7 +1430,7 @@
       "examples": [
         {
           "title": "Response (example):",
-          "content": "  HTTP/1.1 200 OK\n{\n    {\n      \"_id\": \"5f41ed74c025ae6116189890\",\n      \"createdAt\": \"2020-08-23T04:15:48.491Z\"\n    },\n    {\n      \"_id\": \"5f41ed7fc025ae6116189891\",\n      \"createdAt\": \"2020-08-23T04:15:59.824Z\"\n    }\n}",
+          "content": "    HTTP/1.1 200 OK\n  [\n      {\n        \"_id\": \"5f41ed74c025ae6116189890\",\n        \"createdAt\": \"2020-08-23T04:15:48.491Z\"\n      },\n      {\n        \"_id\": \"5f41ed7fc025ae6116189891\",\n        \"createdAt\": \"2020-08-23T04:15:59.824Z\"\n      }\n]",
           "type": "json"
         }
       ]

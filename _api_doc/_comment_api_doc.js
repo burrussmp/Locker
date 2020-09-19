@@ -123,17 +123,17 @@
  * @apiSuccess (200) {ObjectID} data._id       The ID of the comment
  * @apiSuccess (200) {Date}     data.createdAt The timestamp of when the comment was posted
  * @apiSuccessExample Response (example):
- *     HTTP/1.1 200 OK
-  [
-      {
-        "_id": "5f41ed74c025ae6116189890",
-        "createdAt": "2020-08-23T04:15:48.491Z"
-      },
-      {
-        "_id": "5f41ed7fc025ae6116189891",
-        "createdAt": "2020-08-23T04:15:59.824Z"
-      }
-]
+ *  HTTP/1.1 200 OK
+    [
+        {
+          "_id": "5f41ed74c025ae6116189890",
+          "createdAt": "2020-08-23T04:15:48.491Z"
+        },
+        {
+          "_id": "5f41ed7fc025ae6116189891",
+          "createdAt": "2020-08-23T04:15:59.824Z"
+        }
+    ]
 */
  
   /**
