@@ -8,6 +8,7 @@ const UserData = [
     email: 'paula.sullivan@gmail.com',
     phone_number: '+15024567890',
     password: 'Pass@123',
+    about: "And I said no ma'am you may not take my virginity",
     avatar : process.cwd() + '/mock_data_dev/assets/profile_imgs/male_1.jpg',
     follows : [1,2,3],
     posts : [{
@@ -37,6 +38,7 @@ const UserData = [
     email: 'matthew.burruss@gmail.com',
     phone_number: '+15026891822',
     password: 'Pass@123',
+    about: "As a kid I dreamed of getting down as a professional dancer but sadly they told me 'the jig is up'",
     avatar : process.cwd() + '/mock_data_dev/assets/profile_imgs/male_2.jpg',
     follows : [],
     posts: []
@@ -48,6 +50,7 @@ const UserData = [
     email: 'soccer_chick@gmail.com',
     phone_number: '+15023214343',
     password: 'Pass@123',
+    about: "I'm just like really done with it all",
     avatar : process.cwd() + '/mock_data_dev/assets/profile_imgs/women_1.jpg',
     follows : [0,1],
     posts : [{
@@ -73,6 +76,7 @@ const UserData = [
     email: 'kanye_west@gmail.com',
     phone_number: '+15022323212',
     password: 'Pass@123',
+    about: "Kanye for president 2020",
     avatar : process.cwd() + '/mock_data_dev/assets/profile_imgs/male_3.jpg',
     follows : [0,1,2,4],
     posts : [{
@@ -90,6 +94,7 @@ const UserData = [
     email: 'becca_karen@gmail.com',
     phone_number: '+15021112212',
     password: 'Pass@123',
+    about: "oh my god look at her butt",
     avatar : process.cwd() + '/mock_data_dev/assets/profile_imgs/women_2.jpg',
     follows : [2,3],
     posts : [{
