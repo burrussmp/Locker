@@ -4,7 +4,7 @@
 import StaticStrings from "../../config/StaticStrings";
 import S3_Services from "../services/S3.services";
 import Sharp from "sharp";
-import media from "../models/media.model";
+import Media from "../models/media.model";
 
 const ErrorMessages = StaticStrings.MediaControllerErrors;
 
@@ -60,9 +60,7 @@ const mediaExists = (req, res, next, key) => {
       return next();
     })
     .catch((err) => {
-      return res
-        .status(404)
-        .json({ error: ErrorMessages.MediaNotFound });
+      return res.status(404).json({ error: ErrorMessages.MediaNotFound });
     });
 };
 
@@ -98,72 +96,47 @@ const getMediaByKey = (req, res, key) => {
  */
 const getMediaByKeyResize = async (req, res, key) => {
   const size = req.query.size;
-  const media_type = res.locals.media_type
-    ? res.locals.media_type
-    : req.query.media_type;
-  if (!media_type || !__allowed_media_types__.includes(media_type)) {
+  if (!size || !__allowed_media_sizes__.includes(size)) {
+    return res.status(400).json({
+      error: ErrorMessages.SizeQueryParameterInvalid,
+    });
+  }
+  let media = await Media.findOne({ key: key });
+  if (media.mimetype != "image/png" && media.mimetype != "image/jpeg") {
+    return res.status(400).json({
+      error: ErrorMessages.CannotResizeNotImage,
+    });
+  }
+  if (!media.type || !__allowed_media_types__.includes(media.type)) {
     return res.status(400).json({
       error: ErrorMessages.MediaTypeQueryParameterInvalid,
     });
   }
-  if (!size || !__allowed_media_sizes__.includes(size)){
-    return res.status(400).json({
-      error: ErrorMessages.SizeQueryParameterInvalid
-    }); 
-  }
-  let dimensions = All_Dimensions[media_type][size]
-  const {width,height} = dimensions;
-  let resized_key = key + "_" + 'width_' + width + '_height_' + height;
+  let { width, height } = All_Dimensions[media.type][size];
+  let resized_key = key + "_" + "width_" + width + "_height_" + height;
   try {
     let resized_media = await S3_Services.getMediaS3(resized_key);
+    res.setHeader("Content-Length", resized_media.ContentLength);
+    res.write(resized_media.Body);
+    return res.end(null);
+  } catch (err) {
     try {
+      let original_media = await S3_Services.getMediaS3(key);
+      let buffer = await Sharp(original_media.Body)
+        .resize(width, height)
+        .toFormat("png")
+        .toBuffer();
+      await S3_Services.putObjectS3(resized_key, buffer, "image/png");
+      let resized_media = await S3_Services.getMediaS3(resized_key);
+      await Media.findOneAndUpdate(
+        { key: key },
+        { $push: { resized_keys: resized_key } }
+      );
       res.setHeader("Content-Length", resized_media.ContentLength);
       res.write(resized_media.Body);
       return res.end(null);
     } catch (err) {
-      return res
-        .status(500)
-        .json({ message: StaticStrings.UnknownServerError });
-    }
-  } catch (err) {
-    try {
-      let { width, height } = dimensions;
-      let original_media = await S3_Services.getMediaS3(key);
-      if (original_media.Metadata.type != media_type){
-        return res.status(400).json({error: ErrorMessages.MediaTypeDoesntMatchMetaData});
-      }
-      if (
-        original_media.ContentType != "image/png" &&
-        original_media.ContentType != "image/jpeg"
-      ) {
-        return res.status(400).json({
-          error: ErrorMessages.CannotResizeNotImage
-        });
-      } else {
-        let buffer = await Sharp(original_media.Body)
-          .resize(width, height)
-          .toFormat("png")
-          .toBuffer();
-        await S3_Services.putObjectS3(resized_key, buffer, "image/png");
-        let resized_media = await S3_Services.getMediaS3(resized_key);
-        try {
-          await media.findOneAndUpdate(
-            { key: key },
-            { $push: { resized_keys: resized_key } }
-          );
-          res.setHeader("Content-Length", resized_media.ContentLength);
-          res.write(resized_media.Body);
-          return res.end(null);
-        } catch (err) {
-          return res
-            .status(500)
-            .json({ message: StaticStrings.UnknownServerError});
-        }
-      }
-    } catch (err) {
-      return res
-        .status(500)
-        .json({ message: StaticStrings.S3ServiceErrors.RetrieveServerError });
+      return res.status(500).json({ error: err.message });
     }
   }
 };

@@ -210,7 +210,7 @@
 
 /**
  * @api {get} /api/users/:userId/avatar Get Profile Photo
- * @apiDescription Retrieve the profile photo from AWS S3 bucket
+ * @apiDescription Retrieve the profile photo from AWS S3 bucket (use query parameter 'size') to get various version of image
  * @apiName GetApiUsersUserIdAvatar
  * @apiGroup User
  * @apiUse LoginHeader

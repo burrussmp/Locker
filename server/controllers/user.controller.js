@@ -206,7 +206,6 @@ const changePassword = async (req,res) => {
 */ 
 const getProfilePhoto = (req, res) => {
   if (req.profile.profile_photo && req.profile.profile_photo.key){
-    res.locals.media_type = 'Avatar';
     res.locals.key = req.profile.profile_photo.key;
     mediaController.getMedia(req,res);
   } else {

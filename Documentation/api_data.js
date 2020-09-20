@@ -934,7 +934,7 @@ define({ "api": [
     "type": "get",
     "url": "/api/media/:key",
     "title": "Get Media from S3",
-    "description": "<p>Edit one of your posts. The :key path parameter is the file identifier in the S3 bucket</p>",
+    "description": "<p>Edit one of your posts. The :key path parameter is the file identifier in the S3 bucket. You can also use this to dynamically resize the image by providing the query parameter size.</p>",
     "name": "GetMediaKey",
     "group": "Miscellaneous",
     "version": "0.1.0",
@@ -948,6 +948,19 @@ define({ "api": [
         "name": "none"
       }
     ],
+    "parameter": {
+      "fields": {
+        "Query Parameter": [
+          {
+            "group": "Query Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "size",
+            "description": "<p>Retrieves a small, medium, large, or xlarge version of an image</p>"
+          }
+        ]
+      }
+    },
     "success": {
       "fields": {
         "200": [
@@ -969,6 +982,12 @@ define({ "api": [
             "optional": false,
             "field": "404",
             "description": "<p>Media not found</p>"
+          },
+          {
+            "group": "4xx",
+            "optional": false,
+            "field": "400",
+            "description": "<p>Invalid or missing media_type when wanting size / media type cannot be resized</p>"
           },
           {
             "group": "4xx",
@@ -3203,6 +3222,18 @@ define({ "api": [
         "description": "<p>Assigned to all Users by default</p>"
       }
     ],
+    "parameter": {
+      "fields": {
+        "Query parameter": [
+          {
+            "group": "Query parameter",
+            "optional": false,
+            "field": "size",
+            "description": "<p>Request different version of profile (either small, medium, large, or xlarge)</p>"
+          }
+        ]
+      }
+    },
     "success": {
       "fields": {
         "200": [

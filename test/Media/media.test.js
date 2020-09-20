@@ -132,7 +132,7 @@ const media_test_basics = () => {
       });
       it("Incorrect query parameter 'size' should fail for /api/media/", async () => {
         return fetch(
-          `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&size=BAD&media_type=Avatar`
+          `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&size=BAD`
         ).then(async (res) => {
           res.status.should.eql(400);
           let body = await res.json();
@@ -143,57 +143,9 @@ const media_test_basics = () => {
           listS3.Contents.length.should.eql(1);
         });
       });
-      it("Incorrect query parameter 'media_type' should fail for /api/media/", async () => {
-        return fetch(
-          `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&size=small&media_type=BAD`
-        ).then(async (res) => {
-          res.status.should.eql(400);
-          let body = await res.json();
-          body.error.should.eql(
-            StaticStrings.MediaControllerErrors.MediaTypeQueryParameterInvalid
-          );
-          let listS3 = await S3_Services.listObjectsS3();
-          listS3.Contents.length.should.eql(1);
-        });
-      });
-      it("Query parameter 'media_type' doesn't match the meta data in S3 for /api/media/", async () => {
-        return fetch(
-          `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&size=small&media_type=ContentPost`
-        ).then(async (res) => {
-          res.status.should.eql(400);
-          let body = await res.json();
-          body.error.should.eql(
-            StaticStrings.MediaControllerErrors.MediaTypeDoesntMatchMetaData
-          );
-          let listS3 = await S3_Services.listObjectsS3();
-          listS3.Contents.length.should.eql(1);
-        });
-      });
-      it("Missing query parameter 'media_type' for /api/media/", async () => {
-        return fetch(
-          `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&size=small`
-        ).then(async (res) => {
-          res.status.should.eql(400);
-          let body = await res.json();
-          body.error.should.eql(
-            StaticStrings.MediaControllerErrors.MediaTypeQueryParameterInvalid
-          );
-          let listS3 = await S3_Services.listObjectsS3();
-          listS3.Contents.length.should.eql(1);
-        });
-      });
-      it("Missing query parameter 'size' for /api/media/ should return normal image and work", async () => {
-        return fetch(
-          `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&media_type=Avatar`
-        ).then(async (res) => {
-          res.status.should.eql(200);
-          let listS3 = await S3_Services.listObjectsS3();
-          listS3.Contents.length.should.eql(1);
-        });
-      });
       it("Adjust the size of the profile to small for /api/media/", async () => {
         return fetch(
-          `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&size=small&media_type=Avatar`
+          `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&size=small`
         ).then(async (res) => {
           res.status.should.eql(200);
           let media = await Media.findOne({ key: Key });
@@ -205,7 +157,7 @@ const media_test_basics = () => {
       });
       it("Adjust the size of the profile to medium for /api/media/", async () => {
         return fetch(
-          `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&size=medium&media_type=Avatar`
+          `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&size=medium`
         ).then(async (res) => {
           res.status.should.eql(200);
           let media = await Media.findOne({ key: Key });
@@ -214,7 +166,7 @@ const media_test_basics = () => {
       });
       it("Adjust the size of the profile to large for /api/media/", async () => {
         return fetch(
-          `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&size=large&media_type=Avatar`
+          `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&size=large`
         ).then(async (res) => {
           res.status.should.eql(200);
           let media = await Media.findOne({ key: Key });
@@ -223,7 +175,7 @@ const media_test_basics = () => {
       });
       it("Adjust the size of the profile to xlarge for /api/media/", async () => {
         return fetch(
-          `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&size=xlarge&media_type=Avatar`
+          `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&size=xlarge`
         ).then(async (res) => {
           res.status.should.eql(200);
           let media = await Media.findOne({ key: Key });
@@ -282,7 +234,7 @@ const media_test_basics = () => {
       });
       it("Try to resize a non-image (should fail)", async () => {
         return fetch(
-          `http://localhost:3000/api/media/${Key2}?access_token=${userToken0}&size=small&media_type=ContentPost`
+          `http://localhost:3000/api/media/${Key2}?access_token=${userToken0}&size=small`
         ).then(async (res) => {
           res.status.should.eql(400);
           let body = await res.json();
@@ -295,31 +247,11 @@ const media_test_basics = () => {
       });
       it("Try to resize an image (should be fine)", async () => {
         return fetch(
-          `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&size=small&media_type=ContentPost`
-        ).then(async (res) => {
-          res.status.should.eql(200);
-          let listS3 = await S3_Services.listObjectsS3();
-          listS3.Contents.length.should.eql(3);
-        });
-      });
-      it("Missing size query parameter (should be fine)", async () => {
-        return fetch(
-          `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&media_type=ContentPost`
-        ).then(async (res) => {
-          res.status.should.eql(200);
-          let listS3 = await S3_Services.listObjectsS3();
-          listS3.Contents.length.should.eql(3);
-        });
-      });
-      it("Missing media_type query parameter but trying to resize (should fail)", async () => {
-        return fetch(
           `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&size=small`
         ).then(async (res) => {
-          res.status.should.eql(400);
-          let body = await res.json();
-          body.error.should.eql(
-            StaticStrings.MediaControllerErrors.MediaTypeQueryParameterInvalid
-          );
+          res.status.should.eql(200);
+          let listS3 = await S3_Services.listObjectsS3();
+          listS3.Contents.length.should.eql(3);
         });
       });
     });
