@@ -12,7 +12,7 @@ const MediaSchema = new mongoose.Schema({
       type: String,
       required: StaticStrings.MediaModelErrors.TypeRequired,
       enum: {
-        values: ["profile_photo",'ContentPost'],
+        values: ["Avatar",'ContentPost'],
         message: StaticStrings.MediaModelErrors.UnacceptableType
       }
   },
@@ -34,6 +34,10 @@ const MediaSchema = new mongoose.Schema({
       ref: 'User',
       required: StaticStrings.MediaModelErrors.UploadedByRequired
   },
+  resized_keys : {
+    type: [String],
+    default: [],
+  }
 },{
     timestamps : {
       createdAt:'createdAt',
@@ -42,10 +46,19 @@ const MediaSchema = new mongoose.Schema({
   })
 
 MediaSchema.pre("deleteOne",{document: true,query:false },async function(){
-  S3_Services.deleteMediaS3(this.key)
+  await S3_Services.deleteMediaS3(this.key)
     .catch((err)=>{
         console.log(err);
-    })
+    });
+  if (this.resized_keys && this.resized_keys.length != 0){
+    for (let i = 0; i < this.resized_keys.length; ++i){
+      let resized_key = this.resized_keys[i];
+      S3_Services.deleteMediaS3(resized_key)
+        .catch((err)=>{
+          console.log(err);
+        })
+    }
+  }
 });
 
 export default mongoose.model('Media', MediaSchema)

@@ -60,7 +60,7 @@ const avatar_test = () => {
                         image.uploadedBy.toString().should.eql(id);
                         let key = image.key;
                         return S3_Services.fileExistsS3(key).then(data=>{
-                            data.Metadata.type.should.eql("profile_photo");
+                            data.Metadata.type.should.eql("Avatar");
                             data.Metadata.user_id.should.eql(id);
                             data.Metadata.user_id.should.eql(user._id.toString());
                             return S3_Services.deleteMediaS3(key).then(async ()=> {
@@ -89,7 +89,7 @@ const avatar_test = () => {
                     image.uploadedBy.toString().should.eql(id);
                     let key = image.key;
                     return S3_Services.fileExistsS3(key).then(data=>{
-                        data.Metadata.type.should.eql("profile_photo");
+                        data.Metadata.type.should.eql("Avatar");
                         data.Metadata.user_id.should.eql(id);
                         data.Metadata.user_id.should.eql(user._id.toString());
                         return S3_Services.deleteMediaS3(key).then(async ()=> {

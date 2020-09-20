@@ -344,7 +344,6 @@ const comments_test = () => {
             it("Get comment that you haven't liked and see if it shows that (should succeed)",async()=>{
                 return agent.get(`/api/comments/${commentId0}?access_token=${userToken0}`)
                     .then(async res=>{
-                        console.log(res.body.error)
                         res.status.should.eql(200);
                         res.body.text.should.eql(CommentData[0].text);
                         res.body.postedBy.toString().should.eql(userId1);

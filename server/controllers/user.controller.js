@@ -78,7 +78,7 @@ const userByID = async (req, res, next, id) => {
     let user = await User.findById(id)
       .populate('following', '_id name')
       .populate('followers', '_id name')
-      .populate("profile_photo",'_id key mimetype')
+      .populate("profile_photo")
       .exec();
     if (!user)
       return res.status('404').json({
@@ -206,7 +206,9 @@ const changePassword = async (req,res) => {
 */ 
 const getProfilePhoto = (req, res) => {
   if (req.profile.profile_photo && req.profile.profile_photo.key){
-    mediaController.getMediaByKey(req,res,req.profile.profile_photo.key)
+    res.locals.media_type = 'Avatar';
+    res.locals.key = req.profile.profile_photo.key;
+    mediaController.getMedia(req,res);
   } else {
     fs.createReadStream(DefaultProfilePhoto).pipe(res)
   }
@@ -219,7 +221,7 @@ const getProfilePhoto = (req, res) => {
 */ 
 const uploadProfilePhoto = (req, res) => {
   let meta = {
-    'type': "profile_photo",
+    'type': "Avatar",
     'uploadedBy' : req.params.userId
   };
   S3_Services.uploadSingleMediaS3(req,res,meta, async (req,res,image)=>{ // upload to s3
@@ -233,7 +235,7 @@ const uploadProfilePhoto = (req, res) => {
       } else {
         res.status(200).json({message:StaticStrings.UploadProfilePhotoSuccess}) // first upload, nothing to delete... Success!
       }
-    } catch (err) { 
+    } catch (err) {       
       if (req.file) {
         await image.deleteOne() // delete the new one
         res.status(500).json({error: StaticStrings.UnknownServerError + ' and ' + err.message})

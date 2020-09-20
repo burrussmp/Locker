@@ -39,6 +39,7 @@ const reply_test = () => {
                     .attach("media",image1)
                     .field(PostData[0])
                     .then((res)=>{
+                        console.log(res.body.error)
                         res.status.should.eql(200);
                         postId0 = res.body._id;
                     })
@@ -93,7 +94,6 @@ const reply_test = () => {
                     res.body.length.should.eql(0);
                     return agent.get(`/api/${comment_id_array[1]}/replies?access_token=${userToken1}`)
                     .then(res=>{
-                        // console.log(util.inspect(res.body, false, null, true /* enable colors */))
                         res.status.should.eql(200);
                         res.body[0].should.have.property('text'); // the required
                         res.body[0].should.have.property('postedBy'); // the required

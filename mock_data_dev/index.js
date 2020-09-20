@@ -13,7 +13,8 @@ mongoose.connection.on('error', () => {
 const API = require('./api');
 let Users = require('./_user_data');
 let helper = require('./helper');
-
+require('../server/models/comment.model');
+require('../server/models/posts/content.post.model');
 
 (async () => {
     console.log('Dropping data base...');

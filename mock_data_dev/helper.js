@@ -48,7 +48,6 @@ const drop_database = async () => {
   }
   return mongoose.connection.dropDatabase()
 };
-
 exports.filter_user_signup = filter_user_signup;
 exports.filter_content_post_create = filter_content_post_create;
 exports.filter_comment_create = filter_comment_create;

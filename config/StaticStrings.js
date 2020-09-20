@@ -39,12 +39,12 @@ const StaticStrings = {
     },
     MediaModelErrors : {
         KeyRequired: "S3 file key is required",
-        TypeRequired: "The type is required (e.g profile_photo)",
+        TypeRequired: "The type is required (e.g Avatar)",
         MimeTypeRequired: "The mimetype is required (e.g image/png)",
         OriginalNameRequired: "The original name of the upload is required",
         DescriptionTooLong: "Description cannot exceed 180 characters",
         UploadedByRequired: "The ObjectID of the uploader is required",
-        UnacceptableType: "ServerError: Image must be an acceptable type (e.g. profile_photo)",
+        UnacceptableType: "ServerError: Image must be an acceptable type (e.g. Avatar)",
         KeyAlreadyExists: "ServerError: The S3 key must be unique (and should be)",
     },
     UserModelErrors : {
@@ -101,7 +101,12 @@ const StaticStrings = {
 
     },
     MediaControllerErrors: {
-        MediaNotFound: "Error requested media not found"
+        MediaNotFound: "Error requested media not found",
+        CannotResizeNotImage: "Cannot resize media that is not image/png or image/jpeg",
+        MediaTypeDoesntMatchMetaData: 'The media type does not match the media type in S3',
+        SizeQueryParameterInvalid: "Query parameter 'size' invalid or missing",
+        MediaTypeQueryParameterInvalid: "Query parameter 'media_type' invalid or missing",
+
     },
     PostController : {
         UnknownPostType : "Unknown post type",

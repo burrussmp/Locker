@@ -219,6 +219,7 @@
  * @apiUse LoginError
  * @apiPermission UserRead
  * @apiUse PermissionError
+ * @apiParam (Query parameter) size Request different version of profile (either small, medium, large, or xlarge)
  * @apiSuccess (200) {Stream} Image The profile photo is streamed in the HTTP response.
  * @apiError (4xx) 404 Profile not found in S3.
  * @apiError (5xx) 500 ServerError: Unable to send file, but it exists in S3
