@@ -103,7 +103,7 @@ const StaticStrings = {
     MediaControllerErrors: {
         MediaNotFound: "Error requested media not found",
         CannotResizeNotImage: "Cannot resize media that is not image/png or image/jpeg",
-        MediaTypeDoesntMatchMetaData: 'The media type does not match the media type in S3',
+        MediaTypeNotImplementedResize: 'This media type has not been implemented for a resize',
         SizeQueryParameterInvalid: "Query parameter 'size' invalid or missing",
         MediaTypeQueryParameterInvalid: "Query parameter 'media_type' invalid or missing",
 

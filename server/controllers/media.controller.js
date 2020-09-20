@@ -8,8 +8,6 @@ import Media from "../models/media.model";
 
 const ErrorMessages = StaticStrings.MediaControllerErrors;
 
-const __allowed_media_types__ = ["Avatar", "ContentPost"];
-const __allowed_media_sizes__ = ["small", "medium", "large", "xlarge"];
 const All_Dimensions = {
   Avatar: {
     small: {
@@ -95,39 +93,40 @@ const getMediaByKey = (req, res, key) => {
  * @param {String} key - S3 file identifier
  */
 const getMediaByKeyResize = async (req, res, key) => {
-  const size = req.query.size;
-  if (!size || !__allowed_media_sizes__.includes(size)) {
-    return res.status(400).json({
-      error: ErrorMessages.SizeQueryParameterInvalid,
-    });
-  }
-  let media = await Media.findOne({ key: key });
+  const media = await Media.findOne({ key: key });
   if (media.mimetype != "image/png" && media.mimetype != "image/jpeg") {
     return res.status(400).json({
       error: ErrorMessages.CannotResizeNotImage,
     });
   }
-  if (!media.type || !__allowed_media_types__.includes(media.type)) {
-    return res.status(400).json({
-      error: ErrorMessages.MediaTypeQueryParameterInvalid,
+  const typeSizes = All_Dimensions[media.type]
+  if (!typeSizes){
+    return res.status(501).json({
+      error: ErrorMessages.MediaTypeNotImplementedResize,
     });
   }
-  let { width, height } = All_Dimensions[media.type][size];
-  let resized_key = key + "_" + "width_" + width + "_height_" + height;
+  const dimensions = typeSizes[req.query.size];
+  if (!dimensions) {
+    return res.status(400).json({
+      error: ErrorMessages.SizeQueryParameterInvalid,
+    });
+  }
+  const {width,height} = dimensions;
+  const resized_key = key + "_" + "width_" + width + "_height_" + height;
   try {
-    let resized_media = await S3_Services.getMediaS3(resized_key);
+    const resized_media = await S3_Services.getMediaS3(resized_key);
     res.setHeader("Content-Length", resized_media.ContentLength);
     res.write(resized_media.Body);
     return res.end(null);
   } catch (err) {
     try {
-      let original_media = await S3_Services.getMediaS3(key);
-      let buffer = await Sharp(original_media.Body)
+      const original_media = await S3_Services.getMediaS3(key);
+      const buffer = await Sharp(original_media.Body)
         .resize(width, height)
         .toFormat("png")
         .toBuffer();
       await S3_Services.putObjectS3(resized_key, buffer, "image/png");
-      let resized_media = await S3_Services.getMediaS3(resized_key);
+      const resized_media = await S3_Services.getMediaS3(resized_key);
       await Media.findOneAndUpdate(
         { key: key },
         { $push: { resized_keys: resized_key } }
