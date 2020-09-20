@@ -111,10 +111,8 @@
  * @apiSuccess (200) {String}       username            Username of user 
  * @apiSuccess (200) {Object[]}     following           Array of who user followers
  * @apiSuccess (200) {ObjectId}     following._id       MongoDB ID of user following
- * @apiSuccess (200) {String}       following._username Username of user following 
  * @apiSuccess (200) {Object[]}     followers           Array of followers of user
  * @apiSuccess (200) {ObjectId}     followers._id       MongoDB ID of follower
- * @apiSuccess (200) {String}       followers._username Username of follower 
  * @apiSuccess (200) {Date}         updatedAt           Timestamp of last update to user profile
  * @apiSuccess (200) {Date}         createdAt           Timestamp of when user was created
  * @apiSuccess (200) {Object[]}     profile_photo       Not present if there is no profile photo but otherwise looks like the example
@@ -124,7 +122,6 @@
         "about": "This is a bio",
         "following": [{
             "_id" : "5f6565f0c1708f4ad08477c7",
-            "username" : "user1"
         }],
         "followers": [],
         "_id": "5f6565f0c1708f4ad08477c7",
