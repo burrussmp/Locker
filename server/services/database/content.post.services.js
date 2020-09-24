@@ -82,11 +82,19 @@ const getContentPost = async (req, res) => {
     try {
         let post = await Post.findById(req.params.postId).select('type caption tags postedBy createdAt updatedAt')
             .populate({
+                path: 'postedBy',
+                select: '_id username profile_photo',
+                populate: {
+                    path: 'profile_photo',
+                    select: "-_id key mimetype blurhash"
+                }
+            })
+            .populate({
                 path: 'content',
                 select: '-_id price media',
                 populate: {
                     path: "media",
-                    select: '-_id key mimetype'
+                    select: '-_id key mimetype blurhash'
                 }
             }).exec()
         return res.status(200).json(post);

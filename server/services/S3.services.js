@@ -8,6 +8,7 @@ import errorHandler from "./dbErrorHandler";
 import Media from "../models/media.model";
 import StaticStrings from "../../config/StaticStrings";
 import config from "../../config/config";
+import BlurHashEncoder from '../services/BlurHashEncoder';
 
 // Configure AWS
 aws.config.update({
@@ -15,6 +16,21 @@ aws.config.update({
   accessKeyId: config.aws_config.aws_access_key,
   region: "us-east-1",
 });
+
+/**
+ * @desc Send image from S3 in HTTP response
+ * @param Mongoose.schema.model.Media image - MongoDB image object
+ * @return Returns a promise where the resolve contains the image data and reject
+ * contains the error
+ */
+const getMediaS3 = (key) => {
+  let params = {
+    Bucket: config.bucket_name,
+    Key: key,
+  };
+  return s3.getObject(params).promise();
+};
+
 const s3 = new aws.S3();
 
 /**
@@ -75,6 +91,7 @@ const deleteMediaS3 = async (key) => {
 
 /**
  * @desc (Middleware) Upload a single image or video to S3 and update MongoDB Media reference
+ * @todo NEED TO NOT GET MEDIA later and 
  * @param Object req - HTTP request
  * @param Object res - HTTP response
  * @param Object meta - meta data of image object
@@ -115,6 +132,12 @@ const uploadSingleMediaS3 = (req, res, meta, next) => {
     meta.key = req.file.key; // save image to MongoDB
     meta.mimetype = req.file.mimetype;
     meta.originalName = req.file.originalname;
+
+    const image = await getMediaS3(req.file.key)
+    const mimetype = image.ContentType;
+    if (mimetype === "image/jpeg" || mimetype === "image/png"){
+      meta.blurhash = await BlurHashEncoder.encodeBlurHash(image.Body, mimetype);
+    }
     try {
       let image = new Media(meta);
       await image.save();
@@ -148,20 +171,6 @@ const listObjectsS3 = () => {
     MaxKeys: 1000
   };
   return s3.listObjectsV2(params).promise();
-};
-
-/**
- * @desc Send image from S3 in HTTP response
- * @param Mongoose.schema.model.Media image - MongoDB image object
- * @return Returns a promise where the resolve contains the image data and reject
- * contains the error
- */
-const getMediaS3 = (key) => {
-  let params = {
-    Bucket: config.bucket_name,
-    Key: key,
-  };
-  return s3.getObject(params).promise();
 };
 
 /**

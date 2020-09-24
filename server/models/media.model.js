@@ -29,6 +29,9 @@ const MediaSchema = new mongoose.Schema({
       default: "",
       maxlength : [300,]
   },
+  blurhash: {
+    type: String
+  },
   uploadedBy: {
       type: mongoose.Schema.ObjectId, 
       ref: 'User',

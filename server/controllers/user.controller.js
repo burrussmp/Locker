@@ -1,6 +1,7 @@
 "use strict";
 // imports
 import User from '../models/user.model'
+import Media from '../models/media.model';
 import errorHandler from '../services/dbErrorHandler'
 import StaticStrings from '../../config/StaticStrings';
 import S3_Services from '../services/S3.services';
@@ -78,7 +79,7 @@ const userByID = async (req, res, next, id) => {
     let user = await User.findById(id)
       .populate('following', '_id name')
       .populate('followers', '_id name')
-      .populate("profile_photo")
+      .populate('profile_photo', 'key blurhash mimetype')
       .exec();
     if (!user)
       return res.status('404').json({
@@ -229,7 +230,8 @@ const uploadProfilePhoto = (req, res) => {
     try {
       let user = await User.findOneAndUpdate(query, update,{runValidators:true}); // update
       if (user.profile_photo) { 
-        await req.profile.profile_photo.deleteOne();
+        const media = await Media.findOne({ key: req.profile.profile_photo.key });
+        await media.deleteOne();
         res.status(200).json({message:StaticStrings.UploadProfilePhotoSuccess})
       } else {
         res.status(200).json({message:StaticStrings.UploadProfilePhotoSuccess}) // first upload, nothing to delete... Success!
