@@ -8,4 +8,4 @@ import {drop_database} from './helper';
 // describe('Auth Tests',AuthTest)
 // describe('User Tests',UserTest)
 // describe('Post Test',PostTest)
-describe('Media Test',MediaTest)
+// describe('Media Test',MediaTest)

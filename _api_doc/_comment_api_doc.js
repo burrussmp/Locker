@@ -107,7 +107,7 @@
  */
 
   /**
- * @api {get} /api/posts/:postId/comments List Post Comments
+ * @api {get} /api/:postId/comments List Post Comments
  * @apiDescription Comment on a post
  * @apiName GetApiPostIdComments
  * @apiGroup Post

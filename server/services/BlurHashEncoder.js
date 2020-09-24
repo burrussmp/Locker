@@ -23,7 +23,7 @@ const encodeBlurHash = async (data, type) => {
         const height = pixels.shape[1];
         const channels = pixels.shape[2];
         try {
-          const blur_hash = encode(image_data, width, height, 4, 3);
+          const blur_hash = encode(image_data, width, height, 3, 4);
           resolve(blur_hash);
         } catch (err) {
           reject(err);

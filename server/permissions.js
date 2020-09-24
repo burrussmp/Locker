@@ -269,6 +269,14 @@ const Authorize = (req,res,next) => {
                     break;
             }
         break
+        case `/api/search/users/`:
+            switch(method){
+                case 'POST':
+                    required_permissions.push(User_Permissions.Read);
+                    required_permissions.push(User_Permissions.ListAll)
+                    break;
+            }
+        break
     }
     res.locals.require_login = require_login;
     res.locals.permissions = required_permissions;
