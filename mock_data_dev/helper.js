@@ -49,8 +49,20 @@ const drop_database = async () => {
   }
   return mongoose.connection.dropDatabase();
 };
+
+
+const update_fuzzy = async (attrs) => {
+  for await (const doc of User.find()) {
+    const obj = attrs.reduce((acc, attr) => ({ ...acc, [attr]: doc[attr] }), {});
+    await User.findByIdAndUpdate(doc._id, obj);
+  }
+};
+
+
+
 exports.filter_user_signup = filter_user_signup;
 exports.filter_content_post_create = filter_content_post_create;
 exports.filter_comment_create = filter_comment_create;
 exports.filter_reply_create = filter_reply_create;
 exports.drop_database = drop_database;
+exports.update_fuzzy = update_fuzzy; 

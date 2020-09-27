@@ -5,6 +5,7 @@ import MediaTest from './media.test';
 import {drop_database} from './helper';
 
 
+drop_database()
 // describe('Auth Tests',AuthTest)
 // describe('User Tests',UserTest)
 // describe('Post Test',PostTest)

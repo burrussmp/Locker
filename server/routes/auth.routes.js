@@ -15,4 +15,10 @@ router.route('/auth/logout')
 router.route('/auth/verify_token')
   .head(authCtrl.verifyToken);
 
+router.route('/auth/forgot_password')
+  .post(authCtrl.forgotPassword)
+
+router.route('/auth/confirm_forgot_password')
+  .post(authCtrl.confirmForgotPassword)
+
 export default router

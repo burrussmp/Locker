@@ -13,6 +13,11 @@ const StaticStrings = {
     TokenIsNotValid: "This token is not valid (possible user no longer exists)",
     UnknownServerError: "ServerError: Unknown",
     NotImplementedError: "Not Implemented",
+    AuthErrors : {
+        ForgotPasswordMissingEmail: 'Bad Request: Must include an email field to reset password',
+        ConfirmPasswordMissingFields: 'Bad Request: Missing required fields',
+        UserNotFoundWithEmail: 'Sorry, this email is not associated with an account.'
+    },
     LoginErrors : {
         MissingLogin: "Missing username, phone number, or email",
         MissingPassword: "Missing password",

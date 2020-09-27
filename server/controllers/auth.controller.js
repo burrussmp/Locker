@@ -65,11 +65,9 @@ const login = async (req, res) => {
         let cognito_username = CognitoServices.getCognitoUsername(session);
         let user = await User.findOne({ cognito_username: cognito_username });
         if (!user) {
-          return res
-            .status("500")
-            .json({
-              error: "Server Error: User pool not synced with Mongoose DB",
-            });
+          return res.status("500").json({
+            error: "Server Error: User pool not synced with Mongoose DB",
+          });
         }
         let parsed_session = CognitoServices.parseSession(session);
         let id_payload = parsed_session.payloads.id;
@@ -218,6 +216,55 @@ const checkLogin = (req, res, next) => {
   }
 };
 
+/**
+ * @desc Sends reset password code to User's email
+ * @param {Request} req : HTTP request
+ * @param {Response} res : HTTP response
+ * @return A 400 if email missing or something goes wrong else
+ */
+const forgotPassword = async (req, res) => {
+  const email = req.body.email;
+  if (!email) {
+    return res
+      .status(400)
+      .json({ error: StaticStrings.AuthErrors.ForgotPasswordMissingEmail });
+  } else {
+    try {
+      const user = await CognitoServices.getUserByEmail(email);
+      if (!user){
+        return res.status(404).json({error: StaticStrings.AuthErrors.UserNotFoundWithEmail})
+      }
+      const cognito_username = user.Username;
+      await CognitoServices.forgotPassword(cognito_username);
+      return res.status(200).json({cognito_username: cognito_username});
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  }
+};
+
+const confirmForgotPassword = async (req, res) => {
+  const cognito_username = req.body.cognito_username;
+  const confirmation_code = req.body.confirmation_code;
+  const new_password = req.body.new_password;
+  if (!new_password || !cognito_username || !confirmation_code) {
+    return res
+      .status(400)
+      .json({ error: StaticStrings.AuthErrors.ConfirmPasswordMissingFields });
+  } else {
+    try {
+      await CognitoServices.confirmForgotPassword(
+        cognito_username,
+        new_password,
+        confirmation_code
+      );
+      return res.status(200).json({ message: "Correctly reset password" });
+    } catch (err) {
+      return res.status(400).json({ error: err.message });
+    }
+  }
+};
+
 export default {
   login,
   logout,
@@ -226,4 +273,6 @@ export default {
   requireOwnership,
   checkAccessToken,
   verifyToken,
+  forgotPassword,
+  confirmForgotPassword,
 };

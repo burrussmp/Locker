@@ -13,8 +13,6 @@ const UserSchema = new mongoose.Schema(
     cognito_username: {
       type: String,
       trim: true,
-      index: true,
-      unique: true,
       required: StaticStrings.UserModelErrors.CognitoUsernameRequired,
     },
     first_name: {
@@ -36,7 +34,6 @@ const UserSchema = new mongoose.Schema(
     username: {
       type: String,
       trim: true,
-      unique: true,
       required: StaticStrings.UserModelErrors.UsernameRequired,
       maxlength: [32, StaticStrings.UserModelErrors.UsernameExceedLength],
     },
@@ -63,6 +60,7 @@ const UserSchema = new mongoose.Schema(
       createdAt: "createdAt",
       updatedAt: "updatedAt",
     },
+    autoIndex: true,
   }
 );
 
@@ -158,13 +156,13 @@ UserSchema.plugin(mongoose_fuzzy_searching, {
     },
     {
       name: "last_name",
-      minSize: 3,
+      minSize: 2,
       weight: 2,
       prefixOnly: true,
     },
     {
       name: "username",
-      minSize: 3,
+      minSize: 1,
       weight: 10,
     },
   ],
