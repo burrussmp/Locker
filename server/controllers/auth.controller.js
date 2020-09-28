@@ -258,7 +258,7 @@ const confirmForgotPassword = async (req, res) => {
         new_password,
         confirmation_code
       );
-      return res.status(200).json({ message: "Correctly reset password" });
+      return res.status(200).json({ message: "Password updated" });
     } catch (err) {
       return res.status(400).json({ error: err.message });
     }

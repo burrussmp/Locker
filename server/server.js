@@ -9,6 +9,9 @@ mongoose.Promise = global.Promise
 // Configure DB
 mongoose.connect(config.mongoUri, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true, useFindAndModify: false })
 // See if connection is valid
+mongoose.connection.on('connected',()=>{
+  console.log(`Connected to database: ${config.mongoUri}`)
+})
 mongoose.connection.on('error', () => {
   throw new Error(`unable to connect to database: ${config.mongoUri}`)
 })

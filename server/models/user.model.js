@@ -60,7 +60,7 @@ const UserSchema = new mongoose.Schema(
       createdAt: "createdAt",
       updatedAt: "updatedAt",
     },
-    autoIndex: true,
+    index: true,
   }
 );
 

@@ -97,10 +97,10 @@ const Authorize = (req,res,next) => {
         case '/auth/verify_token':
             require_login = false;
             break;
-        case 'auth/forgot_password':
+        case '/auth/forgot_password':
             require_login = false;
             break
-        case 'auth/confirm_forgot_password':
+        case '/auth/confirm_forgot_password':
             require_login = false;
             break
         // User API

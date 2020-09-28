@@ -9,8 +9,7 @@ import userRoutes from "./routes/user.routes";
 import authRoutes from "./routes/auth.routes";
 import postRoutes from "./routes/post.routes";
 import mediaRoutes from "./routes/media.routes";
-import searchRoutes from "./routes/search.routes";
-
+import SearchRoutes from "./routes/search.routes";
 // modules for server side rendering
 
 //comment out before building for production
@@ -36,6 +35,6 @@ app.use("/", userRoutes);
 app.use("/", authRoutes);
 app.use("/", postRoutes);
 app.use("/", mediaRoutes);
-app.use("/", searchRoutes);
+app.use("/", SearchRoutes);
 
 export default app;

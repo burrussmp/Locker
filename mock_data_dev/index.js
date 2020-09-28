@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 const mongoURI = `mongodb+srv://MatthewBurruss:${process.env.MONGO_DEV_PASSWORD}@devopenmarket.mhwca.mongodb.net/${process.env.MONGO_DEV_DB_NAME}?retryWrites=true&w=majority`;
 mongoose.Promise = global.Promise
-mongoose.connect(mongoURI, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true, useFindAndModify: false })
+mongoose.connect(mongoURI, { useNewUrlParser: true, useCreateIndex: false, useUnifiedTopology: true, useFindAndModify: false, autoIndex: true })
 mongoose.connection.on('error', () => {
   throw new Error(`unable to connect to database: ${mongoURI}`)
 })
