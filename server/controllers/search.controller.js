@@ -19,7 +19,7 @@ const searchUsers = (req, res) => {
       let result = [];
       for (const doc of docs){
         const data = await User.findById(doc._id)
-        .select('_id username profile_photo')
+        .select('_id username profile_photo first_name last_name')
         .populate('profile_photo','blurhash mimetype key')
         .exec();
         result.push({

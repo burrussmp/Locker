@@ -8,7 +8,7 @@ const UserData = [
     email: 'paula.sullivan@gmail.com',
     phone_number: '+15024567890',
     password: 'Pass@123',
-    about: "And I said no ma'am you may not take my virginity",
+    about: "NYC",
     avatar : process.cwd() + '/mock_data_dev/assets/profile_imgs/male_1.jpg',
     follows : [1,2,3],
     posts : [{
