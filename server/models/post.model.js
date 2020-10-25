@@ -38,7 +38,7 @@ const PostSchema = new mongoose.Schema({
       message: StaticStrings.PostModelErrors.IncorrectType
     }
   },
-  content :{ 
+  content :{
     type: mongoose.Schema.Types.ObjectId,
     refPath: 'type',
     required: StaticStrings.PostModelErrors.MissingContent,

@@ -2,8 +2,10 @@
 
 import mongoose from 'mongoose';
 
-import User from '../server/models/user.model'
+import User from '../server/models/user.model';
+import permissions from '../server/permissions';
 import Post from '../server/models/post.model';
+
 import fetch from 'node-fetch';
 
 const createUser = async (data) => {
@@ -13,7 +15,9 @@ const createUser = async (data) => {
             'Content-Type' : 'application/json'
         },
         body : JSON.stringify(data)
-    }).then(res=>res.json())
+    }).then(res=>res.json()).catch(err=>{
+        console.log(err);
+    })
 }
 
 const getAccessToken = async (data) => {
@@ -40,12 +44,9 @@ const drop_database = async () => {
     for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
         await doc.deleteOne();
     }
-    return mongoose.connection.dropDatabase()
-};
+    await mongoose.connection.dropDatabase();
+    await permissions.setUpRBAC();
 
-const drop_database2 = async (next) => {
-    await mongoose.connection.dropDatabase()
-    next();
 };
 
 const buffer_equality = (buf1, buf2) =>
@@ -62,7 +63,6 @@ const buffer_equality = (buf1, buf2) =>
 
 export {
     drop_database,
-    drop_database2,
     buffer_equality,
     createUser,
     getAccessToken

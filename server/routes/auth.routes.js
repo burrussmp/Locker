@@ -1,24 +1,31 @@
 // imports
 import express from 'express'
 import authCtrl from '../controllers/auth.controller'
+import permissions from '../permissions';
 
 // create router
 const router = express.Router()
 
+const NoPermissions = permissions.Authorize([], false);
 // Auth API
 router.route('/auth/login')
-  .post(authCtrl.login);
+  .post(NoPermissions,
+    authCtrl.login);
 
 router.route('/auth/logout')
-  .get(authCtrl.logout);
+  .get(NoPermissions,
+    authCtrl.logout);
 
 router.route('/auth/verify_token')
-  .head(authCtrl.verifyToken);
+  .head(NoPermissions,
+    authCtrl.verifyToken);
 
 router.route('/auth/forgot_password')
-  .post(authCtrl.forgotPassword)
+  .post(NoPermissions,
+    authCtrl.forgotPassword)
 
 router.route('/auth/confirm_forgot_password')
-  .post(authCtrl.confirmForgotPassword)
+  .post(NoPermissions,
+    authCtrl.confirmForgotPassword)
 
 export default router

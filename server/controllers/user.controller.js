@@ -1,6 +1,7 @@
 "use strict";
 // imports
 import User from '../models/user.model'
+import RBAC from '../models/rbac.model';
 import Media from '../models/media.model';
 import errorHandler from '../services/dbErrorHandler'
 import StaticStrings from '../../config/StaticStrings';
@@ -39,6 +40,8 @@ const create = async (req, res) => {
   }
   try {
     cognito_user = CognitoServices.getCognitoUsername(session);
+    let user_role = await RBAC.findOne({'role': 'user'});
+    console.log(user_role)
     let new_user = {
       cognito_username: cognito_user,
       username : username,
@@ -47,6 +50,7 @@ const create = async (req, res) => {
       gender : req.body.gender,
       date_of_birth : req.body.date_of_birth,
       about : req.body.about,
+      permissions: user_role._id,
     }
     let user = new User(new_user)
     user = await user.save()

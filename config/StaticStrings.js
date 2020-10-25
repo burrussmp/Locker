@@ -11,6 +11,7 @@ const StaticStrings = {
     BadRequestFieldsNeeded: "The following fields are needed",
     BadRequestInvalidFields: "(Bad request) The following are invalid fields",
     TokenIsNotValid: "This token is not valid (possible user no longer exists)",
+    UnauthorizedAdminRequired: "This request requires admin access",
     UnknownServerError: "ServerError: Unknown",
     NotImplementedError: "Not Implemented",
     AuthErrors : {
@@ -76,6 +77,36 @@ const StaticStrings = {
         PasswordUpdateIncorrectError: 'Old password is incorrect',
         PasswordUpdateSame : "Cannot update with the same old password",
     },
+    EmployeeModelErrors: {
+        CognitoUsernameRequired: 'Server Error: Cognito username is required for employee',
+        RoleRequired: 'Server Error: Must assign a role to a new employee',
+        EmailRequired: 'Must provide an email when creating an employee'
+
+    },
+    RBACModelErrors: {
+        RoleRequired: 'Server Error: Must assign role attribute when creating new RBAC',
+        ResourceRequired: 'A resource is required to define a permission',
+        ActionRequired: 'An action is required to define a permission',
+        InvalidActionType: 'The action you have specified is invalid',
+        LevelRequired: 'Must provide a level for the RBAC (e.g. 0 === Admin)'
+        
+    },
+    OrganizationModelErrors: {
+        NameRequired: 'Must provide a name for the organization',
+        LogoRequired: 'Must provide a logo for the company',
+        UrlRequired: 'Must provide a valid URL to the company page',
+    },
+    OrganizationControllerErrors: {
+        NotFoundError: 'Organization not found',
+    },
+    ProductModelErrors: {
+        PriceRequired: 'Must provide a price for the product',
+        DescriptionRequired: 'Must provide a description for the product',
+        UrlRequired: 'Must provide a URL to the product',
+        ExistsRequired: 'Must check if url exists and appropriately set flag',
+        MediaRequired: 'Must provide a main media',
+        NegativePrice: 'Cannot have negative price'
+    },
     ReplyControllerErrors: {
         MissingTextField: "Missing text field in request body"
     },
@@ -100,7 +131,7 @@ const StaticStrings = {
         MaximumNumberOfTags: 'Too many tags provided (maximum is 7)',
         NoReactionToDelete : "You have not reacted, so there is no reaction to delete",
         ContentPostErrors: {
-            PriceRequired: "Must specify the price of a content post",
+            ProductRequired: "Must link content post to product",
         },
         CreateMissingType: "Missing 'type' in request body"
 
@@ -116,7 +147,6 @@ const StaticStrings = {
     PostController : {
         UnknownPostType : "Unknown post type",
         MissingOrInvalidReaction : "Missing or invalid reaction in request body"
-        
     },
     SignedUpSuccess: "Successfully signed up!",
     LoggedOutSuccess: "Logged out",

@@ -3,7 +3,6 @@
 import mongoose from "mongoose";
 import mongoose_fuzzy_searching from "mongoose-fuzzy-searching";
 
-import permissionCtrl from "../permissions";
 import StaticStrings from "../../config/StaticStrings";
 import CognitoServices from "../services/Cognito.services";
 import validators from "../services/validators";
@@ -23,10 +22,7 @@ const UserSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    permissions: {
-      type: [{ type: String }],
-      default: permissionCtrl.User_Role.permissions,
-    },
+    permissions: { type: mongoose.Schema.ObjectId, ref: "RBAC" },
     date_of_birth: {
       type: Date,
       trim: true,
@@ -45,6 +41,10 @@ const UserSchema = new mongoose.Schema(
         message: StaticStrings.UserModelErrors.InvalidGender,
       },
       default: "",
+    },
+    active: {
+      type: Boolean,
+      default: true 
     },
     about: {
       type: String,

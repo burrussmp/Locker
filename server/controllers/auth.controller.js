@@ -1,6 +1,7 @@
 // imports
 import _ from "lodash";
 import User from "../models/user.model";
+import RBAC from "../models/rbac.model";
 import StaticStrings from "../../config/StaticStrings";
 import CognitoServices from "../services/Cognito.services";
 import dbErrorHandler from "../services/dbErrorHandler";
@@ -116,14 +117,8 @@ const logout = (req, res) => {
  * @param Object res - HTTP response
  */
 const isAdmin = (req) => {
-  if (
-    req.headers.authorization &&
-    req.headers.authorization === process.env.ADMIN_SECRET
-  ) {
-    return true;
-  } else {
-    return false;
-  }
+  const authorization = retrieveAccessToken(req);
+  return authorization && authorization === process.env.ADMIN_SECRET;
 };
 
 /**
@@ -151,20 +146,13 @@ const requireOwnership = (req, res, next) => {
 const checkPermissions = async (req, res, next) => {
   if (!isAdmin(req) && res.locals.permissions.length != 0) {
     if (req.auth && req.auth.cognito_username) {
-      let user = await User.findOne({
-        cognito_username: req.auth.cognito_username,
-      }).select("permissions _id");
+      let user = await User.findOne({cognito_username: req.auth.cognito_username}).select("permissions _id");
+      let role_based_access_control = await RBAC.findById(user.permissions);
       if (!user) {
         return res.status(400).json({ error: StaticStrings.TokenIsNotValid });
       }
-      let permissions = user.permissions;
-      let authorized =
-        req.auth &&
-        _.difference(res.locals.permissions, permissions).length == 0;
-      if (!authorized) {
-        return res
-          .status(403)
-          .json({ error: StaticStrings.InsufficientPermissionsError });
+      if (!role_based_access_control.hasPermission(res.locals.permissions)) {
+        return res.status(403).json({ error: StaticStrings.InsufficientPermissionsError });
       }
       req.auth._id = user._id.toString();
     } else {
@@ -209,10 +197,18 @@ const checkAccessToken = (req, res, next) => {
  * @param Function next - call back function (next middleware)
  */
 const checkLogin = (req, res, next) => {
-  if (!isAdmin(req) && res.locals.require_login) {
-    checkAccessToken(req, res, next);
+  if (res.locals.require_admin){
+    if (isAdmin(req)){
+      next();
+    } else {
+      return res.status(401).json({error: StaticStrings.UnauthorizedAdminRequired});
+    }
   } else {
-    checkPermissions(req, res, next);
+    if (!isAdmin(req) && res.locals.require_login) {
+      checkAccessToken(req, res, next);
+    } else {
+      checkPermissions(req, res, next);
+    }
   }
 };
 
@@ -243,6 +239,11 @@ const forgotPassword = async (req, res) => {
   }
 };
 
+/**
+ * @desc Confirm a forgotten password
+ * @param Object req - HTTP request
+ * @param Object res - HTTP response
+ */
 const confirmForgotPassword = async (req, res) => {
   const cognito_username = req.body.cognito_username;
   const confirmation_code = req.body.confirmation_code;

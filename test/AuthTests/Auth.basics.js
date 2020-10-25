@@ -2,7 +2,6 @@
 import chai  from 'chai';
 import chaiHttp from 'chai-http';
 import {app} from '../../server/server';
-
 import {UserData} from '../../development/user.data'
 import {drop_database,createUser} from  '../helper';
 import StaticStrings from '../../config/StaticStrings';
@@ -15,7 +14,8 @@ chai.should();
 const auth_tests = () => {
         before(async () =>{
             await drop_database();
-            await createUser(UserData[1]);
+            const id = await createUser(UserData[1]);
+            console.log(id)
             await createUser(UserData[2]);
         });
         after(async () =>{
@@ -25,6 +25,7 @@ const auth_tests = () => {
             chai.request(app)
                 .get('/api/users')
                 .end(async (err, res) => {
+                    console.log(res.body)
                 res.should.have.status(200);                
                 res.body.should.have.lengthOf(2)
                 done();

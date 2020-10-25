@@ -41,7 +41,7 @@ const s3 = new aws.S3();
  */
 const MediaFilter = (req, file, next) => {
   let path = req.route.path;
-  if (path == "/api/users/:userId/avatar") {
+  if (path == "/api/users/:userId/avatar" || path == "/api/organizations") {
     if (file.mimetype === "image/jpeg" || file.mimetype === "image/png") {
       next(null, true);
     } else {
@@ -135,7 +135,7 @@ const uploadSingleMediaS3 = (req, res, meta, next) => {
 
     const image = await getMediaS3(req.file.key)
     const mimetype = image.ContentType;
-    if (mimetype === "image/jpeg" || mimetype === "image/png"){
+    if (mimetype === "image/jpeg" || mimetype === "image/png") {
       meta.blurhash = await BlurHashEncoder.encodeBlurHash(image.Body, mimetype);
     }
     try {

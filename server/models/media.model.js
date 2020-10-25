@@ -6,58 +6,58 @@ const MediaSchema = new mongoose.Schema({
   key: {
     type: String,
     required: StaticStrings.MediaModelErrors.KeyRequired,
-    unique: [true,StaticStrings.MediaModelErrors.KeyAlreadyExists]
+    unique: [true, StaticStrings.MediaModelErrors.KeyAlreadyExists]
   },
   type: {
-      type: String,
-      required: StaticStrings.MediaModelErrors.TypeRequired,
-      enum: {
-        values: ["Avatar",'ContentPost'],
-        message: StaticStrings.MediaModelErrors.UnacceptableType
-      }
+    type: String,
+    required: StaticStrings.MediaModelErrors.TypeRequired,
+    enum: {
+      values: ["Avatar", 'ContentPost', 'Logo'],
+      message: StaticStrings.MediaModelErrors.UnacceptableType
+    }
   },
   mimetype: {
     type: String,
     required: StaticStrings.MediaModelErrors.MimeTypeRequired
   },
   originalName: {
-      type: String,
-      required: StaticStrings.MediaModelErrors.OriginalNameRequired
+    type: String,
+    required: StaticStrings.MediaModelErrors.OriginalNameRequired
   },
   description: {
-      type: String,
-      default: "",
-      maxlength : [300,]
+    type: String,
+    default: "",
+    maxlength: [300,]
   },
   blurhash: {
     type: String
   },
   uploadedBy: {
-      type: mongoose.Schema.ObjectId, 
-      ref: 'User',
-      required: StaticStrings.MediaModelErrors.UploadedByRequired
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+    required: StaticStrings.MediaModelErrors.UploadedByRequired
   },
-  resized_keys : {
+  resized_keys: {
     type: [String],
     default: [],
   }
-},{
-    timestamps : {
-      createdAt:'createdAt',
-      updatedAt: 'updatedAt'
-    }
-  })
+}, {
+  timestamps: {
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  }
+})
 
-MediaSchema.pre("deleteOne",{document: true,query:false },async function(){
+MediaSchema.pre("deleteOne", { document: true, query: false }, async function () {
   await S3_Services.deleteMediaS3(this.key)
-    .catch((err)=>{
-        console.log(err);
+    .catch((err) => {
+      console.log(err);
     });
-  if (this.resized_keys && this.resized_keys.length != 0){
-    for (let i = 0; i < this.resized_keys.length; ++i){
+  if (this.resized_keys && this.resized_keys.length != 0) {
+    for (let i = 0; i < this.resized_keys.length; ++i) {
       let resized_key = this.resized_keys[i];
       S3_Services.deleteMediaS3(resized_key)
-        .catch((err)=>{
+        .catch((err) => {
           console.log(err);
         })
     }

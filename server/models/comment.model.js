@@ -35,7 +35,7 @@ const CommentSchema = new mongoose.Schema({
     postId : {
         type: mongoose.Schema.ObjectId,
         required: true,
-        ref: 'Post' 
+        ref: 'Post'
     },
     postedBy: {
         type: mongoose.Schema.ObjectId,

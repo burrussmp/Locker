@@ -4,6 +4,9 @@ import commentCtrl from '../controllers/comment.controller';
 import authCtrl from '../controllers/auth.controller';
 import permission from '../permissions';
 
+const PostPermissions = permission.Post_Permissions;
+const CommentPermissions = permission.Comment_Permissions;
+
 const router = express.Router()
 
 router.param('postId', postCtrl.postByID)
@@ -13,45 +16,45 @@ router.param('replyId', commentCtrl.replyByID)
 
 
 router.route('/api/posts')
-  .get(permission.Authorize, postCtrl.listPosts)
-  .post(permission.Authorize, postCtrl.createPost)
+  .get(permission.Authorize([PostPermissions.Read]), postCtrl.listPosts)
+  .post(permission.Authorize([PostPermissions.Create]), postCtrl.createPost)
 
 router.route('/api/posts/:postId')
-  .get(permission.Authorize, postCtrl.getPost)
-  .put(permission.Authorize, authCtrl.requireOwnership,postCtrl.editPost)
-  .delete(permission.Authorize, authCtrl.requireOwnership,postCtrl.deletePost)
+  .get(permission.Authorize([PostPermissions.Create]), postCtrl.getPost)
+  .put(permission.Authorize([PostPermissions.EditContent]), authCtrl.requireOwnership,postCtrl.editPost)
+  .delete(permission.Authorize([PostPermissions.Delete]), authCtrl.requireOwnership,postCtrl.deletePost)
 
 router.route('/api/:postId/comments')
-  .get(permission.Authorize, postCtrl.listComments)
-  .post(permission.Authorize, postCtrl.createComment)
+  .get(permission.Authorize([PostPermissions.Read, CommentPermissions.Read]), postCtrl.listComments)
+  .post(permission.Authorize([PostPermissions.EditContent, CommentPermissions.Create]), postCtrl.createComment)
 
   // test all below
 router.route('/api/posts/:postId/reaction')
-  .get(permission.Authorize, postCtrl.getReaction)
-  .put(permission.Authorize, postCtrl.changeReaction)
-  .delete(permission.Authorize, postCtrl.removeReaction)
+  .get(permission.Authorize([PostPermissions.Read]), postCtrl.getReaction)
+  .put(permission.Authorize([PostPermissions.EditContent, PostPermissions.Interact]), postCtrl.changeReaction)
+  .delete(permission.Authorize([PostPermissions.EditContent, CommentPermissions.Interact]), postCtrl.removeReaction)
 
 router.route('/api/comments/:commentId')
-  .get(permission.Authorize, postCtrl.getComment)
-  .delete(permission.Authorize, authCtrl.requireOwnership,postCtrl.deleteComment)
+  .get(permission.Authorize([PostPermissions.Read, CommentPermissions.Read]), postCtrl.getComment)
+  .delete(permission.Authorize([PostPermissions.EditContent, CommentPermissions.Delete]), authCtrl.requireOwnership,postCtrl.deleteComment)
 
 
 router.route('/api/:commentId/replies')
-  .get(permission.Authorize, commentCtrl.listReplies)
-  .post(permission.Authorize,commentCtrl.createReply)
+  .get(permission.Authorize([PostPermissions.Read, CommentPermissions.Read]), commentCtrl.listReplies)
+  .post(permission.Authorize([PostPermissions.EditContent, CommentPermissions.EditContent]),commentCtrl.createReply)
 
 router.route('/api/:commentId/likes')
-  .put(permission.Authorize, commentCtrl.likeComment)
-  .delete(permission.Authorize, commentCtrl.unlikeComment)
+  .put(permission.Authorize([PostPermissions.EditContent, CommentPermissions.EditContent]), commentCtrl.likeComment)
+  .delete(permission.Authorize([PostPermissions.EditContent, CommentPermissions.EditContent]), commentCtrl.unlikeComment)
 
 router.route('/api/:commentId/replies/:replyId')
-  .get(permission.Authorize, commentCtrl.getReply)
-  .delete(permission.Authorize, authCtrl.requireOwnership,commentCtrl.deleteReply)
+  .get(permission.Authorize([PostPermissions.Read, CommentPermissions.Read]), commentCtrl.getReply)
+  .delete(permission.Authorize([PostPermissions.EditContent, CommentPermissions.Delete]), authCtrl.requireOwnership,commentCtrl.deleteReply)
   //.put(permission.Authorize, authCtrl.requireOwnership,commentCtrl.editReply) //  IMPLEMENTED BUT TAKEN OUT
 
 
 router.route('/api/:commentId/replies/:replyId/likes')
-  .put(permission.Authorize, commentCtrl.likeReply)
-  .delete(permission.Authorize, commentCtrl.unlikeReply)
+  .put(permission.Authorize([PostPermissions.EditContent, CommentPermissions.Interact]), commentCtrl.likeReply)
+  .delete(permission.Authorize([PostPermissions.EditContent, CommentPermissions.Interact]), commentCtrl.unlikeReply)
 
 export default router
