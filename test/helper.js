@@ -3,8 +3,9 @@
 import mongoose from 'mongoose';
 
 import User from '../server/models/user.model';
-import permissions from '../server/permissions';
+import Employee from '../server/models/employee.model';
 import Post from '../server/models/post.model';
+import permissions from '../server/permissions';
 
 import fetch from 'node-fetch';
 
@@ -34,13 +35,11 @@ const getAccessToken = async (data) => {
 }
 
 const drop_database = async () => {
-    let cursor = User.find().cursor();
-    for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
-        await doc.deleteOne();
-    }
-    cursor = Post.find().cursor();
-    for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
-        await doc.deleteOne();
+    for (let model of [User, Post, Employee]){
+        let cursor = model.find().cursor();
+        for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
+            await doc.deleteOne();
+        }
     }
     await mongoose.connection.dropDatabase();
     await permissions.setUpRBAC();

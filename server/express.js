@@ -1,5 +1,4 @@
 import express from "express";
-import path from "path";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import compress from "compression";
@@ -10,7 +9,8 @@ import authRoutes from "./routes/auth.routes";
 import postRoutes from "./routes/post.routes";
 import mediaRoutes from "./routes/media.routes";
 import SearchRoutes from "./routes/search.routes";
-import organizationRoutes from './routes/organization.routes';
+import OrganizationRoutes from './routes/organization.routes';
+import EmployeeRoutes from "./routes/employee.routes";
 // modules for server side rendering
 
 //comment out before building for production
@@ -37,6 +37,7 @@ app.use("/", authRoutes);
 app.use("/", postRoutes);
 app.use("/", mediaRoutes);
 app.use("/", SearchRoutes);
-app.use('/', organizationRoutes)
+app.use('/', OrganizationRoutes);
+app.use('/', EmployeeRoutes)
 
 export default app;

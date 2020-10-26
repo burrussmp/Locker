@@ -9,8 +9,10 @@ import S3_Services from '../services/S3.services';
 import _ from 'lodash';
 import fs from 'fs';
 import mediaController from './media.controller';
-import CognitoServices from '../services/Cognito.services';
+import CognitoAPI from '../services/Cognito.services';
 import dbErrorHandler from '../services/dbErrorHandler';
+
+const CognitoServices = CognitoAPI.UserCognitoPool
 
 const DefaultProfilePhoto = process.cwd() + "/client/assets/images/profile-pic.png"
 
@@ -34,7 +36,7 @@ const create = async (req, res) => {
   let {username,password,email,phone_number} = req.body;
   let session,cognito_user;
   try{
-    session = await CognitoServices.Signup(username,password,email,phone_number);
+    session = await CognitoServices.signup(username,password,email,phone_number);
   } catch (err) {
     return res.status(400).json({error: errorHandler.getErrorMessage(err)})
   }

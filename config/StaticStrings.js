@@ -81,7 +81,11 @@ const StaticStrings = {
         CognitoUsernameRequired: 'Server Error: Cognito username is required for employee',
         RoleRequired: 'Server Error: Must assign a role to a new employee',
         EmailRequired: 'Must provide an email when creating an employee'
-
+    },
+    EmployeeControllerErrors: {
+        EmployeeNotFound: 'Employee not found',
+        PasswordUpdateSame: 'New password is the same as the old password',
+        PasswordUpdateIncorrectError: 'Old password is incorrect'
     },
     RBACModelErrors: {
         RoleRequired: 'Server Error: Must assign role attribute when creating new RBAC',

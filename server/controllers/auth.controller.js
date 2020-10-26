@@ -1,10 +1,26 @@
 // imports
 import _ from "lodash";
 import User from "../models/user.model";
+import Employee from "../models/employee.model";
 import RBAC from "../models/rbac.model";
 import StaticStrings from "../../config/StaticStrings";
-import CognitoServices from "../services/Cognito.services";
+import config from "../../config/config";
+import CognitoAPI from "../services/Cognito.services";
 import dbErrorHandler from "../services/dbErrorHandler";
+
+/**
+ * @desc Helper to get appropriate auth service
+ * @param Object req: HTTP request
+ * @return A wrapper that provides access and API calls to specific Cognito user pool (either employee or users)
+ */
+const getCognitoService = (req) => {
+  const path = req.route.path;
+  if (req.query.type == 'employee' || path.includes('ent')){
+    return CognitoAPI.EmployeeCognitoPool;
+  } else {
+    return CognitoAPI.UserCognitoPool;
+  }
+}
 
 /**
  * @desc Helper function to get access token from query param or Authorization header
@@ -30,8 +46,9 @@ const retrieveAccessToken = (req) => {
  */
 const verifyToken = (req, res) => {
   let token = req.query.token;
+  const CognitoServices = getCognitoService(req);
   return CognitoServices.verifyToken(token, "access")
-    .then((decoded_token) => {
+    .then(() => {
       return res.status(200).send();
     })
     .catch((err) => {
@@ -57,34 +74,35 @@ const login = async (req, res) => {
         error: StaticStrings.LoginErrors.MissingPassword,
       });
     }
-    return CognitoServices.Login(req.body.login, req.body.password)
+    const CognitoServices = getCognitoService(req);
+    return CognitoServices.login(req.body.login, req.body.password)
       .then(async (session) => {
         res.cookie("t", session, {
           // put in cookies
           expire: new Date() + 9999,
         });
         let cognito_username = CognitoServices.getCognitoUsername(session);
-        let user = await User.findOne({ cognito_username: cognito_username });
-        if (!user) {
+        let person;
+        if (req.query.type == 'employee'){
+          person = await Employee.findOne({ cognito_username: cognito_username });
+        } else {
+          person = await User.findOne({ cognito_username: cognito_username });
+        }
+        if (!person) {
           return res.status("500").json({
             error: "Server Error: User pool not synced with Mongoose DB",
           });
         }
         let parsed_session = CognitoServices.parseSession(session);
-        let id_payload = parsed_session.payloads.id;
-        if (
-          process.env.NODE_ENV == "production" &&
-          !id_payload.phone_number_verified
-        ) {
-          return res.status("401").json({
-            error: "Phone number not verified.",
-          });
-        }
+        // let id_payload = parsed_session.payloads.id;
+        // if (process.env.NODE_ENV == "production" &&!id_payload.phone_number_verified) {
+        //   return res.status("401").json({error: "Phone number not verified.",});
+        // }
         return res.json({
           access_token: parsed_session.accessToken,
           id_token: parsed_session.idToken,
           refresh_token: parsed_session.refreshToken,
-          _id: user._id,
+          _id: person._id,
         });
       })
       .catch((err) => {
@@ -146,15 +164,22 @@ const requireOwnership = (req, res, next) => {
 const checkPermissions = async (req, res, next) => {
   if (!isAdmin(req) && res.locals.permissions.length != 0) {
     if (req.auth && req.auth.cognito_username) {
-      const user = await User.findOne({cognito_username: req.auth.cognito_username}).select("permissions _id");
-      if (!user) {
+      let person;
+      if (req.auth.type == 'user') {
+        person = await User.findOne({cognito_username: req.auth.cognito_username}).select("permissions _id");
+      } else if (req.auth.type == 'employee'){
+        person = await Employee.findOne({cognito_username: req.auth.cognito_username}).select("permissions _id");
+      } else {
+        return res.status(500).json({error: 'Server Error: Requester type is not an employee or a user'});
+      }
+      if (!person) {
         return res.status(400).json({ error: StaticStrings.TokenIsNotValid });
       }
-      const role_based_access_control = await RBAC.findById(user.permissions);
+      const role_based_access_control = await RBAC.findById(person.permissions);
       if (!role_based_access_control.hasPermission(res.locals.permissions)) {
         return res.status(403).json({ error: StaticStrings.InsufficientPermissionsError });
       }
-      req.auth._id = user._id.toString();
+      req.auth._id = person._id.toString();
     } else {
       return res
         .status(500)
@@ -178,10 +203,20 @@ const checkAccessToken = (req, res, next) => {
       .status(401)
       .json({ error: StaticStrings.UnauthorizedMissingTokenError });
   }
+  const CognitoServices = getCognitoService(req);
   CognitoServices.verifyToken(access_token, "access")
     .then((decoded_token) => {
+      let type;
+      if (decoded_token.client_id == config.aws_user_pool_client_id){
+        type = 'user';
+      } else if (decoded_token.client_id == config.aws_employee_pool_client_id){
+        type = 'employee'
+      } else {
+        return res.status(500).json({error: 'Server Error: Unknown user pool client ID in access token'});
+      }
       req.auth = {
         cognito_username: decoded_token.payload.username,
+        type: type,
       };
       checkPermissions(req, res, next);
     })
@@ -225,6 +260,7 @@ const forgotPassword = async (req, res) => {
       .status(400)
       .json({ error: StaticStrings.AuthErrors.ForgotPasswordMissingEmail });
   } else {
+    const CognitoServices = getCognitoService(req);
     try {
       const user = await CognitoServices.getUserByEmail(email);
       if (!user){
@@ -253,6 +289,7 @@ const confirmForgotPassword = async (req, res) => {
       .status(400)
       .json({ error: StaticStrings.AuthErrors.ConfirmPasswordMissingFields });
   } else {
+    const CognitoServices = getCognitoService(req);
     try {
       await CognitoServices.confirmForgotPassword(
         cognito_username,

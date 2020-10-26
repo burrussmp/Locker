@@ -48,32 +48,20 @@ const organizationByID = async (req, res, next, id) => {
  * @param Object res - HTTP response object
  */
 const create = async (req, res) => {
-    let organization;
     let { name, url, description } = req.body;
-    try {
-        console.log({
-            name: name,
-            url: url,
-            description: description
-        })
-        organization = new Organization({
-            name: name,
-            url: url,
-            description: description
-        })
-        organization = await organization.save();
-    } catch(err){
-        return res.status(400).json({ error: errorHandler.getErrorMessage(err) });
-    }
     let type = 'Logo'
     let media_meta = {
         'type': type,
         'uploadedBy': organization._id
     };
     S3_Services.uploadSingleMediaS3(req, res, media_meta, async (req, res, image) => {
-        let query = {'_id' : organization._id};
-        let update = {$set: {"logo" : image._id}};
-        organization = await Organization.findOneAndUpdate(query, update,{runValidators:true});
+        const organization = new Organization({
+            name: name,
+            url: url,
+            description: description,
+            logo: image._id
+        })
+        await organization.save();
         try {
             return res.status(200).json({ '_id': organization._id });
         } catch (err) {

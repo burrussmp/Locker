@@ -40,6 +40,14 @@ const User_Permissions = {
     ChangePassword: "user:change_password" // able to change password
 };
 
+// all permissions associated with User
+const Employee_Permissions = {
+    Create: 'employee:create', // Create User
+    Delete: "employee:delete", // Delete user
+    Read: "employee:read", // Read information from user
+    EditContent: "employee:edit", // Edit only editable content (like caption, etc.)
+};
+
 // all permissions associated with an Organization
 const Organization_Permissions = {
     Create: 'organization:create',
@@ -50,90 +58,50 @@ const Organization_Permissions = {
 }
 
 const get_permission_array = (type) => {
-    let post_permissions,user_permissions,comment_permissions,organization_permissions;
-    if (type == 'user'){
-        post_permissions = [
+    let assigned_permissions = [];
+    if (type == 'user' || type == 'supervisor' || type == 'admin' || type == 'employee'){
+        assigned_permissions = assigned_permissions.concat([
             Post_Permissions.Read,
             Post_Permissions.Interact,
             Post_Permissions.Create,
             Post_Permissions.EditContent,
-            Post_Permissions.Delete
-        ]
-        user_permissions = [
+            Post_Permissions.Delete,
             User_Permissions.EditContent,
             User_Permissions.Delete,
             User_Permissions.Read,
-            User_Permissions.ChangePassword
-        ]
-        comment_permissions = [
+            User_Permissions.ChangePassword,
             Comment_Permissions.Create,
             Comment_Permissions.EditContent,
             Comment_Permissions.Read,
             Comment_Permissions.Delete,
             Comment_Permissions.Interact,
-        ]
-        organization_permissions = [];
-    } else if (type == 'admin'){
-        post_permissions = [
-            Post_Permissions.Read,
-            Post_Permissions.Interact,
-            Post_Permissions.Create,
-            Post_Permissions.EditContent,
-            Post_Permissions.Delete
-        ]
-        user_permissions = [
-            User_Permissions.EditContent,
-            User_Permissions.Delete,
-            User_Permissions.Read,
-            User_Permissions.ChangePassword
-        ]
-        comment_permissions = [
-            Comment_Permissions.Create,
-            Comment_Permissions.EditContent,
-            Comment_Permissions.Read,
-            Comment_Permissions.Delete,
-            Comment_Permissions.Interact,
-        ]
-        organization_permissions = [
-            Organization_Permissions.Create,
-            Organization_Permissions.EditAccessList,
-            Organization_Permissions.Read,
-            Organization_Permissions.Delete,
-            Organization_Permissions.EditContent,   
-        ]
-    } else if (type == 'supervisor'){
-        post_permissions = [
-            Post_Permissions.Read,
-            Post_Permissions.Interact,
-            Post_Permissions.Create,
-            Post_Permissions.EditContent,
-            Post_Permissions.Delete
-        ]
-        user_permissions = [
-            User_Permissions.EditContent,
-            User_Permissions.Delete,
-            User_Permissions.Read,
-            User_Permissions.ChangePassword
-        ]
-        comment_permissions = [
-            Comment_Permissions.Create,
-            Comment_Permissions.EditContent,
-            Comment_Permissions.Read,
-            Comment_Permissions.Delete,
-            Comment_Permissions.Interact,
-        ]
-        organization_permissions = [
-            Organization_Permissions.EditAccessList,
-            Organization_Permissions.Read,
-            Organization_Permissions.Delete,
-            Organization_Permissions.EditContent,   
-        ]
+        ]);
     }
-
-    return [...post_permissions,
-            ...user_permissions,
-            ...comment_permissions,
-            ...organization_permissions];
+    if (type == 'employee'){
+        assigned_permissions = assigned_permissions.concat([
+            Employee_Permissions.EditContent,
+            Employee_Permissions.Delete,
+            Employee_Permissions.Read,
+        ])
+    }
+    if (type == 'supervisor' || type == 'admin'){
+        assigned_permissions = assigned_permissions.concat([
+            Organization_Permissions.EditAccessList,
+            Organization_Permissions.Read,
+            Organization_Permissions.Delete,
+            Organization_Permissions.EditContent,
+            Employee_Permissions.Create,
+            Employee_Permissions.EditContent,
+            Employee_Permissions.Delete,
+            Employee_Permissions.Read,
+        ])
+    }
+    if (type == 'admin'){
+        assigned_permissions = assigned_permissions.concat([
+            Organization_Permissions.Create
+        ])
+    }
+    return assigned_permissions;
     
 };
 
@@ -162,10 +130,17 @@ const setUpRBAC = async () => {
 
     const Supervisor_Role = {
         role: 'supervisor',
-        level: 0,
+        level: 5,
         permissions: get_permission_array('supervisor')
     };
     await (new RBAC(Supervisor_Role)).save()
+
+    const Employee_Role = {
+        role: 'employee',
+        level: 10,
+        permissions: get_permission_array('employee')
+    };
+    await (new RBAC(Employee_Role)).save()
 
     const NA_Role = {
         role: 'none',
@@ -180,6 +155,7 @@ export default {
     Post_Permissions,
     Organization_Permissions,
     Comment_Permissions,
+    Employee_Permissions,
     Authorize,
     setUpRBAC,
     get_permission_array,

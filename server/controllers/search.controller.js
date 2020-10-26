@@ -1,9 +1,6 @@
 // imports
 import _ from "lodash";
 import User from "../models/user.model";
-import StaticStrings from "../../config/StaticStrings";
-import CognitoServices from "../services/Cognito.services";
-import dbErrorHandler from "../services/dbErrorHandler";
 
 /**
  *

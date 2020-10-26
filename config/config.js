@@ -20,7 +20,10 @@ const get_aws_config = () => {
       aws_s3_region: process.env.AWS_S3_REGION_DEV,
       aws_user_pool_id: process.env.AWS_USER_POOL_ID_DEV,
       aws_user_pool_client_id : process.env.AWS_USER_POOL_CLIENT_ID_DEV,
-      aws_user_pool_region : process.env.AWS_USER_POOL_REGION_DEV
+      aws_user_pool_region : process.env.AWS_USER_POOL_REGION_DEV,
+      aws_employee_pool_id: process.env.AWS_EMPLOYEE_POOL_ID_DEV,
+      aws_employee_pool_client_id : process.env.AWS_EMPLOYEE_POOL_CLIENT_ID_DEV,
+      aws_employee_pool_region : process.env.AWS_EMPLOYEE_POOL_REGION_DEV,
     }
   } else if (process.env.NODE_ENV == 'test'){
     return {
@@ -29,7 +32,10 @@ const get_aws_config = () => {
       aws_s3_region: process.env.AWS_S3_REGION_TEST,
       aws_user_pool_id: process.env.AWS_USER_POOL_ID_TEST,
       aws_user_pool_client_id : process.env.AWS_USER_POOL_CLIENT_ID_TEST,
-      aws_user_pool_region : process.env.AWS_USER_POOL_REGION_TEST
+      aws_user_pool_region : process.env.AWS_USER_POOL_REGION_TEST,
+      aws_employee_pool_id: process.env.AWS_EMPLOYEE_POOL_ID_TEST,
+      aws_employee_pool_client_id : process.env.AWS_EMPLOYEE_POOL_CLIENT_ID_TEST,
+      aws_employee_pool_region : process.env.AWS_EMPLOYEE_POOL_REGION_TEST,
     }
   } else {
     throw `NODE_ENV set to ${process.env.NODE_ENV}: Invalid must be development, test, or production`;

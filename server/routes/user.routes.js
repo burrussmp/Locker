@@ -39,7 +39,4 @@ router.route('/api/users/:userId/follow')
     .put(permission.Authorize([UserPermissions.EditContent]),userCtrl.Follow)
     .delete(permission.Authorize([UserPermissions.EditContent]),userCtrl.Unfollow)
 
-router.route('/api/rbac')
-  .post
-  
 export default router

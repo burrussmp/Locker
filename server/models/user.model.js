@@ -4,8 +4,10 @@ import mongoose from "mongoose";
 import mongoose_fuzzy_searching from "mongoose-fuzzy-searching";
 
 import StaticStrings from "../../config/StaticStrings";
-import CognitoServices from "../services/Cognito.services";
+import CognitoAPI from "../services/Cognito.services";
 import validators from "../services/validators";
+
+const CognitoServices = CognitoAPI.UserCognitoPool
 
 const UserSchema = new mongoose.Schema(
   {

@@ -4,7 +4,8 @@ import mongoose from "mongoose";
 import mongoose_fuzzy_searching from "mongoose-fuzzy-searching";
 
 import StaticStrings from "../../config/StaticStrings";
-import CognitoServices from "../services/Cognito.services";
+import CognitoAPI from "../services/Cognito.services";
+const CognitoServices = CognitoAPI.EmployeeCognitoPool
 
 const EmployeeModelErrors = StaticStrings.EmployeeModelErrors;
 
@@ -28,11 +29,7 @@ const EmployeeSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    role: {
-      type: String,
-      default: '',
-      required: EmployeeModelErrors.RoleRequired,
-    },
+    permissions: { type: mongoose.Schema.ObjectId, ref: "RBAC" },
     date_of_birth: {
       type: Date,
       trim: true,
