@@ -14,8 +14,7 @@ import dbErrorHandler from "../services/dbErrorHandler";
  * @return A wrapper that provides access and API calls to specific Cognito user pool (either employee or users)
  */
 const getCognitoService = (req) => {
-  const path = req.route.path;
-  if (req.query.type == 'employee' || path.includes('ent')){
+  if (req.route.path.includes('ent')){
     return CognitoAPI.EmployeeCognitoPool;
   } else {
     return CognitoAPI.UserCognitoPool;
@@ -83,7 +82,7 @@ const login = async (req, res) => {
         });
         let cognito_username = CognitoServices.getCognitoUsername(session);
         let person;
-        if (req.query.type == 'employee'){
+        if (req.route.path.includes('ent')){
           person = await Employee.findOne({ cognito_username: cognito_username });
         } else {
           person = await User.findOne({ cognito_username: cognito_username });

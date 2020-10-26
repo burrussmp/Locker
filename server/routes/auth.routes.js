@@ -7,7 +7,10 @@ import permissions from '../permissions';
 const router = express.Router()
 
 const NoPermissions = permissions.Authorize([], false);
-// Auth API
+
+/**
+ * User API
+ */
 router.route('/auth/login')
   .post(NoPermissions,
     authCtrl.login);
@@ -25,6 +28,29 @@ router.route('/auth/forgot_password')
     authCtrl.forgotPassword)
 
 router.route('/auth/confirm_forgot_password')
+  .post(NoPermissions,
+    authCtrl.confirmForgotPassword)
+
+/**
+ * Enterprise API
+ */
+router.route('/auth/ent/login')
+  .post(NoPermissions,
+    authCtrl.login);
+
+router.route('/auth/ent/logout')
+  .get(NoPermissions,
+    authCtrl.logout);
+
+router.route('/auth/ent/verify_token')
+  .head(NoPermissions,
+    authCtrl.verifyToken);
+
+router.route('/auth/ent/forgot_password')
+  .post(NoPermissions,
+    authCtrl.forgotPassword)
+
+router.route('/auth/ent/confirm_forgot_password')
   .post(NoPermissions,
     authCtrl.confirmForgotPassword)
 
