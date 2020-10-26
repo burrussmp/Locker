@@ -5,6 +5,7 @@ import {app} from '../../server/server';
 import {UserData} from '../../development/user.data'
 import {drop_database, createUser, getAccessToken} from  '../helper';
 import User from '../../server/models/user.model';
+import RBAC from '../../server/models/rbac.model';
 import StaticStrings from '../../config/StaticStrings';
 chai.use(chaiHttp);
 chai.should();
@@ -63,7 +64,8 @@ const change_password_test = () => {
                 });
             });
             it("Invalid permissions (should fail)", async()=>{
-                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':["user:read"]},{new:true});
+                const na_role = await RBAC.findOne({'role':'none'});
+                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions': na_role._id}, {new:true});
                 return agent.put(`/api/users/${id0}/password?access_token=${access_token0}`)
                 .send({
                     'old_password' : UserData[0].password,

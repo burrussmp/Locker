@@ -3,11 +3,8 @@ import chaiHttp from 'chai-http';
 import {app} from '../../server/server';
 import {UserData} from '../../development/user.data';
 import {PostData,ReactionData} from '../../development/post.data';
-import {CommentData} from '../../development/comments.data';
 import User from '../../server/models/user.model';
-import Media from '../../server/models/media.model';
-import Comment from '../../server/models/comment.model';
-import Post from '../../server/models/post.model';
+import RBAC from '../../server/models/rbac.model';
 import StaticStrings from '../../config/StaticStrings';
 import {drop_database,createUser} from  '../helper';
 import _, { drop } from 'lodash';
@@ -137,7 +134,8 @@ const reaction_test = () => {
                 });
             });
             it("Bad Permissions (should fail)",async()=>{
-                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':["user:read"]},{new:true});
+                let role = await RBAC.findOne({'role': 'na'});
+                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':role._id},{new:true});
                 return agent.put(`/api/posts/${postId0}/reaction?access_token=${userToken0}`)
                 .send({reaction:"like"})
                 .then(async res=>{

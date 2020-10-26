@@ -6,6 +6,7 @@ import {app} from '../../server/server';
 import {UserData} from '../../development/user.data'
 import {drop_database,buffer_equality, createUser} from  '../helper';
 import User from '../../server/models/user.model';
+import RBAC from '../../server/models/rbac.model';
 import Media from '../../server/models/media.model';
 import StaticStrings from '../../config/StaticStrings';
 import S3_Services from '../../server/services/S3.services';
@@ -150,14 +151,16 @@ const avatar_test = () => {
                     });
             })
             it("Invalid permissions (should fail)", async()=>{
-                await User.findOneAndUpdate({'username':user.username},{'permissions':["user:read"]},{new:true});
+                const na_role = await RBAC.findOne({'role':'none'});
+                await User.findOneAndUpdate({'username':user.username},{'permissions': na_role._id},{new:true});
                 return agent.post(`/api/users/${id0}/avatar`)
                     .set('Authorization',`Bearer ${access_token0}`)
                     .attach("media", process.cwd()+'/test/resources/profile1.png', "profile_photo")
                     .then(async res=>{
                         res.status.should.eql(403);
                         res.body.error.should.eql(StaticStrings.InsufficientPermissionsError)
-                        await User.findOneAndUpdate({'username':user.username},{'permissions':permissions.get_permission_array('user')},{new:true});
+                        let user_role = await RBAC.findOne({'role':'user'});
+                        await User.findOneAndUpdate({'username':user.username},{'permissions': user_role._id},{new:true});
                     });
             });
             it("Not an image file (should fail)",async ()=>{
@@ -307,7 +310,8 @@ const avatar_test = () => {
                 });
             })
             it("Invalid permissions (should fail)", async()=>{
-                await User.findOneAndUpdate({'username':user.username},{'permissions':["user:edit_content"]},{new:true});
+                const na_role = await RBAC.findOne({'role':'none'});
+                await User.findOneAndUpdate({'username':user.username},{'permissions':na_role._id},{new:true});
                 return agent.get(`/api/users/${id0}/avatar`)
                 .set('Authorization',`Bearer ${access_token0}`)
                 .then(res=>{
@@ -463,7 +467,8 @@ const avatar_test = () => {
                     });
             });
             it("Invalid permissions (should fail)", async()=>{
-                await User.findOneAndUpdate({'username':user.username},{'permissions':["user:read"]},{new:true});
+                const na_role = await RBAC.findOne({'role':'none'});
+                await User.findOneAndUpdate({'username':user.username},{'permissions':na_role._id},{new:true});
                 let id = id0;
                 let m_token = token;
                 return agent.delete(`/api/users/${id}/avatar`).set('Authorization',`Bearer ${m_token}`).then(res=>{

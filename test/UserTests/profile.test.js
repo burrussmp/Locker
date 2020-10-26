@@ -5,6 +5,7 @@ import {app} from '../../server/server';
 import {UserData} from '../../development/user.data'
 import {drop_database, createUser,getAccessToken} from  '../helper';
 import User from '../../server/models/user.model';
+import RBAC from '../../server/models/rbac.model';
 import StaticStrings from '../../config/StaticStrings';
 chai.use(chaiHttp);
 chai.should();
@@ -65,7 +66,8 @@ const profile_test = () => {
                     })
             });
             it("/GET Attempt w/ incorrect privileges (none)", async ()=>{
-                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':[]},{new:true});
+                const na_role = await RBAC.findOne({'role':'none'});
+                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions': na_role._id},{new:true});
                 return agent.get(`/api/users/${id0}`)
                     .set('Authorization',`Bearer ${access_token0}`)
                     .then((res)=>{
@@ -74,7 +76,8 @@ const profile_test = () => {
                     })
             });
             it("/PUT Attempt w/ incorrect privileges (user:read)", async ()=>{
-                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':[]},{new:true});
+                const na_role = await RBAC.findOne({'role':'none'});
+                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions': na_role._id},{new:true});
                 return agent.delete(`/api/users/${id0}`)
                     .set('Authorization',`Bearer ${access_token0}`)
                     .then((res)=>{

@@ -58,9 +58,10 @@ const auth_password_tests = () => {
           });
       });
       it("Bad Permissions (should fail)", async () => {
+        let role = await RBAC.findOne({'role': 'na'});
         await User.findOneAndUpdate(
           { username: UserData[0].username },
-          { permissions: [] },
+          { permissions: role._id },
           { new: true }
         );
         return agent

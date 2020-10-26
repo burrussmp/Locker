@@ -41,7 +41,6 @@ const create = async (req, res) => {
   try {
     cognito_user = CognitoServices.getCognitoUsername(session);
     let user_role = await RBAC.findOne({'role': 'user'});
-    console.log(user_role)
     let new_user = {
       cognito_username: cognito_user,
       username : username,

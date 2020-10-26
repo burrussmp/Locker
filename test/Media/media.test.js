@@ -12,7 +12,6 @@ import S3_Services from "../../server/services/S3.services";
 import fetch from "node-fetch";
 import { drop_database, buffer_equality, createUser } from "../helper";
 import _ from "lodash";
-import permissions from "../../server/permissions";
 
 chai.use(chaiHttp);
 chai.should();

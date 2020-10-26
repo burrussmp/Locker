@@ -146,11 +146,11 @@ const requireOwnership = (req, res, next) => {
 const checkPermissions = async (req, res, next) => {
   if (!isAdmin(req) && res.locals.permissions.length != 0) {
     if (req.auth && req.auth.cognito_username) {
-      let user = await User.findOne({cognito_username: req.auth.cognito_username}).select("permissions _id");
-      let role_based_access_control = await RBAC.findById(user.permissions);
+      const user = await User.findOne({cognito_username: req.auth.cognito_username}).select("permissions _id");
       if (!user) {
         return res.status(400).json({ error: StaticStrings.TokenIsNotValid });
       }
+      const role_based_access_control = await RBAC.findById(user.permissions);
       if (!role_based_access_control.hasPermission(res.locals.permissions)) {
         return res.status(403).json({ error: StaticStrings.InsufficientPermissionsError });
       }

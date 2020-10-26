@@ -5,6 +5,7 @@ import {app} from '../../server/server';
 import {UserData} from '../../development/user.data'
 import {drop_database, createUser} from  '../helper';
 import User from '../../server/models/user.model';
+import RBAC from '../../server/models/rbac.model';
 import StaticStrings from '../../config/StaticStrings';
 import permissions from '../../server/permissions';
 
@@ -59,12 +60,14 @@ const follow_test = () => {
                 });
             });
             it("Invalid permissions (should fail)", async()=>{
-                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':[]},{new:true});
+                const na_role = await RBAC.findOne({'role':'none'});
+                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':na_role._id},{new:true});
                 return agent.get(`/api/users/${id1}/follow?access_token=${token0}`)
                 .then(async res=>{
                     res.status.should.eql(403);
                     res.body.error.should.eql(StaticStrings.InsufficientPermissionsError)
-                    await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':permissions.get_permission_array('user')},{new:true});
+                    const user_role = await RBAC.findOne({'role':'user'});
+                    await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':user_role._id},{new:true});
                 });
             });
         });
@@ -127,12 +130,14 @@ const follow_test = () => {
                 });
             });
             it("Invalid permissions (should fail)", async()=>{
-                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':[]},{new:true});
+                const na_role = await RBAC.findOne({'role':'none'});
+                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':na_role._id},{new:true});
                 return agent.get(`/api/users/${id1}/follow?access_token=${token0}`)
                 .then(async res=>{
                     res.status.should.eql(403);
                     res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
-                    await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':permissions.get_permission_array('user')},{new:true});
+                    const user_role = await RBAC.findOne({'role':'user'});
+                    await User.findOneAndUpdate({'username':UserData[0].username},{'permissions': user_role._id},{new:true});
                 });
             });
         });
@@ -195,12 +200,14 @@ const follow_test = () => {
                 });
             });
             it("Invalid permissions (should fail)", async()=>{
-                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':[]},{new:true});
+                const na_role = await RBAC.findOne({'role':'none'});
+                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':na_role._id},{new:true});
                 return agent.delete(`/api/users/${id1}/follow?access_token=${token0}`)
                 .then(async res=>{
                     res.status.should.eql(403);
                     res.body.error.should.eql(StaticStrings.InsufficientPermissionsError)
-                    await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':permissions.get_permission_array('user')},{new:true});
+                    const user_role = await RBAC.findOne({'role':'user'});
+                    await User.findOneAndUpdate({'username':UserData[0].username},{'permissions': user_role._id},{new:true});
                 });
             });
         });

@@ -4,6 +4,7 @@ import {app} from '../../server/server';
 import {UserData} from '../../development/user.data';
 import {PostData} from '../../development/post.data';
 import User from '../../server/models/user.model';
+import RBAC from '../../server/models/rbac.model';
 import Media from '../../server/models/media.model';
 import Post from '../../server/models/post.model';
 import StaticStrings from '../../config/StaticStrings';
@@ -119,13 +120,15 @@ const content_post_test_basics = () => {
                 })
                 it("Permissions: Insufficient (should fail)",async()=>{
                 let post_data = JSON.parse(JSON.stringify(PostData[0]))
-                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':["user:read"]},{new:true});
+                let role = await RBAC.findOne({'role': 'na'});
+                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':role._id},{new:true});
                 return agent.post(`/api/posts?access_token=${userToken0}&type=ContentPost`)
                     .attach("media",image1)
                     .field(post_data)
                     .then(async res=>{
                         await on_failure_to_create(res,403,StaticStrings.InsufficientPermissionsError);
-                        await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':permissions.get_permission_array('user')},{new:true});
+                        role = await RBAC.findOne({'role': 'user'});
+                        await User.findOneAndUpdate({'username':UserData[0].username},{'permissions': role._id},{new:true});
                 });  
             });
             it("Not logged in: (should fail)",async()=>{
@@ -372,11 +375,13 @@ const content_post_test_basics = () => {
                     .field(PostData[1])
                     .then(async res=>{
                         let postId = res.body._id;
-                        await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':["user:read"]},{new:true});
+                        let role = await RBAC.findOne({'role': 'na'});
+                        await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':role._id},{new:true});
                         return agent.get(`/api/posts/${postId}?access_token=${userToken0}`)
                         .then(async res=>{
                             res.status.should.eql(403);
-                            await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':permissions.get_permission_array('user')},{new:true});
+                            role = await RBAC.findOne({'role': 'user'});
+                            await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':role._id},{new:true});
                         });                
                 });  
             });
@@ -467,12 +472,14 @@ const content_post_test_basics = () => {
                     .then(async res=>{
                         res.status.should.eql(200);
                         let postId = res.body._id;
-                        await User.findOneAndUpdate({'username':UserData[1].username},{'permissions':["user:read"]},{new:true});
+                        let role = await RBAC.findOne({'role': 'na'});
+                        await User.findOneAndUpdate({'username':UserData[1].username},{'permissions':role._id},{new:true});
                         return agent.delete(`/api/posts/${postId}?access_token=${userToken1}`)
                         .then(async res=>{
                             res.status.should.eql(403);
-                            res.body.error.should.eql(StaticStrings.InsufficientPermissionsError)
-                            await User.findOneAndUpdate({'username':UserData[1].username},{'permissions':permissions.get_permission_array('user')},{new:true});
+                            res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
+                            role = await RBAC.findOne({'role': 'user'});
+                            await User.findOneAndUpdate({'username':UserData[1].username},{'permissions': role._id},{new:true});
                     });
                 });  
             });
@@ -642,19 +649,20 @@ const content_post_test_basics = () => {
             it("Insufficient permissions: (should fail)",async()=>{
                 let new_caption = "new caption";
                 let new_tags = 'a,b,c';
-                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':["post:read"]},{new:true});
+                let role = await RBAC.findOne({'role': 'na'});
+                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':role._id},{new:true});
                 return agent.put(`/api/posts/${postId}?access_token=${userToken0}`)
                     .send({tags:new_tags,caption:new_caption})
                     .then(async (res)=>{
                         res.status.should.eql(403);
                         res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
-                        await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':permissions.get_permission_array('user')},{new:true});
+                        role = await RBAC.findOne({'role': 'user'});
+                        await User.findOneAndUpdate({'username':UserData[0].username},{'permissions': role._id},{new:true});
                 });  
             });
             it("Wrong post id: (should fail w/ 404)",async()=>{
                 let new_caption = "new caption";
                 let new_tags = 'a,b,c';
-                await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':["post:read"]},{new:true});
                 return agent.put(`/api/posts/${userId0}?access_token=${userToken0}`)
                     .send({tags:new_tags,caption:new_caption})
                     .then(async (res)=>{

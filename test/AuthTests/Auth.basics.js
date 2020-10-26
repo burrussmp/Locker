@@ -14,8 +14,7 @@ chai.should();
 const auth_tests = () => {
         before(async () =>{
             await drop_database();
-            const id = await createUser(UserData[1]);
-            console.log(id)
+            await createUser(UserData[1]);
             await createUser(UserData[2]);
         });
         after(async () =>{
@@ -25,7 +24,6 @@ const auth_tests = () => {
             chai.request(app)
                 .get('/api/users')
                 .end(async (err, res) => {
-                    console.log(res.body)
                 res.should.have.status(200);                
                 res.body.should.have.lengthOf(2)
                 done();
