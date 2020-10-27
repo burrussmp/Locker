@@ -1,5 +1,7 @@
-import mongoose from 'mongoose'
+import mongoose from 'mongoose';
 import StaticStrings from "../../config/StaticStrings";
+import validators from "../services/validators";
+
 const OrganizationModelErrors = StaticStrings.OrganizationModelErrors;
 
 const OrgSchema = new mongoose.Schema(
@@ -8,6 +10,7 @@ const OrgSchema = new mongoose.Schema(
       type: String,
       trim: true,
       required: OrganizationModelErrors.NameRequired,
+      unique: true,
     },
     logo: {
       type: mongoose.Schema.ObjectId,
@@ -19,6 +22,7 @@ const OrgSchema = new mongoose.Schema(
       type: String,
       trim: true,
       required: OrganizationModelErrors.UrlRequired,
+      unique: true,
     },
     employees: [{ type: mongoose.Schema.ObjectId, ref: "Employee" }],
     description: {
@@ -39,6 +43,20 @@ const OrgSchema = new mongoose.Schema(
     index: true,
   }
 );
+
+OrgSchema.path("name").validate(async function (value) {
+  const count = await mongoose.models.Organization.countDocuments({ name: value });
+  const isUnique = this ? count == 0 || !this.isModified("name") : count == 0;
+  if (!isUnique)
+    throw validators.createValidationError(OrganizationModelErrors.NameAlreadyExists);
+}, null);
+
+OrgSchema.path("url").validate(async function (value) {
+  const count = await mongoose.models.Organization.countDocuments({ url: value });
+  const isUnique = this ? count == 0 || !this.isModified("url") : count == 0;
+  if (!isUnique)
+    throw validators.createValidationError(OrganizationModelErrors.URLAlreadyExists);
+}, null);
 
 OrgSchema.pre("deleteOne", { document: true, query: false }, async function () {
   // clean up profile photo

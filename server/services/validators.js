@@ -1,4 +1,5 @@
 "use strict";
+import mongoose from 'mongoose';
 import StaticStrings from "../../config/StaticStrings";
 
 /**
@@ -65,9 +66,20 @@ const isValidPassword = (password) => {
   return undefined;
 };
 
+/**
+ * @desc Creates a mongoose vaidation error that a Mongoose Schema can call in a custom validation method
+ * @param String message : The error message
+ * @return A Mongoose validation error
+ */
+const createValidationError = (message) => {
+  let validatorError = new mongoose.Error.ValidatorError({ message: message });
+  return validatorError;
+};
+
 export default {
   isValidEmail,
   isValidPhoneNumber,
   isValidUsername,
   isValidPassword,
+  createValidationError
 };

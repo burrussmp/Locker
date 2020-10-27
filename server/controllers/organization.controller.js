@@ -54,13 +54,18 @@ const create = async (req, res) => {
     };
     S3_Services.uploadSingleMediaS3(req, res, media_meta, async (req, res, image) => {
         const { name, url, description } = req.body;
-        let organization = new Organization({
-            name: name,
-            url: url,
-            description: description,
-            logo: image._id,
-        })
-        organization = await organization.save();
+        let organization;
+        try {
+            organization = new Organization({
+                name: name,
+                url: url,
+                description: description,
+                logo: image._id,
+            })
+            organization = await organization.save();
+        } catch(err) {
+            return res.status(400).json({err: errorHandler.getErrorMessage(err)})
+        }
         try {
             return res.status(200).json({ '_id': organization._id });
         } catch (err) {

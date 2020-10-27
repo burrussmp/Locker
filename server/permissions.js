@@ -93,7 +93,6 @@ const get_permission_array = (type) => {
         assigned_permissions = assigned_permissions.concat([
             Organization_Permissions.EditAccessList,
             Organization_Permissions.Read,
-            Organization_Permissions.Delete,
             Organization_Permissions.EditContent,
             Organization_Permissions.AddEmployee,
             Organization_Permissions.DeleteEmployee,
@@ -105,7 +104,8 @@ const get_permission_array = (type) => {
     }
     if (type == 'admin') {
         assigned_permissions = assigned_permissions.concat([
-            Organization_Permissions.Create
+            Organization_Permissions.Create,
+            Organization_Permissions.Delete,
         ])
     }
     return assigned_permissions;

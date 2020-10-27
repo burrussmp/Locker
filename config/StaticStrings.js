@@ -100,6 +100,8 @@ const StaticStrings = {
         NameRequired: 'Must provide a name for the organization',
         LogoRequired: 'Must provide a logo for the company',
         UrlRequired: 'Must provide a valid URL to the company page',
+        NameAlreadyExists: 'An organization already exists with this name',
+        URLAlreadyExists: 'An organization already exists with this url',
     },
     OrganizationControllerErrors: {
         NotFoundError: 'Organization not found',

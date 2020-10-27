@@ -66,20 +66,13 @@ const UserSchema = new mongoose.Schema(
   }
 );
 
-const create_validation_error = (message) => {
-  let validatorError = new mongoose.Error.ValidatorError({ message: message });
-  return validatorError;
-};
-
 UserSchema.path("username").validate(async function (value) {
   const count = await mongoose.models.User.countDocuments({ username: value });
-  let isUnique = this ? count == 0 || !this.isModified("username") : count == 0;
+  const isUnique = this ? count == 0 || !this.isModified("username") : count == 0;
   if (!isUnique)
-    throw create_validation_error(
-      StaticStrings.UserModelErrors.UsernameAlreadyExists
-    );
-  let invalid_error = validators.isValidUsername(value);
-  if (invalid_error) throw create_validation_error(invalid_error);
+    throw validators.createValidationError(StaticStrings.UserModelErrors.UsernameAlreadyExists);
+  const invalid_error = validators.isValidUsername(value);
+  if (invalid_error) throw validators.createValidationError(invalid_error);
 }, null);
 
 UserSchema.pre(

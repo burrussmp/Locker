@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 
 import User from '../server/models/user.model';
 import Employee from '../server/models/employee.model';
+import Organization from '../server/models/organization.model';
 import Post from '../server/models/post.model';
 import permissions from '../server/permissions';
 
@@ -35,7 +36,7 @@ const getAccessToken = async (data) => {
 }
 
 const drop_database = async () => {
-    for (const model of [User, Post, Employee]){
+    for (const model of [User, Post, Employee, Organization]){
         let cursor = model.find().cursor();
         for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
             await doc.deleteOne();
