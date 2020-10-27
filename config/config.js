@@ -45,6 +45,7 @@ const get_aws_config = () => {
 const config = {
   env: process.env.NODE_ENV || 'development',
   port: process.env.PORT || 3000,
+  address: process.env.ADDRESS || '127.0.0.1',
   mongoUri: get_mongodb_uri(),
   bucket_name: process.env.NODE_ENV == 'development' ? "locker-media-storage-dev" : "locker-media-storage-test",
   aws_config: get_aws_config()

@@ -11,8 +11,11 @@
 */
 
 import authCtrl from './controllers/auth.controller';
+import fetch from 'node-fetch';
+import config from '../config/config';
 import RBAC from './models/rbac.model';
-
+import fs from 'fs';
+import FormData from 'form-data';
 // all permissions associated with Post collection
 const Post_Permissions = {
     Create: 'post:create', // Create Post
@@ -54,12 +57,14 @@ const Organization_Permissions = {
     Delete: 'organization:delete',
     Read: 'organization:read',
     EditContent: 'organization:edit',
-    EditAccessList: 'organization:edit_access_list', 
+    EditAccessList: 'organization:edit_access_list',
+    AddEmployee: 'organization:add_employee',
+    DeleteEmployee: 'organization:delete_employee'
 }
 
 const get_permission_array = (type) => {
     let assigned_permissions = [];
-    if (type == 'user' || type == 'supervisor' || type == 'admin' || type == 'employee'){
+    if (type == 'user' || type == 'supervisor' || type == 'admin' || type == 'employee') {
         assigned_permissions = assigned_permissions.concat([
             Post_Permissions.Read,
             Post_Permissions.Interact,
@@ -77,32 +82,34 @@ const get_permission_array = (type) => {
             Comment_Permissions.Interact,
         ]);
     }
-    if (type == 'employee'){
+    if (type == 'employee') {
         assigned_permissions = assigned_permissions.concat([
             Employee_Permissions.EditContent,
             Employee_Permissions.Delete,
             Employee_Permissions.Read,
         ])
     }
-    if (type == 'supervisor' || type == 'admin'){
+    if (type == 'supervisor' || type == 'admin') {
         assigned_permissions = assigned_permissions.concat([
             Organization_Permissions.EditAccessList,
             Organization_Permissions.Read,
             Organization_Permissions.Delete,
             Organization_Permissions.EditContent,
+            Organization_Permissions.AddEmployee,
+            Organization_Permissions.DeleteEmployee,
             Employee_Permissions.Create,
             Employee_Permissions.EditContent,
             Employee_Permissions.Delete,
             Employee_Permissions.Read,
         ])
     }
-    if (type == 'admin'){
+    if (type == 'admin') {
         assigned_permissions = assigned_permissions.concat([
             Organization_Permissions.Create
         ])
     }
     return assigned_permissions;
-    
+
 };
 
 const Authorize = (permissions, requireLogin = true) => {
@@ -120,7 +127,7 @@ const setUpRBAC = async () => {
         permissions: get_permission_array('user')
     };
     await (new RBAC(User_Role)).save()
-    
+
     const Admin_Role = {
         role: 'admin',
         level: 0,
@@ -148,6 +155,42 @@ const setUpRBAC = async () => {
         permissions: []
     };
     await (new RBAC(NA_Role)).save()
+    const admin = {
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD,
+        role_type: 'admin',
+    };
+    await fetch(`http://${config.address}:${config.port}/api/ent/employees?access_token=${process.env.ADMIN_SECRET}`, {
+        'method': 'POST',
+        'headers': {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(admin)
+    }).then(res => res.json()).then(async (res) => {
+        const access_token = res.access_token;
+        const employeeId = res._id;
+        let form = new FormData();
+        form.append("media", fs.createReadStream(process.cwd() + '/images/logo.png'));
+        form.append("name", 'locker');
+        form.append("url", 'https://locker.com');
+        form.append("description", 'Locker Company');
+        await fetch(`http://${config.address}:${config.port}/api/ent/organizations?access_token=${access_token}`, {
+            method: "POST",
+            body: form,
+        }).then(res => res.json()).then(async (org) => {
+            const organizationId = org._id;
+            await fetch(`http://${config.address}:${config.port}/api/ent/organizations/${organizationId}/employees/?access_token=${access_token}`, {
+                'method': 'POST',
+                'headers': {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    employeeId: employeeId
+                })
+            })
+        });
+    });
+
 }
 
 export default {

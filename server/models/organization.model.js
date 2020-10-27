@@ -20,16 +20,7 @@ const OrgSchema = new mongoose.Schema(
       trim: true,
       required: OrganizationModelErrors.UrlRequired,
     },
-    access_list: {
-      type: [{
-        user: {
-          type: mongoose.Schema.ObjectId,
-          ref: 'user',
-          required: true,
-        },
-        permissions: [{type: String}]
-      }],
-    },
+    employees: [{ type: mongoose.Schema.ObjectId, ref: "Employee" }],
     description: {
       type: String,
       default: ''
@@ -48,6 +39,14 @@ const OrgSchema = new mongoose.Schema(
     index: true,
   }
 );
+
+OrgSchema.pre("deleteOne", { document: true, query: false }, async function () {
+  // clean up profile photo
+  let media = await mongoose.models.Media.findById(this.logo);
+  if (media) {
+    await media.deleteOne();
+  }
+});
 
 /**
  * TODO

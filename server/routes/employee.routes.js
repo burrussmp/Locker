@@ -19,7 +19,7 @@ router.param('employeeId', employeeCtrl.employeeByID)
 
 router.route('/api/ent/employees')
   .get(permission.Authorize([]), employeeCtrl.list)
-  .post(permission.Authorize([], false),employeeCtrl.create);
+  .post(permission.Authorize([]),employeeCtrl.create);
 
 router.route('/api/ent/employees/:employeeId')
   .get(permission.Authorize([EmployeePermissions.Read]), employeeCtrl.read)

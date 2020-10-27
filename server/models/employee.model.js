@@ -103,8 +103,8 @@ EmployeeSchema.plugin(mongoose_fuzzy_searching, {
   ],
   middlewares: {
     preSave: function () {
-      this.last_name = this.last_name.replace(/<(?:.|\n)*?>/gm, "");
-      this.first_name = this.first_name.replace(/<(?:.|\n)*?>/gm, "");
+      this.last_name = this.last_name ? this.last_name.replace(/<(?:.|\n)*?>/gm, "") : this.last_name;
+      this.first_name = this.first_name ? this.first_name.replace(/<(?:.|\n)*?>/gm, "") : this.first_name;
     },
     preFindOneAndUpdate: async function () {
       let update = await this.getUpdate();

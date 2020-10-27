@@ -85,7 +85,8 @@ const StaticStrings = {
     EmployeeControllerErrors: {
         EmployeeNotFound: 'Employee not found',
         PasswordUpdateSame: 'New password is the same as the old password',
-        PasswordUpdateIncorrectError: 'Old password is incorrect'
+        PasswordUpdateIncorrectError: 'Old password is incorrect',
+        MissingRoleType: 'Missing role_type parameter in request body',
     },
     RBACModelErrors: {
         RoleRequired: 'Server Error: Must assign role attribute when creating new RBAC',
@@ -102,6 +103,7 @@ const StaticStrings = {
     },
     OrganizationControllerErrors: {
         NotFoundError: 'Organization not found',
+        MissingID: 'Missing parameter "employeeId" in request body',
     },
     ProductModelErrors: {
         PriceRequired: 'Must provide a price for the product',

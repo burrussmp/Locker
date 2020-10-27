@@ -11,6 +11,7 @@ import fs from 'fs';
 import mediaController from './media.controller';
 import CognitoAPI from '../services/Cognito.services';
 import dbErrorHandler from '../services/dbErrorHandler';
+import authController from './auth.controller';
 
 const CognitoServices = CognitoAPI.EmployeeCognitoPool
 
@@ -34,7 +35,10 @@ const filter_employee = (employee) => {
   * @param Object res - HTTP response object
 */
 const create = async (req, res) => {
-    let { password, email} = req.body;
+    const { password, email, role_type} = req.body;
+    if (!role_type){
+        return res.status(400).json({error: Errors.MissingRoleType});
+    }
     let session, cognito_user;
     try {
         session = await CognitoServices.signup(email, password);
@@ -43,7 +47,15 @@ const create = async (req, res) => {
     }
     try {
         cognito_user = CognitoServices.getCognitoUsername(session);
-        const role = await RBAC.findOne({ 'role': 'employee' });        
+        let role;
+        if(authController.isAdmin(req)){
+            role = await RBAC.findOne({ 'role': 'admin' });
+        } else {
+            role = await RBAC.findOne({ 'role': role_type });
+            if (req.auth.level < role.level){
+                return res.status(401).json({error: `Requester authorization too low: Requester level ${req.auth.level} & level of attempt ${role.level}`});
+            }
+        }
         let new_employee = {
             cognito_username: cognito_user,
             email: email,

@@ -28,11 +28,14 @@ app.use(function (err, req, res, next) {
 })
 
 // Listen
-app.listen(config.port, (err) => {
+const server = app.listen(config.port,config.address, (err) => {
   if (err) {
     console.log(err)
+  } else {
+    const host = server.address().address;
+    const port = server.address().port;
+    console.log('running at http://' + host + ':' + port)
   }
-  console.info('Server started on port %s.', config.port)
 })
 
 export {app}

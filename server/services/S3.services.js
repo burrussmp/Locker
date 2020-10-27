@@ -41,7 +41,7 @@ const s3 = new aws.S3();
  */
 const MediaFilter = (req, file, next) => {
   let path = req.route.path;
-  if (path == "/api/users/:userId/avatar" || path == "/api/organizations") {
+  if (path == "/api/users/:userId/avatar" || path == "/api/ent/organizations") {
     if (file.mimetype === "image/jpeg" || file.mimetype === "image/png") {
       next(null, true);
     } else {

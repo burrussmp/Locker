@@ -48,20 +48,19 @@ const organizationByID = async (req, res, next, id) => {
  * @param Object res - HTTP response object
  */
 const create = async (req, res) => {
-    let { name, url, description } = req.body;
-    let type = 'Logo'
-    let media_meta = {
-        'type': type,
-        'uploadedBy': organization._id
+    const media_meta = {
+        'type': 'Logo',
+        'uploadedBy': req.auth._id
     };
     S3_Services.uploadSingleMediaS3(req, res, media_meta, async (req, res, image) => {
-        const organization = new Organization({
+        const { name, url, description } = req.body;
+        let organization = new Organization({
             name: name,
             url: url,
             description: description,
-            logo: image._id
+            logo: image._id,
         })
-        await organization.save();
+        organization = await organization.save();
         try {
             return res.status(200).json({ '_id': organization._id });
         } catch (err) {
@@ -137,6 +136,44 @@ const remove = async (req, res) => {
     }
 };
 
+/**
+ * @desc Add employee
+ * @param Object req - HTTP request object
+ * @param Object res - HTTP response object
+ */
+const addEmployee = async (req, res) => {
+    const employeeId = req.body.employeeId;
+    const organizationId = req.organization._id;
+    if (!employeeId){
+      return res.status(400).json({error: OrganizationControllerErrors.MissingID});
+    }
+    try {
+        await Organization.findOneAndUpdate({'_id' : organizationId}, {$addToSet: {employees: employeeId}}) // update their account
+        return res.status(200).json({message:StaticStrings.AddedFollowerSuccess});
+    } catch(err){
+        return res.status(500).json({error: StaticStrings.UnknownServerError+err.message})  // no accounts were changed
+    }
+};
+
+/**
+ * @desc Remove employee
+ * @param Object req - HTTP request object
+ * @param Object res - HTTP response object
+ */
+const removeEmployee = async (req, res) => {
+    const employeeId = req.body.employeeId;
+    const organizationId = req.organization._id;
+    if (!employeeId){
+      return res.status(400).json({error: OrganizationControllerErrors.MissingID});
+    }
+    try {
+        await Organization.findOneAndUpdate({'_id' : organizationId}, {$pull: {employees: employeeId}}) // update their account
+        return res.status(200).json({message:StaticStrings.AddedFollowerSuccess});
+    } catch(err){
+        return res.status(500).json({error: StaticStrings.UnknownServerError+err.message})
+    }
+};
+
 export default {
     list,
     create,
@@ -144,4 +181,6 @@ export default {
     update,
     remove,
     organizationByID,
+    addEmployee,
+    removeEmployee,
 };

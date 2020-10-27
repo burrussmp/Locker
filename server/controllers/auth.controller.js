@@ -44,7 +44,7 @@ const retrieveAccessToken = (req) => {
  * @param Object res - HTTP response
  */
 const verifyToken = (req, res) => {
-  let token = req.query.token;
+  const token = req.query.token;
   const CognitoServices = getCognitoService(req);
   return CognitoServices.verifyToken(token, "access")
     .then(() => {
@@ -135,7 +135,8 @@ const logout = (req, res) => {
  */
 const isAdmin = (req) => {
   const authorization = retrieveAccessToken(req);
-  return authorization && authorization === process.env.ADMIN_SECRET;
+  const isAdminRole = req.auth && req.auth.level == 0 && req.auth.role == 'admin';
+  return authorization && authorization === process.env.ADMIN_SECRET || isAdminRole;
 };
 
 /**
@@ -179,6 +180,7 @@ const checkPermissions = async (req, res, next) => {
         return res.status(403).json({ error: StaticStrings.InsufficientPermissionsError });
       }
       req.auth._id = person._id.toString();
+      req.auth.level = role_based_access_control.level;
     } else {
       return res
         .status(500)
@@ -198,17 +200,15 @@ const checkPermissions = async (req, res, next) => {
 const checkAccessToken = (req, res, next) => {
   let access_token = retrieveAccessToken(req);
   if (!access_token) {
-    return res
-      .status(401)
-      .json({ error: StaticStrings.UnauthorizedMissingTokenError });
+    return res.status(401).json({ error: StaticStrings.UnauthorizedMissingTokenError });
   }
   const CognitoServices = getCognitoService(req);
   CognitoServices.verifyToken(access_token, "access")
     .then((decoded_token) => {
       let type;
-      if (decoded_token.client_id == config.aws_user_pool_client_id){
+      if (decoded_token.payload.client_id == config.aws_config.aws_user_pool_client_id){
         type = 'user';
-      } else if (decoded_token.client_id == config.aws_employee_pool_client_id){
+      } else if (decoded_token.payload.client_id == config.aws_config.aws_employee_pool_client_id){
         type = 'employee'
       } else {
         return res.status(500).json({error: 'Server Error: Unknown user pool client ID in access token'});
@@ -261,11 +261,11 @@ const forgotPassword = async (req, res) => {
   } else {
     const CognitoServices = getCognitoService(req);
     try {
-      const user = await CognitoServices.getUserByEmail(email);
-      if (!user){
+      const person = await CognitoServices.getUserByEmail(email);
+      if (!person){
         return res.status(404).json({error: StaticStrings.AuthErrors.UserNotFoundWithEmail})
       }
-      const cognito_username = user.Username;
+      const cognito_username = person.Username;
       await CognitoServices.forgotPassword(cognito_username);
       return res.status(200).json({cognito_username: cognito_username});
     } catch (err) {
