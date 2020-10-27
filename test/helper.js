@@ -35,7 +35,7 @@ const getAccessToken = async (data) => {
 }
 
 const drop_database = async () => {
-    for (let model of [User, Post, Employee]){
+    for (const model of [User, Post, Employee]){
         let cursor = model.find().cursor();
         for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
             await doc.deleteOne();
@@ -43,7 +43,6 @@ const drop_database = async () => {
     }
     await mongoose.connection.dropDatabase();
     await permissions.setUpRBAC();
-
 };
 
 const buffer_equality = (buf1, buf2) =>
