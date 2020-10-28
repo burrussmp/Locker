@@ -30,6 +30,29 @@ const filter_employee = (employee) => {
 }
 
 /**
+  * @desc Query an employee by ID
+  * @param Object req - HTTP request object
+  * @param Object res - HTTP response object
+*/
+const employeeByID = async (req, res, next, id) => {
+    try {
+        const employee = await Employee.findById(id)
+            .populate('permissions')
+            .populate('profile_photo', 'key blurhash mimetype')
+            .exec();
+        if (!employee)
+            return res.status('404').json({
+                error: Errors.EmployeeNotFound
+            })
+        req.profile = employee
+        req.owner = id;
+        next()
+    } catch (err) {
+        return res.status('404').json({ error: Errors.EmployeeNotFound })
+    }
+}
+
+/**
   * @desc Create a new employee
   * @param Object req - HTTP request object
   * @param Object res - HTTP response object
@@ -52,11 +75,14 @@ const create = async (req, res) => {
             role = await RBAC.findOne({ 'role': 'admin' });
         } else {
             role = await RBAC.findOne({ 'role': role_type });
+            if (!role){
+                return res.status(404).json({error: `Role ${role_type} not a valid role type.`});
+            }
             if (req.auth.level < role.level){
                 return res.status(401).json({error: `Requester authorization too low: Requester level ${req.auth.level} & level of attempt ${role.level}`});
             }
         }
-        let new_employee = {
+        const new_employee = {
             cognito_username: cognito_user,
             email: email,
             first_name: req.body.first_name,
@@ -64,12 +90,12 @@ const create = async (req, res) => {
             date_of_birth: req.body.date_of_birth,
             permissions: role._id,
         }
-        let employee = new Employee(new_employee)
-        employee = await employee.save()
+        const employee = new Employee(new_employee)
+        await employee.save()
         res.cookie("t", session, {
             expire: new Date() + 9999
         })
-        let parsed_session = CognitoServices.parseSession(session);
+        const parsed_session = CognitoServices.parseSession(session);
         return res.json({
             access_token: parsed_session.accessToken,
             id_token: parsed_session.idToken,
@@ -87,35 +113,12 @@ const create = async (req, res) => {
 }
 
 /**
-  * @desc Query an employee by ID
-  * @param Object req - HTTP request object
-  * @param Object res - HTTP response object
-*/
-const employeeByID = async (req, res, next, id) => {
-    try {
-        let employee = await Employee.findById(id)
-            .populate('profile_photo', 'key blurhash mimetype')
-            .exec();
-        if (!employee)
-            return res.status('404').json({
-                error: Errors.EmployeeNotFound
-            })
-        req.profile = employee
-        req.owner = id;
-        next()
-    } catch (err) {
-        return res.status('404').json({ error: Errors.EmployeeNotFound })
-    }
-}
-
-/**
   * @desc Read a specific employee public info
   * @param Object req - HTTP request object
   * @param Object res - HTTP response object
 */
 const read = (req, res) => {
-    req.profile = filter_employee(req.profile);
-    return res.status(200).json(req.profile)
+    return res.status(200).json(filter_employee(req.profile))
 }
 
 /**
@@ -125,7 +128,7 @@ const read = (req, res) => {
 */
 const list = async (req, res) => {
     try {
-        let employees = await Employee.find().select('_id email updatedAt createdAt')
+        const employees = await Employee.find().select('_id email updatedAt createdAt')
         return res.json(employees)
     } catch (err) {
         return res.status(500).json({ error: errorHandler.getErrorMessage(err) });
@@ -144,14 +147,14 @@ const update = async (req, res) => {
         'email',
         'date_of_birth',
     ]
-    let update_fields = Object.keys(req.body);
-    let invalid_fields = _.difference(update_fields, fields_allowed);
+    const update_fields = Object.keys(req.body);
+    const invalid_fields = _.difference(update_fields, fields_allowed);
     if (invalid_fields.length != 0) {
         return res.status(422).json({ error: `${StaticStrings.BadRequestInvalidFields} ${invalid_fields}` })
     }
     try {
         await CognitoServices.updateCognitoUser(req.auth.cognito_username, req.body)
-        let employee = await Employee.findOneAndUpdate({ '_id': req.params.employeeId }, req.body, { new: true, runValidators: true });
+        const employee = await Employee.findOneAndUpdate({ '_id': req.params.employeeId }, req.body, { new: true, runValidators: true });
         if (!employee) return res.status(500).json({ error: StaticStrings.UnknownServerError }) // possibly unable to fetch
         return res.status(200).json(employee)
     } catch (err) {
@@ -166,7 +169,7 @@ const update = async (req, res) => {
 */
 const remove = async (req, res) => {
     try {
-        let deletedEmployee = await req.profile.deleteOne()
+        const deletedEmployee = await req.profile.deleteOne()
         return res.json(deletedEmployee)
     } catch (err) {
         return res.status(500).json({ error: errorHandler.getErrorMessage(err) });
@@ -184,13 +187,13 @@ const changePassword = async (req, res) => {
         "old_password"
     ]
     // check to see if only contains proper fields
-    let update_fields = Object.keys(req.body);
-    let fields_needed = _.difference(fields_required, update_fields);
+    const update_fields = Object.keys(req.body);
+    const fields_needed = _.difference(fields_required, update_fields);
     if (fields_needed.length != 0) {
         return res.status(422).json({ error: `${StaticStrings.BadRequestFieldsNeeded} ${fields_needed}` })
     }
     // check to see if it has an extra fields
-    let fields_extra = _.difference(update_fields, fields_required);
+    const fields_extra = _.difference(update_fields, fields_required);
     if (fields_extra.length != 0) {
         return res.status(422).json({ error: `${StaticStrings.BadRequestInvalidFields} ${fields_extra}` })
     }
@@ -201,7 +204,7 @@ const changePassword = async (req, res) => {
         await CognitoServices.changePassword(req.query.access_token, req.body.old_password, req.body.password)
         return res.status(200).json({ message: StaticStrings.UpdatedPasswordSuccess });
     } catch (err) {
-        let errMessage = dbErrorHandler.getErrorMessage(err);
+        const errMessage = dbErrorHandler.getErrorMessage(err);
         if (errMessage == 'Incorrect username or password.') {
             res.status(400).json({ error: Errors.PasswordUpdateIncorrectError });
         } else {
@@ -233,13 +236,14 @@ const getProfilePhoto = (req, res) => {
 const uploadProfilePhoto = (req, res) => {
     let meta = {
         'type': "Avatar",
-        'uploadedBy': req.params.employeeId
+        'uploadedBy': req.params.employeeId,
+        'uploadedByType': 'employee'
     };
     S3_Services.uploadSingleMediaS3(req, res, meta, async (req, res, image) => { // upload to s3
-        let query = { '_id': req.params.employeeId }; // at this point we have uploaded to S3 and just need to clean up
-        let update = { $set: { "profile_photo": image._id } };
+        const query = { '_id': req.params.employeeId }; // at this point we have uploaded to S3 and just need to clean up
+        const update = { $set: { "profile_photo": image._id } };
         try {
-            let employee = await Employee.findOneAndUpdate(query, update, { runValidators: true }); // update
+            const employee = await Employee.findOneAndUpdate(query, update, { runValidators: true }); // update
             if (employee.profile_photo) {
                 const media = await Media.findOne({ key: req.profile.profile_photo.key });
                 await media.deleteOne();
@@ -264,9 +268,9 @@ const uploadProfilePhoto = (req, res) => {
   * @param Object res - HTTP response object
 */
 const removeProfilePhoto = async (req, res) => {
-    let query = { '_id': req.params.employeeId };
-    let update = { $unset: { "profile_photo": "" } };
-    let employee = req.profile;
+    const query = { '_id': req.params.employeeId };
+    const update = { $unset: { "profile_photo": "" } };
+    const employee = req.profile;
     try {
         await Employee.findOneAndUpdate(query, update)
         if (employee.profile_photo && employee.profile_photo.key) {
@@ -278,8 +282,32 @@ const removeProfilePhoto = async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: StaticStrings.UnknownServerError + err.message }) // some other error
     }
-
 }
+
+/**
+  * @desc Change an employee's permissions
+  * @param Object req - HTTP request object
+  * @param Object res - HTTP response object
+*/
+const changeRole = async (req, res) => {
+    const {employeeId, new_role} = req.body;
+    const mRole = req.profile.permissions;
+    const employee = await Employee.findById(changeRole).populate('permissions');
+    const employeeRole = employee.permissions;
+    const 
+    try {
+        await Employee.findOneAndUpdate(query, update)
+        if (employee.profile_photo && employee.profile_photo.key) {
+            await employee.profile_photo.deleteOne();
+            res.status(200).json({ message: StaticStrings.RemoveProfilePhotoSuccess }) // Successfully removed photo
+        } else {
+            res.status(404).json({ error: StaticStrings.UserControllerErrors.ProfilePhotoNotFound }); // no profile to remove
+        }
+    } catch (err) {
+        res.status(500).json({ error: StaticStrings.UnknownServerError + err.message }) // some other error
+    }
+}
+
 
 export default {
     create,
@@ -291,5 +319,6 @@ export default {
     getProfilePhoto,
     uploadProfilePhoto,
     removeProfilePhoto,
-    changePassword
+    changePassword,
+    changeRole,
 }

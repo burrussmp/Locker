@@ -1,1 +1,22 @@
-1. Add permissions to rbac function
+Immediate
+-----------------------------------------------------------------
+1. Finish the employee changePermission role
+
+Short term
+-----------------------------------------------------------------
+1. Complete employee.controller
+2. Test employee.controller
+3. Complete organization.controller
+4. Test organization.controller
+5. Create product routes
+6. Complete product.controller
+7. Test product.controller
+Add tests for RBAC
+8. Setup CI/CD for repository to automatically launch into AWS
+9. Setup lambda to scrape websites
+
+
+Long term
+-----------------------------------------------------------------
+Setup CI/CD for repository to automatically launch into AWS cloud
+Automate deployment and cleanup of AWS resources for test, dev, and prod

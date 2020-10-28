@@ -27,6 +27,24 @@ const All_Dimensions = {
       height: 256,
     },
   },
+  Logo: {
+    small: {
+      width: 32,
+      height: 32,
+    },
+    medium: {
+      width: 64,
+      height: 64,
+    },
+    large: {
+      width: 128,
+      height: 128,
+    },
+    xlarge: {
+      width: 256,
+      height: 256,
+    },
+  },
   ContentPost: {
     small: {
       width: 50,
@@ -46,6 +64,7 @@ const All_Dimensions = {
     },
   },
 };
+
 /**
  * @desc Get media from S3 bucket
  * @param Object req - HTTP request object

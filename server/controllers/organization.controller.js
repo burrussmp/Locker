@@ -50,7 +50,8 @@ const organizationByID = async (req, res, next, id) => {
 const create = async (req, res) => {
     const media_meta = {
         'type': 'Logo',
-        'uploadedBy': req.auth._id
+        'uploadedBy': req.auth._id,
+        'uploadedByType': 'employee'
     };
     S3_Services.uploadSingleMediaS3(req, res, media_meta, async (req, res, image) => {
         const { name, url, description } = req.body;

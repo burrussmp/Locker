@@ -32,10 +32,19 @@ const MediaSchema = new mongoose.Schema({
   blurhash: {
     type: String
   },
-  uploadedBy: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'User',
-    required: StaticStrings.MediaModelErrors.UploadedByRequired
+  uploadedByType : {
+    type: String,
+    trim: true,
+    required: StaticStrings.MediaModelErrors.UploadedByTypeRequired,
+    enum : {
+      values:['user', 'employee'],
+      message: StaticStrings.PostModelErrors.IncorrectType
+    }
+  },
+  uploadedBy :{
+    type: mongoose.Schema.Types.ObjectId,
+    refPath: 'type',
+    required: StaticStrings.MediaModelErrors.UploadedByRequired,
   },
   resized_keys: {
     type: [String],

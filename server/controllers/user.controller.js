@@ -227,7 +227,8 @@ const getProfilePhoto = (req, res) => {
 const uploadProfilePhoto = (req, res) => {
   let meta = {
     'type': "Avatar",
-    'uploadedBy' : req.params.userId
+    'uploadedBy' : req.params.userId,
+    'uploadedByType': 'user'
   };
   S3_Services.uploadSingleMediaS3(req,res,meta, async (req,res,image)=>{ // upload to s3
     let query = {'_id' : req.params.userId}; // at this point we have uploaded to S3 and just need to clean up

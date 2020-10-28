@@ -1,7 +1,6 @@
 "use strict";
 
 // imports
-import mongoose from 'mongoose';
 import S3_Services from '../S3.services';
 import ContentPost from '../../models/posts/content.post.model';
 import Post from '../../models/post.model';
@@ -32,7 +31,8 @@ const createContentPost = async (req,res) => {
     let type = "ContentPost";
     let media_meta = {
         'type' : type,
-        'uploadedBy' : req.auth._id
+        'uploadedBy' : req.auth._id,
+        'uploadedByType': 'employee'
     };
     S3_Services.uploadSingleMediaS3(req,res,media_meta, async (req,res,image)=>{
         let contentPost;

@@ -6,14 +6,13 @@ const ProductSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: 'Name is required',
+      required: ProductModelErrors.NameRequired,
       trim: true,
     },
-    tags: {
-      type: [String],
-    },
-    meta: {
-      type: Object
+    organization: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Organization",
+      required: ProductModelErrors.OrganizationRequired
     },
     price: {
       type: Number,
@@ -38,6 +37,12 @@ const ProductSchema = new mongoose.Schema(
     exists: {
       type: Boolean,
       required: ProductModelErrors.ExistsRequired,
+    },
+    tags: {
+      type: [String],
+    },
+    meta: {
+      type: Object
     },
     sizes: {
       type: [{ type: String }],
@@ -65,12 +70,18 @@ const ProductSchema = new mongoose.Schema(
 */
 
 ProductSchema.pre("deleteOne",{document: true,query:false },async function(){
+  // clean up all images
   let media = await mongoose.models.Media.findById(this.media); // delegate cleanup to media
   await media.deleteOne();
   for (let additional_media of this.all_media){
     media = await mongoose.models.Media.findById(additional_media); // delegate cleanup to media
     await media.deleteOne();
   }
+  // pull product from organization
+  await mongoose.models.Organization.findOneAndUpdate(
+    { _id: this.organization },
+    { $pull: { products: this._id } }
+  );
 });
 
 export default mongoose.model('Product', ProductSchema)

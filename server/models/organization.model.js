@@ -18,6 +18,9 @@ const OrgSchema = new mongoose.Schema(
       required: OrganizationModelErrors.LogoRequired
 
     },
+    last_scraped: {
+      type: Date,
+    },
     url: {
       type: String,
       trim: true,
@@ -59,7 +62,7 @@ OrgSchema.path("url").validate(async function (value) {
 }, null);
 
 OrgSchema.pre("deleteOne", { document: true, query: false }, async function () {
-  // clean up profile photo
+  // clean up logo
   let media = await mongoose.models.Media.findById(this.logo);
   if (media) {
     await media.deleteOne();

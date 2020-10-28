@@ -52,6 +52,8 @@ const StaticStrings = {
         UploadedByRequired: "The ObjectID of the uploader is required",
         UnacceptableType: "ServerError: Image must be an acceptable type (e.g. Avatar)",
         KeyAlreadyExists: "ServerError: The S3 key must be unique (and should be)",
+        UploadedByTypeRequired: "ServerError: Must specify an uploaded type (either 'user' or 'employee')",
+        UploadedByTypeInvalid: "ServerError: 'uploadedByType' of media object must be either 'user' or 'employee'",
     },
     UserModelErrors : {
         InvalidGender: "Valid gender is required",
@@ -110,10 +112,12 @@ const StaticStrings = {
     ProductModelErrors: {
         PriceRequired: 'Must provide a price for the product',
         DescriptionRequired: 'Must provide a description for the product',
+        NameRequired: 'Must provide a name for the product',
         UrlRequired: 'Must provide a URL to the product',
         ExistsRequired: 'Must check if url exists and appropriately set flag',
         MediaRequired: 'Must provide a main media',
-        NegativePrice: 'Cannot have negative price'
+        NegativePrice: 'Cannot have negative price',
+        OrganizationRequired: 'Must link the product to an organization',
     },
     ReplyControllerErrors: {
         MissingTextField: "Missing text field in request body"
