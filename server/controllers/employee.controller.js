@@ -76,7 +76,7 @@ const create = async (req, res) => {
         } else {
             role = await RBAC.findOne({ 'role': role_type });
             if (!role){
-                return res.status(404).json({error: `Role ${role_type} not a valid role type.`});
+                return res.status(404).json({error: StaticStrings.RBACModelErrors.RoleNotFound});
             }
             if (req.auth.level < role.level){
                 return res.status(401).json({error: `Requester authorization too low: Requester level ${req.auth.level} & level of attempt ${role.level}`});
@@ -103,7 +103,6 @@ const create = async (req, res) => {
             _id: employee._id
         })
     } catch (err) {
-        console.log(err);
         CognitoServices.deleteCognitoUser(cognito_user).then(() => {
             return res.status(400).json({ error: errorHandler.getErrorMessage(err) })
         }).catch(err => {
@@ -290,19 +289,28 @@ const removeProfilePhoto = async (req, res) => {
   * @param Object res - HTTP response object
 */
 const changeRole = async (req, res) => {
-    const {employeeId, new_role} = req.body;
-    const mRole = req.profile.permissions;
-    const employee = await Employee.findById(changeRole).populate('permissions');
+    const {new_role} = req.body;
+    const employeeId = req.params.employeeId;
+    const employee = await Employee.findById(employeeId).populate('permissions').exec();
+    if (!employee){
+        return res.status(404).json({error: Errors.EmployeeNotFound + ` (Requested ID ${employeeId})`});
+    }
     const employeeRole = employee.permissions;
-    const 
+    const newRole = await RBAC.findOne({'role': new_role});
+    if (!newRole){
+        return res.status(400).json({error: StaticStrings.RBACModelErrors.RoleNotFound});
+    }
+    if (req.auth.level < newRole.level){
+        return res.status(401).json({error: `Requester authorization too low: Requester level ${req.auth.level} & level of attempt ${newRole.level}`})
+    }
+    if (employeeRole.level < req.auth.level){
+        return res.status(401).json({error: `Employee you are trying to change has higher authorization.`}) 
+    }
     try {
+        const update = {'permissions': newRole._id};
+        const query = {'_id': employeeId}
         await Employee.findOneAndUpdate(query, update)
-        if (employee.profile_photo && employee.profile_photo.key) {
-            await employee.profile_photo.deleteOne();
-            res.status(200).json({ message: StaticStrings.RemoveProfilePhotoSuccess }) // Successfully removed photo
-        } else {
-            res.status(404).json({ error: StaticStrings.UserControllerErrors.ProfilePhotoNotFound }); // no profile to remove
-        }
+        return res.status(200);
     } catch (err) {
         res.status(500).json({ error: StaticStrings.UnknownServerError + err.message }) // some other error
     }

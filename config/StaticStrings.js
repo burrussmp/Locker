@@ -82,7 +82,8 @@ const StaticStrings = {
     EmployeeModelErrors: {
         CognitoUsernameRequired: 'Server Error: Cognito username is required for employee',
         RoleRequired: 'Server Error: Must assign a role to a new employee',
-        EmailRequired: 'Must provide an email when creating an employee'
+        EmailRequired: 'Must provide an email when creating an employee',
+        EmailAlreadyExists: 'Employee with that email already exists',
     },
     EmployeeControllerErrors: {
         EmployeeNotFound: 'Employee not found',
@@ -95,8 +96,9 @@ const StaticStrings = {
         ResourceRequired: 'A resource is required to define a permission',
         ActionRequired: 'An action is required to define a permission',
         InvalidActionType: 'The action you have specified is invalid',
-        LevelRequired: 'Must provide a level for the RBAC (e.g. 0 === Admin)'
-        
+        LevelRequired: 'Must provide a level for the RBAC (e.g. 0 === Admin)',
+        RoleNotFound: 'The role type was not found',
+        RoleAlreadyExists: 'A role with this name already exists',
     },
     OrganizationModelErrors: {
         NameRequired: 'Must provide a name for the organization',

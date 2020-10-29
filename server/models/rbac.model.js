@@ -3,6 +3,7 @@
 import mongoose from "mongoose";
 import _ from 'lodash';
 
+import validators from '../services/validators';
 import StaticStrings from "../../config/StaticStrings";
 
 const RBACModelErrors = StaticStrings.RBACModelErrors;
@@ -52,5 +53,12 @@ RBACSchema.method('removePermission', function (permission) {
         return this.save();
     }
 });
+
+RBACSchema.path("role").validate(async function (value) {
+    const count = await mongoose.models.RBAC.countDocuments({ role: value });
+    const isUnique = this ? count == 0 || !this.isModified("role") : count == 0;
+    if (!isUnique)
+      throw validators.createValidationError(RBACModelErrors.RoleAlreadyExists);
+}, null);
 
 export default mongoose.model("RBAC", RBACSchema);

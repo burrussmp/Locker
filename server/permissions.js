@@ -16,6 +16,8 @@ import config from '../config/config';
 import RBAC from './models/rbac.model';
 import fs from 'fs';
 import FormData from 'form-data';
+import dbErrorHandler from './services/dbErrorHandler';
+
 // all permissions associated with Post collection
 const Post_Permissions = {
     Create: 'post:create', // Create Post
@@ -49,6 +51,7 @@ const Employee_Permissions = {
     Delete: "employee:delete", // Delete user
     Read: "employee:read", // Read information from user
     EditContent: "employee:edit", // Edit only editable content (like caption, etc.)
+    ChangeRole: "employee:change_role", // change the role of an employee
 };
 
 // all permissions associated with an Organization
@@ -87,6 +90,7 @@ const get_permission_array = (type) => {
             Employee_Permissions.EditContent,
             Employee_Permissions.Delete,
             Employee_Permissions.Read,
+            Employee_Permissions.ChangeRole,
         ])
     }
     if (type == 'supervisor' || type == 'admin') {
@@ -100,6 +104,7 @@ const get_permission_array = (type) => {
             Employee_Permissions.EditContent,
             Employee_Permissions.Delete,
             Employee_Permissions.Read,
+            Employee_Permissions.ChangeRole,
         ])
     }
     if (type == 'admin') {
@@ -126,70 +131,98 @@ const setUpRBAC = async () => {
         level: 50,
         permissions: get_permission_array('user')
     };
-    await (new RBAC(User_Role)).save()
+    try {
+        await (new RBAC(User_Role)).save()
+    } catch(err){
+        // console.log(dbErrorHandler.getErrorMessage(err));
+    }
 
     const Admin_Role = {
         role: 'admin',
         level: 0,
         permissions: get_permission_array('admin')
     };
-    await (new RBAC(Admin_Role)).save()
+    
+    try {
+        await (new RBAC(Admin_Role)).save();
+    } catch(err){
+        // console.log(dbErrorHandler.getErrorMessage(err));
+    }
 
     const Supervisor_Role = {
         role: 'supervisor',
         level: 5,
         permissions: get_permission_array('supervisor')
     };
-    await (new RBAC(Supervisor_Role)).save()
+
+    try {
+        await (new RBAC(Supervisor_Role)).save();
+    } catch(err){
+        // console.log(dbErrorHandler.getErrorMessage(err));
+    }
 
     const Employee_Role = {
         role: 'employee',
         level: 10,
         permissions: get_permission_array('employee')
     };
-    await (new RBAC(Employee_Role)).save()
+    try {
+        await (new RBAC(Employee_Role)).save();
+    } catch(err){
+        // console.log(dbErrorHandler.getErrorMessage(err));
+    }
 
     const NA_Role = {
         role: 'none',
         level: 100000,
         permissions: []
     };
-    await (new RBAC(NA_Role)).save()
+
+    try {
+        await (new RBAC(NA_Role)).save();
+    } catch(err){
+        // console.log(dbErrorHandler.getErrorMessage(err));
+    }
+    
     const admin = {
         email: process.env.ADMIN_EMAIL,
         password: process.env.ADMIN_PASSWORD,
         role_type: 'admin',
     };
-    await fetch(`http://${config.address}:${config.port}/api/ent/employees?access_token=${process.env.ADMIN_SECRET}`, {
-        'method': 'POST',
-        'headers': {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(admin)
-    }).then(res => res.json()).then(async (res) => {
-        const access_token = res.access_token;
-        const employeeId = res._id;
-        let form = new FormData();
-        form.append("media", fs.createReadStream(process.cwd() + '/images/logo.png'));
-        form.append("name", 'locker');
-        form.append("url", 'https://locker.com');
-        form.append("description", 'Locker Company');
-        await fetch(`http://${config.address}:${config.port}/api/ent/organizations?access_token=${access_token}`, {
-            method: "POST",
-            body: form,
-        }).then(res => res.json()).then(async (org) => {
-            const organizationId = org._id;
-            await fetch(`http://${config.address}:${config.port}/api/ent/organizations/${organizationId}/employees/?access_token=${access_token}`, {
-                'method': 'POST',
-                'headers': {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    employeeId: employeeId
+    try {
+        await fetch(`http://${config.address}:${config.port}/api/ent/employees?access_token=${process.env.ADMIN_SECRET}`, {
+            'method': 'POST',
+            'headers': {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(admin)
+        }).then(res => res.json()).then(async (res) => {
+            const access_token = res.access_token;
+            const employeeId = res._id;
+            let form = new FormData();
+            form.append("media", fs.createReadStream(process.cwd() + '/images/logo.png'));
+            form.append("name", 'locker');
+            form.append("url", 'https://locker.com');
+            form.append("description", 'Locker Company');
+            await fetch(`http://${config.address}:${config.port}/api/ent/organizations?access_token=${access_token}`, {
+                method: "POST",
+                body: form,
+            }).then(res => res.json()).then(async (org) => {
+                const organizationId = org._id;
+                await fetch(`http://${config.address}:${config.port}/api/ent/organizations/${organizationId}/employees/?access_token=${access_token}`, {
+                    'method': 'POST',
+                    'headers': {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        employeeId: employeeId
+                    })
                 })
-            })
+            });
         });
-    });
+    } catch(err){
+        console.log(dbErrorHandler.getErrorMessage(err));
+    }
 
 }
 

@@ -42,7 +42,6 @@ const drop_database = async () => {
             await doc.deleteOne();
         }
     }
-    await mongoose.connection.dropDatabase();
     await permissions.setUpRBAC();
 };
 

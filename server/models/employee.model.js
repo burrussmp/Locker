@@ -5,6 +5,8 @@ import mongoose_fuzzy_searching from "mongoose-fuzzy-searching";
 
 import StaticStrings from "../../config/StaticStrings";
 import CognitoAPI from "../services/Cognito.services";
+import validators from '../services/validators';
+
 const CognitoServices = CognitoAPI.EmployeeCognitoPool
 
 const EmployeeModelErrors = StaticStrings.EmployeeModelErrors;
@@ -59,6 +61,13 @@ EmployeeSchema.pre("deleteOne",{ document: true, query: false }, async function 
     }
   }
 );
+
+EmployeeSchema.path("email").validate(async function (value) {
+  const count = await mongoose.models.Employee.countDocuments({ email: value });
+  const isUnique = this ? count == 0 || !this.isModified("email") : count == 0;
+  if (!isUnique)
+    throw validators.createValidationError(EmployeeModelErrors.EmailAlreadyExists);
+}, null);
 
 EmployeeSchema.pre("findOneAndUpdate", async function () {
   // sanitize
