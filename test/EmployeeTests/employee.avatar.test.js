@@ -1,0 +1,241 @@
+import chai from 'chai';
+import chaiHttp from 'chai-http';
+const fs = require('fs').promises
+import fetch from 'node-fetch';
+import {app} from '../../server/server';
+import {OrganizationData, getOrganizationConstructor} from '../../development/organization.data';
+import {EmployeeData, getEmployeeConstructor} from '../../development/employee.data';
+import {drop_database, buffer_equality, createEmployee, loginAdminEmployee} from  '../helper';
+import Employee from '../../server/models/employee.model';
+import RBAC from '../../server/models/rbac.model';
+import Media from '../../server/models/media.model';
+import StaticStrings from '../../config/StaticStrings';
+import S3_Services from '../../server/services/S3.services';
+
+// Configure chai
+chai.use(chaiHttp);
+chai.should();
+
+const default_profile_photo = '/client/assets/images/profile-pic.png'
+
+const employee_avatar_test = () => {
+    describe("Profile Photo",()=>{
+        describe("POST /api/ent/employees/:employeeId/avatar", ()=>{
+            let agent = chai.request.agent(app);
+            let admin, employee;
+            beforeEach( async () =>{
+                await drop_database();
+                admin = await loginAdminEmployee();
+                employee = await createEmployee(admin, getEmployeeConstructor(EmployeeData[1]))         
+            });
+            it("Successfully post an avatar (png) and check exists in S3", async()=>{
+                return agent.post(`/api/ent/employees/${employee.id}/avatar?access_token=${employee.access_token}`)
+                .attach("media", EmployeeData[1].profile)
+                .then(async (res)=>{
+                    res.status.should.eql(200);
+                    res.body.message.should.eql(StaticStrings.UploadProfilePhotoSuccess);
+                    let emp = await Employee.findById({"_id": employee.id}).populate("profile_photo",'key').exec()
+                    emp.should.have.property("profile_photo");
+                    emp.profile_photo.should.have.property('key');
+                    let image = await Media.findOne({"key": emp.profile_photo.key});
+                    image.mimetype.includes('image').should.be.true;
+                    image.uploadedBy.toString().should.eql(employee.id);
+                    let key = image.key;
+                    return S3_Services.fileExistsS3(key).then(data=>{
+                        data.Metadata.type.should.eql("Avatar");
+                        data.Metadata.uploader.should.eql(employee.id);
+                        data.Metadata.uploader.should.eql(emp._id.toString());
+                        return S3_Services.deleteMediaS3(key).then(async ()=> {
+                            image = await Media.findOne({"key":key});
+                            (image == undefined || image == null).should.be.true;
+                            return S3_Services.fileExistsS3(key).catch(err=>{
+                                err.should.exist;
+                            })
+                        })
+                    })
+                });
+            })
+            it("delete a user and then see if cleaned up in S3", async()=>{
+                return agent.post(`/api/ent/employees/${employee.id}/avatar?access_token=${employee.access_token}`)
+                .attach("media", EmployeeData[1].profile)
+                .then(async (res)=>{
+                    res.body.message.should.eql(StaticStrings.UploadProfilePhotoSuccess);
+                    const image = await Media.findOne({"uploadedBy": employee.id});
+                    const key = image.key;
+                    return agent.delete(`/api/users/${employee.id}?access_token=${employee.access_token}`).then(res=>{
+                        return S3_Services.fileExistsS3(key).catch(err=>{
+                            (err==null || err==undefined).should.be.false;
+                            err.statusCode.should.eql(404)
+                        })
+                    });
+                })
+            });
+            it("Empty field (should fail)",async ()=>{
+                return agent.post(`/api/ent/employees/${employee.id}/avatar?access_token=${employee.access_token}`)
+                .attach("media", '')
+                .then(res=>{
+                    res.status.should.eql(400);
+                    res.body.error.should.eql(StaticStrings.S3ServiceErrors.BadRequestMissingFile);
+                });
+            });
+            it("Not owner (should fail)",async ()=>{
+                return agent.post(`/api/ent/employees/${admin.id}/avatar?access_token=${employee.access_token}`)
+                .attach("media", EmployeeData[1].profile)
+                .then(res=>{
+                    res.status.should.eql(403);
+                    res.body.error.should.eql(StaticStrings.NotOwnerError);
+                });
+            })
+            it("Employee not found (should fail)",async ()=>{
+                return agent.post(`/api/ent/employees/404/avatar?access_token=${employee.access_token}`)
+                .attach("media", EmployeeData[1].profile)
+                .then(res=>{
+                    res.status.should.eql(404);
+                    res.body.error.should.eql(StaticStrings.EmployeeControllerErrors.EmployeeNotFound);
+                });
+            })
+            it("Invalid permissions (should fail)", async()=>{
+                const na_role = await RBAC.findOne({'role':'none'});
+                await Employee.findOneAndUpdate({'_id':employee.id},{'permissions': na_role._id},{new:true});
+                return agent.post(`/api/ent/employees/${employee.id}/avatar?access_token=${employee.access_token}`)
+                .attach("media", EmployeeData[1].profile)
+                .then(async res=>{
+                    res.status.should.eql(403);
+                    res.body.error.should.eql(StaticStrings.InsufficientPermissionsError)
+                });
+            });
+            it("Not an image file (should fail)",async ()=>{
+                return agent.post(`/api/ent/employees/${employee.id}/avatar?access_token=${employee.access_token}`)
+                .attach("media", process.cwd() + '/test/resources/profile3.txt')
+                .then(res=>{
+                    res.status.should.eql(422);
+                    res.body.error.should.eql(StaticStrings.S3ServiceErrors.InvalidImageMimeType)
+                });
+            });
+            it("Not logged in (should fail)",async ()=>{
+                return agent.post(`/api/ent/employees/${employee.id}/avatar`)
+                .attach("media", EmployeeData[1].profile)
+                .then(res=>{
+                    res.status.should.eql(401);
+                    res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError)
+                });
+            });
+            it("Check if overwrite works (upload twice). This checks if MongoDB and S3 have been cleaned. Old entry should be gone", async()=>{                
+                return agent.post(`/api/ent/employees/${employee.id}/avatar?access_token=${employee.access_token}`)
+                .attach("media", EmployeeData[1].profile)
+                .then(async (res)=>{
+                    const image = await Media.findOne({"uploadedBy": employee.id});
+                    const key = image.key;
+                    return S3_Services.fileExistsS3(key).then(()=>{
+                        return agent.post(`/api/ent/employees/${employee.id}/avatar?access_token=${employee.access_token}`)
+                        .attach("media", process.cwd()+'/test/resources/profile2.jpg', "profile_photo")
+                        .then(async ()=>{
+                            const image2 = await Media.findOne({"uploadedBy": employee.id});
+                            const old_image = await Media.findOne({"key":key});
+                            (old_image == null || old_image == undefined).should.be.true;
+                            const key2 = image2.key;
+                            key.should.not.eql(key2);
+                        })
+                    })
+                })
+            });
+        });
+        describe("GET /api/users/:userId/avatar", ()=>{
+            let agent = chai.request.agent(app);
+            let admin, employee;
+            beforeEach( async () =>{
+                await drop_database();
+                admin = await loginAdminEmployee();
+                employee = await createEmployee(admin, getEmployeeConstructor(EmployeeData[1]))         
+            });
+            it("Get default profile",async ()=>{
+                return fetch(`http://localhost:3000/api/ent/employees/${employee.id}/avatar?access_token=${employee.access_token}`)
+                .then(res=>res.blob())
+                .then(async res=>{
+                    let buffer = await res.arrayBuffer();
+                    return fs.readFile(process.cwd()+default_profile_photo).then(data=>{
+                        buffer_equality(data,buffer).should.be.true;
+                    });
+                });
+            });
+            it("Not owner (should succeed)",async ()=>{
+                return agent.get(`/api/ent/employees/${admin.id}/avatar?access_token=${employee.access_token}`)
+                .then(res=>{
+                    res.status.should.eql(200);
+                });
+            });
+            it("Not logged in (should fail)",async ()=>{
+                return agent.get(`/api/ent/employees/${employee.id}/avatar`)
+                .then(res=>{
+                    res.status.should.eql(401);
+                    res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError)
+                });
+            });
+            it("Employee not found (should fail)",async ()=>{
+                return agent.get(`/api/ent/employees/1234/avatar?access_token=${employee.access_token}`)
+                .then(res=>{
+                    res.status.should.eql(404);
+                });
+            })
+        });
+        describe("/DELETE /api/users/:userId/avatar (A user has a non-default photo to begin each test)",()=>{
+            const agent = chai.request.agent(app);
+            let admin, employee;
+            beforeEach( async () =>{
+                await drop_database();
+                admin = await loginAdminEmployee();
+                employee = await createEmployee(admin, getEmployeeConstructor(EmployeeData[1]))
+                await agent.post(`/api/ent/employees/${employee.id}/avatar?access_token=${employee.access_token}`)
+                    .attach("media", EmployeeData[1].profile)
+            });
+            it("Delete twice (first succeeds and second fails)",async ()=>{
+                return agent.delete(`/api/ent/employees/${employee.id}/avatar?access_token=${employee.access_token}`)
+                    .then(async (res)=>{
+                        res.status.should.eql(200);
+                        res.body.message.should.eql(StaticStrings.RemoveProfilePhotoSuccess)
+                        return agent.delete(`/api/ent/employees/${employee.id}/avatar?access_token=${employee.access_token}`)
+                            .then(async (res)=>{
+                                res.status.should.eql(404);
+                                res.body.error.should.eql(StaticStrings.UserControllerErrors.ProfilePhotoNotFound)
+                    });
+                });
+            });
+            it("Delete user and see if S3 gets cleaned up correctly",async ()=>{
+                const image = await Media.findOne({'uploadedBy': employee.id});
+                const key = image.key;
+                return agent.delete(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
+                .then(async (res)=>{
+                    res.status.should.eql(200);
+                    return S3_Services.fileExistsS3(key).catch(async(err)=>{
+                        err.statusCode.should.eql(404);
+                        let image = await Media.findOne({'key':key});
+                        (image == null || image == undefined).should.be.true;
+                    })
+                });
+            });
+            it("Not owner (should fail)",async ()=>{
+                return agent.delete(`/api/ent/employees/${employee.id}?access_token=${admin.access_token}`)
+                .then(res=>{
+                    res.status.should.eql(403);
+                    res.body.error.should.eql(StaticStrings.NotOwnerError)
+                });
+            });
+            it("Not logged in (should fail)",async ()=>{
+                return agent.delete(`/api/ent/employees/${employee.id}`)
+                .then(res=>{
+                    res.status.should.eql(401);
+                    res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError)
+                });
+            });
+            it("User does not exists (should fail)",async ()=>{
+                return agent.delete(`/api/ent/employees/404?access_token=${employee.access_token}`)
+                .then(res=>{
+                    res.status.should.eql(404);
+                        res.body.error.should.eql(StaticStrings.EmployeeControllerErrors.EmployeeNotFound);
+                });
+            });
+        });
+    });
+}
+
+export default employee_avatar_test;

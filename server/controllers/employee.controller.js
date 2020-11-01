@@ -71,15 +71,15 @@ const create = async (req, res) => {
     try {
         cognito_user = CognitoServices.getCognitoUsername(session);
         let role;
-        if(authController.isAdmin(req)){
+        if(authController.isAdmin(req) && role_type == 'admin'){
             role = await RBAC.findOne({ 'role': 'admin' });
         } else {
             role = await RBAC.findOne({ 'role': role_type });
             if (!role){
                 return res.status(404).json({error: StaticStrings.RBACModelErrors.RoleNotFound});
             }
-            if (req.auth.level < role.level){
-                return res.status(401).json({error: `Requester authorization too low: Requester level ${req.auth.level} & level of attempt ${role.level}`});
+            if (req.auth.level > role.level){
+                return res.status(401).json({error: `Requester authorization insufficient: Requester level ${req.auth.level} & level of attempt ${role.level}`});
             }
         }
         const new_employee = {
@@ -152,9 +152,9 @@ const update = async (req, res) => {
         return res.status(422).json({ error: `${StaticStrings.BadRequestInvalidFields} ${invalid_fields}` })
     }
     try {
-        await CognitoServices.updateCognitoUser(req.auth.cognito_username, req.body)
         const employee = await Employee.findOneAndUpdate({ '_id': req.params.employeeId }, req.body, { new: true, runValidators: true });
         if (!employee) return res.status(500).json({ error: StaticStrings.UnknownServerError }) // possibly unable to fetch
+        await CognitoServices.updateCognitoUser(req.auth.cognito_username, req.body);
         return res.status(200).json(employee)
     } catch (err) {
         return res.status(400).json({ error: errorHandler.getErrorMessage(err) });
@@ -291,20 +291,16 @@ const removeProfilePhoto = async (req, res) => {
 const changeRole = async (req, res) => {
     const {new_role} = req.body;
     const employeeId = req.params.employeeId;
-    const employee = await Employee.findById(employeeId).populate('permissions').exec();
-    if (!employee){
-        return res.status(404).json({error: Errors.EmployeeNotFound + ` (Requested ID ${employeeId})`});
-    }
-    const employeeRole = employee.permissions;
+    const employeeRole = req.profile.permissions;
     const newRole = await RBAC.findOne({'role': new_role});
     if (!newRole){
         return res.status(400).json({error: StaticStrings.RBACModelErrors.RoleNotFound});
     }
-    if (req.auth.level < newRole.level){
-        return res.status(401).json({error: `Requester authorization too low: Requester level ${req.auth.level} & level of attempt ${newRole.level}`})
+    if (newRole.level < req.auth.level){
+        return res.status(401).json({error: `Requester authorization insufficient: Requester level ${req.auth.level} & level of attempt ${newRole.level}`})
     }
     if (employeeRole.level < req.auth.level){
-        return res.status(401).json({error: `Employee you are trying to change has higher authorization.`}) 
+        return res.status(401).json({error: `Employee you are trying to change role has higher authorization than you.`}) 
     }
     try {
         const update = {'permissions': newRole._id};

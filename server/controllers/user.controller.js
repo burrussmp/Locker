@@ -138,15 +138,15 @@ const update = async (req, res) => {
       'date_of_birth',
       'about',
     ]
-    let update_fields = Object.keys(req.body);
-    let invalid_fields = _.difference(update_fields,fields_allowed);
+    const update_fields = Object.keys(req.body);
+    const invalid_fields = _.difference(update_fields,fields_allowed);
     if(invalid_fields.length != 0){
       return res.status(422).json({error:`${StaticStrings.BadRequestInvalidFields} ${invalid_fields}`})
     }
     try {
-      await CognitoServices.updateCognitoUser(req.auth.cognito_username,req.body)
-      let user = await User.findOneAndUpdate({'_id' : req.params.userId}, req.body,{new:true,runValidators:true});
+      const user = await User.findOneAndUpdate({'_id' : req.params.userId}, req.body,{new:true,runValidators:true});
       if (!user) return res.status(500).json({error:StaticStrings.UnknownServerError}) // possibly unable to fetch
+      await CognitoServices.updateCognitoUser(req.auth.cognito_username, req.body);
       return res.status(200).json(user)
     } catch (err) {
       return res.status(400).json({error: errorHandler.getErrorMessage(err)});

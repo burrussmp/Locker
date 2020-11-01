@@ -90,7 +90,6 @@ const get_permission_array = (type) => {
             Employee_Permissions.EditContent,
             Employee_Permissions.Delete,
             Employee_Permissions.Read,
-            Employee_Permissions.ChangeRole,
         ])
     }
     if (type == 'supervisor' || type == 'admin') {

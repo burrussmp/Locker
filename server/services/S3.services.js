@@ -41,7 +41,8 @@ const s3 = new aws.S3();
  */
 const MediaFilter = (req, file, next) => {
   let path = req.route.path;
-  if (path == "/api/users/:userId/avatar" || path == "/api/ent/organizations") {
+  if (path == "/api/users/:userId/avatar" || path == "/api/ent/organizations"
+    || path == "/api/ent/employees/:employeeId/avatar") {
     if (file.mimetype === "image/jpeg" || file.mimetype === "image/png") {
       next(null, true);
     } else {
@@ -107,7 +108,7 @@ const uploadSingleMediaS3 = (req, res, meta, next) => {
       metadata: function (req, file, next) {
         next(null, {
           type: meta.type,
-          user_id: meta.uploadedBy,
+          uploader: meta.uploadedBy,
         });
       },
       key: function (req, file, next) {

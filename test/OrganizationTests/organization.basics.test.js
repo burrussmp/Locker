@@ -14,7 +14,7 @@ chai.should();
 
 const organization_basics_test = () => {
     describe("Basics Test",()=>{
-        describe("GET/POST /api/posts/:postId/comments",()=>{
+        describe("GET/POST /api/organizations`",()=>{
             let agent = chai.request.agent(app);
             before (async()=>{
                 await drop_database();

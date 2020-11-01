@@ -20,6 +20,45 @@ const createUser = async (data) => {
     }).then(res=>res.json());
 }
 
+const createEmployee = async (admin, data) => {
+    return new Promise((resolve, reject) => {
+            fetch(`http://localhost:3000/api/ent/employees?access_token=${admin.access_token}`,{
+            'method' : 'POST',
+            'headers' : {
+                'Content-Type' : 'application/json'
+            },
+            body : JSON.stringify(data)
+        }).then(res=>res.json())
+        .then(data=>{
+            resolve({
+                id: data._id,
+                access_token: data.access_token
+            })
+        });
+    });
+}
+
+const loginAdminEmployee = async () => {
+    return new Promise((resolve, reject) => {
+        fetch('http://localhost:3000/auth/ent/login',{
+        'method' : 'POST',
+        'headers' : {
+            'Content-Type' : 'application/json'
+        },
+        body : JSON.stringify({
+            login: process.env.ADMIN_EMAIL,
+            password: process.env.ADMIN_PASSWORD
+        })
+        }).then(res=>res.json())
+        .then(data => {
+            resolve({
+                access_token: data.access_token,
+                id: data._id
+            })
+        });
+    });
+}
+
 const getAccessToken = async (data) => {
     let login_info = {
         'login' : data.username,
@@ -61,5 +100,7 @@ export {
     drop_database,
     buffer_equality,
     createUser,
-    getAccessToken
+    createEmployee,
+    getAccessToken,
+    loginAdminEmployee
 }

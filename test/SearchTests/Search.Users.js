@@ -68,7 +68,6 @@ const auth_password_tests = () => {
           .post(`/api/search/users?access_token=${userToken0}`)
           .send({ search: UserData[0].username })
           .then(async (res) => {
-            console.log(res.body)
             res.status.should.eql(403);
           });
       });

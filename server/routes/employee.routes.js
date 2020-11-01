@@ -18,8 +18,8 @@ router.param('employeeId', employeeCtrl.employeeByID)
 */
 
 router.route('/api/ent/employees')
-  .get(permission.Authorize([]), employeeCtrl.list)
-  .post(permission.Authorize([]),employeeCtrl.create);
+  .get(permission.Authorize([EmployeePermissions.Read]), employeeCtrl.list)
+  .post(permission.Authorize([EmployeePermissions.Create]),employeeCtrl.create);
 
 router.route('/api/ent/employees/:employeeId')
   .get(permission.Authorize([EmployeePermissions.Read]), employeeCtrl.read)
@@ -32,7 +32,7 @@ router.route('/api/ent/employees/:employeeId/avatar')
   .delete(permission.Authorize([EmployeePermissions.Delete]),authCtrl.requireOwnership,employeeCtrl.removeProfilePhoto);
 
 router.route('/api/ent/employees/:employeeId/password')
-  .put(permission.Authorize([EmployeePermissions.ChangePassword]),authCtrl.requireOwnership,employeeCtrl.changePassword);
+  .put(permission.Authorize([EmployeePermissions.EditContent]),authCtrl.requireOwnership,employeeCtrl.changePassword);
 
 router.route('/api/ent/employees/:employeeId/role')
   .put(permission.Authorize([EmployeePermissions.ChangeRole]), employeeCtrl.changeRole);

@@ -62,8 +62,8 @@ const avatar_test = () => {
                         let key = image.key;
                         return S3_Services.fileExistsS3(key).then(data=>{
                             data.Metadata.type.should.eql("Avatar");
-                            data.Metadata.user_id.should.eql(id);
-                            data.Metadata.user_id.should.eql(user._id.toString());
+                            data.Metadata.uploader.should.eql(id);
+                            data.Metadata.uploader.should.eql(user._id.toString());
                             return S3_Services.deleteMediaS3(key).then(async ()=> {
                                 image = await Media.findOne({"key":key});
                                 (image == undefined || image == null).should.be.true;
@@ -91,8 +91,8 @@ const avatar_test = () => {
                     let key = image.key;
                     return S3_Services.fileExistsS3(key).then(data=>{
                         data.Metadata.type.should.eql("Avatar");
-                        data.Metadata.user_id.should.eql(id);
-                        data.Metadata.user_id.should.eql(user._id.toString());
+                        data.Metadata.uploader.should.eql(id);
+                        data.Metadata.uploader.should.eql(user._id.toString());
                         return S3_Services.deleteMediaS3(key).then(async ()=> {
                             image = await Media.findOne({"key":key});
                             (image == undefined || image == null).should.be.true;
