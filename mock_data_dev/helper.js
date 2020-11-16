@@ -1,9 +1,9 @@
-"use strict";
+/* eslint-disable camelcase */
+'use strict';
 
-import User from "../server/models/user.model";
-import Post from "../server/models/post.model";
-import Media from "../server/models/media.model";
-import mongoose from "mongoose";
+import User from '../server/models/user.model';
+import Post from '../server/models/post.model';
+import mongoose from 'mongoose';
 
 const filter_user_signup = (data) => {
   return {
@@ -53,11 +53,10 @@ const drop_database = async () => {
 
 const update_fuzzy = async (attrs) => {
   for await (const doc of User.find()) {
-    const obj = attrs.reduce((acc, attr) => ({ ...acc, [attr]: doc[attr] }), {});
+    const obj = attrs.reduce((acc, attr) => ({...acc, [attr]: doc[attr]}), {});
     await User.findByIdAndUpdate(doc._id, obj);
   }
 };
-
 
 
 exports.filter_user_signup = filter_user_signup;
@@ -65,4 +64,4 @@ exports.filter_content_post_create = filter_content_post_create;
 exports.filter_comment_create = filter_comment_create;
 exports.filter_reply_create = filter_reply_create;
 exports.drop_database = drop_database;
-exports.update_fuzzy = update_fuzzy; 
+exports.update_fuzzy = update_fuzzy;

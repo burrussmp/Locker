@@ -1,17 +1,17 @@
-const fetch = require("node-fetch");
-const FormData = require("form-data");
-const fs = require("fs");
+const fetch = require('node-fetch');
+const FormData = require('form-data');
+const fs = require('fs');
 
-const IP = "localhost";
+const IP = 'localhost';
 const PORT = 3000;
 
 const SERVER = `http://${IP}:${PORT}`;
 
 const getHeaders = async (token) => {
   return {
-    Accept: "application/json",
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
   };
 };
 
@@ -19,16 +19,16 @@ const handleError = async (res) => {
   const status = res.status;
   const err = await res.json();
   return new Error(
-    JSON.stringify({
-      status: status,
-      message: err,
-    })
+      JSON.stringify({
+        status: status,
+        message: err,
+      }),
   );
 };
 
 const SignUp = async (data) => {
   const res = await fetch(`${SERVER}/api/users`, {
-    method: "POST",
+    method: 'POST',
     headers: await getHeaders(),
     body: JSON.stringify(data),
   });
@@ -45,7 +45,7 @@ const SignUp = async (data) => {
 
 const Follow = async (userId, token) => {
   const res = await fetch(`${SERVER}/api/users/${userId}/follow`, {
-    method: "PUT",
+    method: 'PUT',
     headers: await getHeaders(token),
   });
   if (res.ok) {
@@ -57,17 +57,17 @@ const Follow = async (userId, token) => {
 };
 
 const CreateContentPost = async (data, token) => {
-  let form = new FormData();
-  form.append("media", fs.createReadStream(data.media));
-  form.append("price", data.price);
-  form.append("caption", data.caption);
-  form.append("tags", data.tags);
+  const form = new FormData();
+  form.append('media', fs.createReadStream(data.media));
+  form.append('price', data.price);
+  form.append('caption', data.caption);
+  form.append('tags', data.tags);
   const res = await fetch(
-    `${SERVER}/api/posts?type=ContentPost&access_token=${token}`,
-    {
-      method: "POST",
-      body: form,
-    }
+      `${SERVER}/api/posts?type=ContentPost&access_token=${token}`,
+      {
+        method: 'POST',
+        body: form,
+      },
   );
   if (res.ok) {
     const result = await res.json();
@@ -78,14 +78,14 @@ const CreateContentPost = async (data, token) => {
 };
 
 const UpdateProfilePhoto = async (userId, token, imagePath) => {
-  let form = new FormData();
-  form.append("media", fs.createReadStream(imagePath));
+  const form = new FormData();
+  form.append('media', fs.createReadStream(imagePath));
   const res = await fetch(
-    `${SERVER}/api/users/${userId}/avatar?access_token=${token}`,
-    {
-      method: "POST",
-      body: form,
-    }
+      `${SERVER}/api/users/${userId}/avatar?access_token=${token}`,
+      {
+        method: 'POST',
+        body: form,
+      },
   );
   if (res.ok) {
     const result = await res.json();
@@ -97,7 +97,7 @@ const UpdateProfilePhoto = async (userId, token, imagePath) => {
 
 const CreateComment = async (data, postId, token) => {
   const res = await fetch(`${SERVER}/api/${postId}/comments`, {
-    method: "POST",
+    method: 'POST',
     headers: await getHeaders(token),
     body: JSON.stringify(data),
   });
@@ -111,7 +111,7 @@ const CreateComment = async (data, postId, token) => {
 
 const CreateReply = async (data, commentId, token) => {
   const res = await fetch(`${SERVER}/api/${commentId}/replies`, {
-    method: "POST",
+    method: 'POST',
     headers: await getHeaders(token),
     body: JSON.stringify(data),
   });

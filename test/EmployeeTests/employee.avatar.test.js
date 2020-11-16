@@ -10,7 +10,7 @@ import Employee from '../../server/models/employee.model';
 import RBAC from '../../server/models/rbac.model';
 import Media from '../../server/models/media.model';
 import StaticStrings from '../../config/StaticStrings';
-import S3_Services from '../../server/services/S3.services';
+import s3Services from '../../server/services/S3.services';
 
 // Configure chai
 chai.use(chaiHttp);
@@ -41,14 +41,14 @@ const employee_avatar_test = () => {
                     image.mimetype.includes('image').should.be.true;
                     image.uploadedBy.toString().should.eql(employee.id);
                     let key = image.key;
-                    return S3_Services.fileExistsS3(key).then(data=>{
+                    return s3Services.fileExistsS3(key).then(data=>{
                         data.Metadata.type.should.eql("Avatar");
                         data.Metadata.uploader.should.eql(employee.id);
                         data.Metadata.uploader.should.eql(emp._id.toString());
-                        return S3_Services.deleteMediaS3(key).then(async ()=> {
+                        return s3Services.deleteMediaS3(key).then(async ()=> {
                             image = await Media.findOne({"key":key});
                             (image == undefined || image == null).should.be.true;
-                            return S3_Services.fileExistsS3(key).catch(err=>{
+                            return s3Services.fileExistsS3(key).catch(err=>{
                                 err.should.exist;
                             })
                         })
@@ -63,7 +63,7 @@ const employee_avatar_test = () => {
                     const image = await Media.findOne({"uploadedBy": employee.id});
                     const key = image.key;
                     return agent.delete(`/api/users/${employee.id}?access_token=${employee.access_token}`).then(res=>{
-                        return S3_Services.fileExistsS3(key).catch(err=>{
+                        return s3Services.fileExistsS3(key).catch(err=>{
                             (err==null || err==undefined).should.be.false;
                             err.statusCode.should.eql(404)
                         })
@@ -126,7 +126,7 @@ const employee_avatar_test = () => {
                 .then(async (res)=>{
                     const image = await Media.findOne({"uploadedBy": employee.id});
                     const key = image.key;
-                    return S3_Services.fileExistsS3(key).then(()=>{
+                    return s3Services.fileExistsS3(key).then(()=>{
                         return agent.post(`/api/ent/employees/${employee.id}/avatar?access_token=${employee.access_token}`)
                         .attach("media", process.cwd()+'/test/resources/profile2.jpg', "profile_photo")
                         .then(async ()=>{
@@ -206,7 +206,7 @@ const employee_avatar_test = () => {
                 return agent.delete(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
                 .then(async (res)=>{
                     res.status.should.eql(200);
-                    return S3_Services.fileExistsS3(key).catch(async(err)=>{
+                    return s3Services.fileExistsS3(key).catch(async(err)=>{
                         err.statusCode.should.eql(404);
                         let image = await Media.findOne({'key':key});
                         (image == null || image == undefined).should.be.true;

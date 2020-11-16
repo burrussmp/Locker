@@ -1,7 +1,8 @@
 Immediate
 -----------------------------------------------------------------
 1. Finish the employee changePermission role
-
+2. Add code to only allow 1 admin
+3. Add code to allow subadmin permissions. Same as admin just not admin (avoid loophole)
 
 Short term
 -----------------------------------------------------------------

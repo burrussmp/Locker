@@ -6,7 +6,7 @@ import {UserData} from '../../development/user.data'
 import {drop_database,createUser} from  '../helper';
 import User from '../../server/models/user.model';
 import StaticStrings from '../../config/StaticStrings';
-import S3_Services from '../../server/services/S3.services';
+import s3Services from '../../server/services/S3.services';
 
 // Configure chai
 chai.use(chaiHttp);

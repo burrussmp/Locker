@@ -1,17 +1,19 @@
-"use strict";
+/* eslint-disable no-invalid-this */
+/* eslint-disable max-len */
+'use strict';
 
-import mongoose from 'mongoose'
+import mongoose from 'mongoose';
 import StaticStrings from '../../config/StaticStrings';
 
-const ReactionTypes = ['like','love','laugh','surprise','mad','sad']
+const ReactionTypes = ['like', 'love', 'laugh', 'surprise', 'mad', 'sad'];
 const ReactionSchema = new mongoose.Schema({
   type: {
-    type : String,
+    type: String,
     trim: true,
     required: true,
     enum: {
       values: ReactionTypes,
-      message: StaticStrings.PostModelErrors.InvalidReaction
+      message: StaticStrings.PostModelErrors.InvalidReaction,
     },
   },
   postedBy: {
@@ -19,26 +21,28 @@ const ReactionSchema = new mongoose.Schema({
     required: true,
     ref: 'User',
   },
-},{
-  timestamps : {
-    createdAt:'createdAt',
-    updatedAt: 'updatedAt'
-  }
+}, {
+  timestamps: {
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+  },
 });
 
-const tagLimit = (val) => {return val.length <=7 };
+const tagLimit = (val) => {
+  return val.length <=7;
+};
 
 const PostSchema = new mongoose.Schema({
-  type : {
+  type: {
     type: String,
     trim: true,
     required: StaticStrings.PostModelErrors.TypeRequired,
-    enum : {
-      values:['ContentPost'],
-      message: StaticStrings.PostModelErrors.IncorrectType
-    }
+    enum: {
+      values: ['ContentPost'],
+      message: StaticStrings.PostModelErrors.IncorrectType,
+    },
   },
-  content :{
+  content: {
     type: mongoose.Schema.Types.ObjectId,
     refPath: 'type',
     required: StaticStrings.PostModelErrors.MissingContent,
@@ -46,43 +50,43 @@ const PostSchema = new mongoose.Schema({
   postedBy: {
     type: mongoose.Schema.ObjectId,
     ref: 'User',
-    required: StaticStrings.PostModelErrors.MissingPoster
+    required: StaticStrings.PostModelErrors.MissingPoster,
   },
   caption: {
     type: String,
     trim: true,
-    default : "",
-    maxlength: [300,StaticStrings.PostModelErrors.MaxCaptionSizeError]
+    default: '',
+    maxlength: [300, StaticStrings.PostModelErrors.MaxCaptionSizeError],
   },
   reactions: [ReactionSchema],
-  comments: [{ type: mongoose.Schema.ObjectId, ref: 'Comment'}],
+  comments: [{type: mongoose.Schema.ObjectId, ref: 'Comment'}],
   tags: {
     type: [{
-      type : String,
+      type: String,
       trim: true,
       lowercase: true,
-      maxlength: [20,StaticStrings.PostModelErrors.MaxLengthTag],
-      match: [/^$|^[a-zA-Z]+$/ , StaticStrings.PostModelErrors.TagMustBeAlphabetical]
-  }],
-  default: [],
-  validate: [tagLimit,StaticStrings.PostModelErrors.MaximumNumberOfTags]
-},
-},{
-  timestamps : {
-    createdAt:'createdAt',
-    updatedAt: 'updatedAt'
-  }
-})
+      maxlength: [20, StaticStrings.PostModelErrors.MaxLengthTag],
+      match: [/^$|^[a-zA-Z]+$/, StaticStrings.PostModelErrors.TagMustBeAlphabetical],
+    }],
+    default: [],
+    validate: [tagLimit, StaticStrings.PostModelErrors.MaximumNumberOfTags],
+  },
+}, {
+  timestamps: {
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+  },
+});
 
 // cleanup
-PostSchema.pre("deleteOne",{document: true,query:false },async function(){
-  let content = await mongoose.model(this.type).findById(this.content); // delegate cleaning to the post
-  if(content){
+PostSchema.pre('deleteOne', {document: true, query: false}, async function() {
+  const content = await mongoose.model(this.type).findById(this.content); // delegate cleaning to the post
+  if (content) {
     await content.deleteOne();
-    for (let comment of this.comments){
+    for (const comment of this.comments) {
       await mongoose.model('Comment').findByIdAndRemove(comment._id);
     }
   }
 });
 
-export default mongoose.model('Post', PostSchema)
+export default mongoose.model('Post', PostSchema);

@@ -1,7 +1,7 @@
 "use strict";
 
 // imports
-import S3_Services from '../S3.services';
+import s3Services from '../S3.services';
 import ContentPost from '../../models/posts/content.post.model';
 import Post from '../../models/post.model';
 import errorHandler from '../dbErrorHandler'
@@ -34,7 +34,7 @@ const createContentPost = async (req,res) => {
         'uploadedBy' : req.auth._id,
         'uploadedByType': 'employee'
     };
-    S3_Services.uploadSingleMediaS3(req,res,media_meta, async (req,res,image)=>{
+    s3Services.uploadSingleMediaS3(req,res,media_meta, async (req,res,image)=>{
         let contentPost;
         try {
             contentPost = new ContentPost({
@@ -43,7 +43,7 @@ const createContentPost = async (req,res) => {
             })
             contentPost = await contentPost.save();
         } catch(err) {
-            return S3_Services.deleteMediaS3(req.file.key).then(()=>{
+            return s3Services.deleteMediaS3(req.file.key).then(()=>{
                 return res.status(400).json({error:errorHandler.getErrorMessage(err)});
             }).catch((err2)=>{
                 return res.status(500).json({error:"Posting Server Error: Unable to create content for post and failed to clean s3 "
@@ -63,7 +63,7 @@ const createContentPost = async (req,res) => {
             return res.status(200).json({'_id':newPost._id});
         } catch(err) {
             await contentPost.deleteOne();
-            return S3_Services.deleteMediaS3(req.file.key).then(()=>{
+            return s3Services.deleteMediaS3(req.file.key).then(()=>{
                 return res.status(400).json({error:errorHandler.getErrorMessage(err)});
             }).catch((err2)=>{
                 return res.status(500).json({error:"Posting Server Error: Unable to clean post, cleaned created content, but failed to clean s3"

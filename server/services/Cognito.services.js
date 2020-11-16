@@ -1,15 +1,15 @@
-"use strict";
-//imports
-const AmazonCognitoIdentity = require("amazon-cognito-identity-js");
-const { v4: uuid4 } = require("uuid");
-global.fetch = require("node-fetch");
+'use strict';
+// imports
+const AmazonCognitoIdentity = require('amazon-cognito-identity-js');
+const {v4: uuid4} = require('uuid');
+global.fetch = require('node-fetch');
 
-import jwt from "jsonwebtoken";
-import jwkToPem from "jwk-to-pem";
-import aws from "aws-sdk";
-import config from "../../config/config";
-import validators from "../services/validators";
-import StaticStrings from "../../config/StaticStrings";
+import jwt from 'jsonwebtoken';
+import jwkToPem from 'jwk-to-pem';
+import aws from 'aws-sdk';
+import config from '../../config/config';
+import validators from '../services/validators';
+import StaticStrings from '../../config/StaticStrings';
 
 // Configure AWS
 aws.config.update({
@@ -21,45 +21,45 @@ aws.config.update({
 const generateCognitoAPI = (type) => {
   // Configure User Pool
   const CognitoServiceProvider = new aws.CognitoIdentityServiceProvider();
-  let UserPoolConfig, UserPoolRegion, UserPool;
+  let UserPoolConfig; let UserPoolRegion; let UserPool;
   let __cognito_can_update__;
-  if (type == 'user'){
+  if (type == 'user') {
     UserPoolConfig = {
       UserPoolId: config.aws_config.aws_user_pool_id,
       ClientId: config.aws_config.aws_user_pool_client_id,
     };
     UserPoolRegion = config.aws_config.aws_user_pool_region;
     UserPool = new AmazonCognitoIdentity.CognitoUserPool(UserPoolConfig);
-    __cognito_can_update__ = ["username", "email", "phone_number"];
-  } else if (type == 'employee'){
+    __cognito_can_update__ = ['username', 'email', 'phone_number'];
+  } else if (type == 'employee') {
     UserPoolConfig = {
       UserPoolId: config.aws_config.aws_employee_pool_id,
       ClientId: config.aws_config.aws_employee_pool_client_id,
     };
     UserPoolRegion = config.aws_config.aws_employee_pool_region;
     UserPool = new AmazonCognitoIdentity.CognitoUserPool(UserPoolConfig);
-    __cognito_can_update__ = ["email"];
+    __cognito_can_update__ = ['email'];
   }
 
   // get the public key to verify JWT token signatures
-  let pems = {};
+  const pems = {};
   fetch(
-    `https://cognito-idp.${UserPoolRegion}.amazonaws.com/${UserPoolConfig.UserPoolId}/.well-known/jwks.json`
+      `https://cognito-idp.${UserPoolRegion}.amazonaws.com/${UserPoolConfig.UserPoolId}/.well-known/jwks.json`,
   )
-    .then((res) => res.json())
-    .then((body) => {
-      let keys = body["keys"];
-      for (let i = 0; i < keys.length; i++) {
-        //Convert each key to PEM
-        let key_id = keys[i].kid;
-        let modulus = keys[i].n;
-        let exponent = keys[i].e;
-        let key_type = keys[i].kty;
-        let jwk = { kty: key_type, n: modulus, e: exponent };
-        let pem = jwkToPem(jwk);
-        pems[key_id] = pem;
-      }
-    });
+      .then((res) => res.json())
+      .then((body) => {
+        const keys = body['keys'];
+        for (let i = 0; i < keys.length; i++) {
+        // Convert each key to PEM
+          const key_id = keys[i].kid;
+          const modulus = keys[i].n;
+          const exponent = keys[i].e;
+          const key_type = keys[i].kty;
+          const jwk = {kty: key_type, n: modulus, e: exponent};
+          const pem = jwkToPem(jwk);
+          pems[key_id] = pem;
+        }
+      });
 
   /**
    * @desc Verifies a JWT token according to public signature and returns a promise.
@@ -69,18 +69,18 @@ const generateCognitoAPI = (type) => {
    */
   const verifyToken = (token, tokenType) => {
     return new Promise((resolve, reject) => {
-      let decodedJwt = jwt.decode(token, { complete: true });
+      const decodedJwt = jwt.decode(token, {complete: true});
       if (!decodedJwt) {
         reject(`Not a valid JWT ${tokenType} token. Unable to decode`);
       }
-      let kid = decodedJwt.header.kid;
-      let pem = pems[kid];
+      const kid = decodedJwt.header.kid;
+      const pem = pems[kid];
       if (!pem) {
         reject(
-          `The local key ID (kid) of ${tokenType} does not match public kid`
+            `The local key ID (kid) of ${tokenType} does not match public kid`,
         );
       }
-      jwt.verify(token, pem, function (err, payload) {
+      jwt.verify(token, pem, function(err, payload) {
         if (err) {
           console.log(err);
           reject(`Public signature does not match ${tokenType} token`);
@@ -103,10 +103,10 @@ const generateCognitoAPI = (type) => {
       Pool: UserPool,
     });
     const authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails(
-      {
-        Username: cognitoUsername,
-        Password: password,
-      }
+        {
+          Username: cognitoUsername,
+          Password: password,
+        },
     );
     return new Promise((resolve, reject) => {
       cognitoUser.authenticateUser(authenticationDetails, {
@@ -131,10 +131,10 @@ const generateCognitoAPI = (type) => {
    * @return an Object with idToken, accessToken, refreshToken keys and payload key with id and access sub-keys
    */
   const parseSession = (session) => {
-    let idToken = session.getIdToken();
-    let accessToken = session.getAccessToken();
-    let refreshToken = session.getRefreshToken();
-    let payloads = {
+    const idToken = session.getIdToken();
+    const accessToken = session.getAccessToken();
+    const refreshToken = session.getRefreshToken();
+    const payloads = {
       id: idToken.decodePayload(),
       access: accessToken.decodePayload(),
     };
@@ -151,8 +151,8 @@ const generateCognitoAPI = (type) => {
    * @desc Get the Cognito username from a parsed session object
    */
   const getCognitoUsername = (session) => {
-    let parsed_session = parseSession(session);
-    return parsed_session.payloads.id["cognito:username"];
+    const parsed_session = parseSession(session);
+    return parsed_session.payloads.id['cognito:username'];
   };
 
   /**
@@ -162,11 +162,11 @@ const generateCognitoAPI = (type) => {
    */
   const verifySession = async (session) => {
     try {
-      let parsedSession = parseSession(session);
-      let idToken = parsedSession.idToken;
-      let accessToken = parsedSession.accessToken;
-      await verifyToken(idToken, "id");
-      await verifyToken(accessToken, "access");
+      const parsedSession = parseSession(session);
+      const idToken = parsedSession.idToken;
+      const accessToken = parsedSession.accessToken;
+      await verifyToken(idToken, 'id');
+      await verifyToken(accessToken, 'access');
     } catch (err) {
       throw err;
     }
@@ -181,11 +181,11 @@ const generateCognitoAPI = (type) => {
   const deleteCognitoUser = async (cognitoUsername) => {
     return new Promise((resolve, reject) => {
       CognitoServiceProvider.adminDeleteUser(
-        {
-          UserPoolId: UserPoolConfig.UserPoolId,
-          Username: cognitoUsername,
-        },
-        (err, result) => (err ? reject(err) : resolve(result))
+          {
+            UserPoolId: UserPoolConfig.UserPoolId,
+            Username: cognitoUsername,
+          },
+          (err, result) => (err ? reject(err) : resolve(result)),
       );
     });
   };
@@ -198,13 +198,13 @@ const generateCognitoAPI = (type) => {
    */
   const updateCognitoUser = async (cognitoUsername, update) => {
     const values = Object.values(update);
-    let keys = Object.keys(update);
-    let attributeList = [];
+    const keys = Object.keys(update);
+    const attributeList = [];
     for (let i = 0; i < values.length; ++i) {
       if (__cognito_can_update__.includes(keys[i])) {
-        if (keys[i] == "username") {
-          keys[i] = "preferred_username";
-          let username_error = validators.isValidUsername(values[i]);
+        if (keys[i] == 'username') {
+          keys[i] = 'preferred_username';
+          const username_error = validators.isValidUsername(values[i]);
           if (username_error) {
             throw username_error;
           }
@@ -222,8 +222,8 @@ const generateCognitoAPI = (type) => {
     };
     return new Promise((resolve, reject) => {
       CognitoServiceProvider.adminUpdateUserAttributes(
-        UpdateAttributes,
-        (err, result) => (err ? reject(err) : resolve(result))
+          UpdateAttributes,
+          (err, result) => (err ? reject(err) : resolve(result)),
       );
     });
   };
@@ -242,58 +242,58 @@ const generateCognitoAPI = (type) => {
     } else if (!phone_number) {
       throw StaticStrings.UserModelErrors.PhoneNumberRequired;
     }
-    let password_error = validators.isValidPassword(password);
+    const password_error = validators.isValidPassword(password);
     if (password_error) {
       throw password_error;
     }
-    let username_error = validators.isValidUsername(username);
+    const username_error = validators.isValidUsername(username);
     if (username_error) {
       throw username_error;
     }
-    let attributeList = [];
+    const attributeList = [];
     attributeList.push(
-      new AmazonCognitoIdentity.CognitoUserAttribute({
-        Name: "email",
-        Value: email,
-      })
+        new AmazonCognitoIdentity.CognitoUserAttribute({
+          Name: 'email',
+          Value: email,
+        }),
     );
     attributeList.push(
-      new AmazonCognitoIdentity.CognitoUserAttribute({
-        Name: "phone_number",
-        Value: phone_number,
-      })
+        new AmazonCognitoIdentity.CognitoUserAttribute({
+          Name: 'phone_number',
+          Value: phone_number,
+        }),
     );
     return new Promise((resolve, reject) => {
-      let cognitoUsername = uuid4();
+      const cognitoUsername = uuid4();
       UserPool.signUp(
-        cognitoUsername,
-        password,
-        attributeList,
-        null,
-        (err, user) => {
-          if (err) {
-            reject(err);
-          } else {
-            updateCognitoUser(cognitoUsername, {
-              username: username,
-            })
-              .then(() => {
-                return getCognitoSession(cognitoUsername, password);
+          cognitoUsername,
+          password,
+          attributeList,
+          null,
+          (err, user) => {
+            if (err) {
+              reject(err);
+            } else {
+              updateCognitoUser(cognitoUsername, {
+                username: username,
               })
-              .then((token) => {
-                resolve(token);
-              })
-              .catch(async (err) => {
-                await deleteCognitoUser(cognitoUsername);
-                reject(err);
-              });
-          }
-        }
+                  .then(() => {
+                    return getCognitoSession(cognitoUsername, password);
+                  })
+                  .then((token) => {
+                    resolve(token);
+                  })
+                  .catch(async (err) => {
+                    await deleteCognitoUser(cognitoUsername);
+                    reject(err);
+                  });
+            }
+          },
       );
     });
   };
 
-/**
+  /**
    * @desc Create a new employee in Cognito Pool
    * @param String : email : A valid email address
    * @param String : password : the unencrypted password
@@ -303,28 +303,28 @@ const generateCognitoAPI = (type) => {
     if (!email) {
       throw StaticStrings.UserModelErrors.EmailRequired;
     }
-    let password_error = validators.isValidPassword(password);
+    const password_error = validators.isValidPassword(password);
     if (password_error) {
       throw password_error;
     }
-    let attributeList = [];
+    const attributeList = [];
     attributeList.push(
-      new AmazonCognitoIdentity.CognitoUserAttribute({
-        Name: "email",
-        Value: email,
-      })
+        new AmazonCognitoIdentity.CognitoUserAttribute({
+          Name: 'email',
+          Value: email,
+        }),
     );
     return new Promise((resolve, reject) => {
-      let cognitoUsername = uuid4();
+      const cognitoUsername = uuid4();
       UserPool.signUp(
-        cognitoUsername,
-        password,
-        attributeList,
-        null,
-        (err, user) => {
-          if (err) {
-            reject(err);
-          } else {
+          cognitoUsername,
+          password,
+          attributeList,
+          null,
+          (err, user) => {
+            if (err) {
+              reject(err);
+            } else {
               return getCognitoSession(cognitoUsername, password).then((token) => {
                 resolve(token);
               }).catch(async (err) => {
@@ -332,20 +332,20 @@ const generateCognitoAPI = (type) => {
                 reject(err);
               });
             }
-        }
+          },
       );
     });
   };
 
   const getSignup = (type) => {
-    if (type == 'user'){
+    if (type == 'user') {
       return signup_user;
-    } else if (type == 'employee'){
+    } else if (type == 'employee') {
       return signup_employee;
     } else {
       throw new Error(`Cognito pool type ${type} does not exist`);
     }
-  }
+  };
 
   /**
    * @desc Refreshes a session token
@@ -358,12 +358,12 @@ const generateCognitoAPI = (type) => {
         const RefreshToken = new AmazonCognitoIdentity.CognitoRefreshToken({
           RefreshToken: prevSession.refreshToken,
         });
-        let cognitoUser = new AmazonCognitoIdentity.CognitoUser({
+        const cognitoUser = new AmazonCognitoIdentity.CognitoUser({
           Username: prevSession.payloads.access.username,
           Pool: UserPool,
         });
         cognitoUser.refreshSession(RefreshToken, (err, session) =>
-          err ? reject(err) : resolve(session)
+          err ? reject(err) : resolve(session),
         );
       } catch (err) {
         reject(err);
@@ -420,12 +420,12 @@ const generateCognitoAPI = (type) => {
    */
   const getCognitoSession = async (username, password) => {
     try {
-      let { session, newPasswordRequired } = await getAuthenticateUserAsync(
-        username,
-        password
+      const {session, newPasswordRequired} = await getAuthenticateUserAsync(
+          username,
+          password,
       );
       if (newPasswordRequired) {
-        throw "New password required";
+        throw 'New password required';
       }
       return session;
     } catch (err) {
@@ -441,7 +441,7 @@ const generateCognitoAPI = (type) => {
    */
   const login = async (username, password) => {
     try {
-      let session = await getCognitoSession(username, password);
+      const session = await getCognitoSession(username, password);
       verifySession(session);
       return session;
     } catch (err) {
@@ -456,8 +456,8 @@ const generateCognitoAPI = (type) => {
    * @return Promise that resolves if user is confirmed
    */
   const confirmUser = (session, code) => {
-    let username = getCognitoUsername(session);
-    let params = {
+    const username = getCognitoUsername(session);
+    const params = {
       ClientId: UserPoolConfig.ClientId,
       Username: username,
       ConfirmationCode: code,
@@ -476,7 +476,7 @@ const generateCognitoAPI = (type) => {
    * @return Promise that resolves if user is confirmed
    */
   const forgotPassword = (cognito_username) => {
-    let params = {
+    const params = {
       ClientId: UserPoolConfig.ClientId,
       Username: cognito_username,
     };
@@ -495,7 +495,7 @@ const generateCognitoAPI = (type) => {
    * @return Promise that resolves if password forgot has been confirmed
    */
   const confirmForgotPassword = (cognito_username, password, code) => {
-    let params = {
+    const params = {
       ClientId: UserPoolConfig.ClientId,
       Username: cognito_username,
       ConfirmationCode: code,
@@ -516,7 +516,7 @@ const generateCognitoAPI = (type) => {
    * @return Promise that resolves if the password has been changed
    */
   const changePassword = async (access_token, old_password, password) => {
-    let password_error = validators.isValidPassword(password);
+    const password_error = validators.isValidPassword(password);
     if (password_error) {
       throw password_error;
     }
@@ -525,7 +525,7 @@ const generateCognitoAPI = (type) => {
     } catch (err) {
       throw err;
     }
-    let params = {
+    const params = {
       AccessToken: access_token,
       PreviousPassword: old_password,
       ProposedPassword: password,
@@ -552,15 +552,15 @@ const generateCognitoAPI = (type) => {
     confirmUser: confirmUser,
     refreshSession: refreshSession,
     getUser: getUser,
-  }
-}
+  };
+};
 
 const UserCognitoPool = generateCognitoAPI('user');
 const EmployeeCognitoPool = generateCognitoAPI('employee');
 
 export default {
   UserCognitoPool,
-  EmployeeCognitoPool
+  EmployeeCognitoPool,
 };
 
 // (async () => {

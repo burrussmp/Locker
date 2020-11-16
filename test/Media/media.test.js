@@ -8,7 +8,7 @@ import Media from "../../server/models/media.model";
 import Post from "../../server/models/post.model";
 import StaticStrings from "../../config/StaticStrings";
 const fs = require("fs").promises;
-import S3_Services from "../../server/services/S3.services";
+import s3Services from "../../server/services/S3.services";
 import fetch from "node-fetch";
 import { drop_database, buffer_equality, createUser } from "../helper";
 import _ from "lodash";
@@ -61,8 +61,8 @@ const media_test_basics = () => {
           let media = await Media.findOne({ key: Key });
           media.resized_keys.length.should.eql(1);
           let resized_media = media.resized_keys[0];
-          await S3_Services.fileExistsS3(Key);
-          await S3_Services.fileExistsS3(resized_media);
+          await s3Services.fileExistsS3(Key);
+          await s3Services.fileExistsS3(resized_media);
         });
       });
       it("Adjust the size of the profile to medium for /api/users/:userId/avatar", async () => {
@@ -99,7 +99,7 @@ const media_test_basics = () => {
           res.status.should.eql(200);
           let media = await Media.findOne({ key: Key });
           media.resized_keys.length.should.eql(4);
-          let listS3 = await S3_Services.listObjectsS3();
+          let listS3 = await s3Services.listObjectsS3();
           listS3.Contents.length.should.eql(5);
         });
       });
@@ -111,7 +111,7 @@ const media_test_basics = () => {
           `http://localhost:3000/api/users/${userId0}/avatar?access_token=${userToken0}`
         ).then(async (res) => {
           res.status.should.eql(200);
-          let listS3 = await S3_Services.listObjectsS3();
+          let listS3 = await s3Services.listObjectsS3();
           listS3.Contents.length.should.eql(1);
           let medias = await Media.find();
           medias.length.should.eql(1);
@@ -138,7 +138,7 @@ const media_test_basics = () => {
           body.error.should.eql(
             StaticStrings.MediaControllerErrors.SizeQueryParameterInvalid
           );
-          let listS3 = await S3_Services.listObjectsS3();
+          let listS3 = await s3Services.listObjectsS3();
           listS3.Contents.length.should.eql(1);
         });
       });
@@ -150,8 +150,8 @@ const media_test_basics = () => {
           let media = await Media.findOne({ key: Key });
           media.resized_keys.length.should.eql(1);
           let resized_media = media.resized_keys[0];
-          await S3_Services.fileExistsS3(Key);
-          await S3_Services.fileExistsS3(resized_media);
+          await s3Services.fileExistsS3(Key);
+          await s3Services.fileExistsS3(resized_media);
         });
       });
       it("Adjust the size of the profile to medium for /api/media/", async () => {
@@ -240,7 +240,7 @@ const media_test_basics = () => {
           body.error.should.eql(
             StaticStrings.MediaControllerErrors.CannotResizeNotImage
           );
-          let listS3 = await S3_Services.listObjectsS3();
+          let listS3 = await s3Services.listObjectsS3();
           listS3.Contents.length.should.eql(2);
         });
       });
@@ -249,7 +249,7 @@ const media_test_basics = () => {
           `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&size=small`
         ).then(async (res) => {
           res.status.should.eql(200);
-          let listS3 = await S3_Services.listObjectsS3();
+          let listS3 = await s3Services.listObjectsS3();
           listS3.Contents.length.should.eql(3);
         });
       });

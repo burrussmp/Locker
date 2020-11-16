@@ -1,192 +1,237 @@
-"use strict";
+/* eslint-disable max-len */
+'use strict';
 // imports
-import Organization from "../models/organization.model";
-import Media from "../models/media.model";
-import errorHandler from "../services/dbErrorHandler";
-import StaticStrings from "../../config/StaticStrings";
-import S3_Services from "../services/S3.services";
+import Organization from '../models/organization.model';
+import Employee from '../models/employee.model';
+
+import errorHandler from '../services/dbErrorHandler';
+import StaticStrings from '../../config/StaticStrings';
+import s3Services from '../services/S3.services';
 
 const OrganizationControllerErrors = StaticStrings.OrganizationControllerErrors;
 
 /**
- * @desc Filter organization
- * @param Object User query result
+ * @desc Filter an organization to return public information
+ * @param {object} organization The Mongoose information of an
+ * Organization model
+ * @return {object} A filtered organization
  */
-const filter_organization = (organization) => {
-    organization.__v = undefined;
-    return organization;
+const filterOrganization = (organization) => {
+  organization.__v = undefined;
+  return organization;
 };
 
 /**
- * @desc Middleware: Get an organization by ID
- * @param Object req - HTTP request object
- * @param Object res - HTTP response object
+ * @desc Middleware to parse url parameter :organizationId
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @param {Function} next Next express middleware function
+ * @param {Number} id The ID of the organization
+ * @return {Promise<Response>} Sends the HTTP response or continues
+ * to next middleware. A 404 error code is sent if the organization is not
+ * found.
  */
 const organizationByID = async (req, res, next, id) => {
-    try {
-        let organization = await Organization.findById(id)
-            .populate("logo", "key blurhash mimetype")
-            .exec();
-        if (!organization)
-            return res.status("404").json({
-                error: OrganizationControllerErrors.NotFoundError,
-            });
-        req.organization = organization;
-        next();
-    } catch (err) {
-        return res
-            .status("404")
-            .json({
-                error: OrganizationControllerErrors.NotFoundError
-            });
+  try {
+    const organization = await Organization.findById(id)
+        .populate('logo', 'key blurhash mimetype')
+        .exec();
+    if (!organization) {
+      return res.status('404').json({
+        error: OrganizationControllerErrors.NotFoundError,
+      });
     }
+    req.organization = organization;
+    next();
+  } catch (err) {
+    return res
+        .status('404')
+        .json({
+          error: OrganizationControllerErrors.NotFoundError,
+        });
+  }
 };
 
 /**
- * @desc create a new organization.
- * @param Object req - HTTP request object
- * @param Object res - HTTP response object
+ * @desc Creates a new organization with information in request body
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>}
  */
 const create = async (req, res) => {
-    const media_meta = {
-        'type': 'Logo',
-        'uploadedBy': req.auth._id,
-        'uploadedByType': 'employee'
-    };
-    S3_Services.uploadSingleMediaS3(req, res, media_meta, async (req, res, image) => {
-        const { name, url, description } = req.body;
+  const mediaMeta = {
+    'type': 'Logo',
+    'uploadedBy': req.auth._id,
+    'uploadedByType': 'employee',
+  };
+  s3Services.uploadSingleMediaS3(req, res, mediaMeta,
+      async (req, res, image) => {
+        const {name, url, description} = req.body;
         let organization;
         try {
-            organization = new Organization({
-                name: name,
-                url: url,
-                description: description,
-                logo: image._id,
-            })
-            organization = await organization.save();
-        } catch(err) {
-            return res.status(400).json({err: errorHandler.getErrorMessage(err)})
+          organization = new Organization({
+            name: name,
+            url: url,
+            description: description,
+            logo: image._id,
+          });
+          organization = await organization.save();
+        } catch (err) {
+          return res.status(400).json(
+              {err: errorHandler.getErrorMessage(err)});
         }
         try {
-            return res.status(200).json({ '_id': organization._id });
+          return res.status(200).json({'_id': organization._id});
         } catch (err) {
-            return S3_Services.deleteMediaS3(req.file.key).then(() => {
-                return res.status(400).json({ error: errorHandler.getErrorMessage(err) });
-            }).catch((err2) => {
-                return res.status(500).json({
-                    error: "Server Error: Unable to save logo to S3"
-                        + ' because ' + err.message + ' and ' + err2.message
-                });
-            })
+          return s3Services.deleteMediaS3(req.file.key).then(() => {
+            return res.status(400).json(
+                {error: errorHandler.getErrorMessage(err)});
+          }).catch((err2) => {
+            return res.status(500).json({
+              error: 'Server Error: Unable to save logo to S3' +
+                        ' because ' + err.message + ' and ' + err2.message,
+            });
+          });
         }
-    })
+      });
 };
 
 /**
- * @desc Read a specific organization
- * @param Object req - HTTP request object
- * @param Object res - HTTP response object
+ * @desc Retrieve the information of a single organization
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>}
  */
 const read = (req, res) => {
-    try {
-        return res.status(200).json(filter_organization(req.organization));
-    } catch (err) {
-        return res.status(500).json({
-            error: errorHandler.getErrorMessage(err)
-        });
-    }
+  try {
+    return res.status(200).json(filterOrganization(req.organization));
+  } catch (err) {
+    return res.status(500).json({
+      error: errorHandler.getErrorMessage(err),
+    });
+  }
 };
 
 /**
- * @desc List all organizations
- * @param Object req - HTTP request object
- * @param Object res - HTTP response object
+ * @desc List off organizations
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>}
  */
 const list = async (req, res) => {
-    try {
-        const organizations = await Organization.find().select(
-            "_id updatedAt createdAt"
-        );
-        return res.json(organizations);
-    } catch (err) {
-        return res.status(500).json({
-            error: errorHandler.getErrorMessage(err)
-        });
-    }
+  try {
+    const organizations = await Organization.find().select(
+        '_id updatedAt createdAt',
+    );
+    return res.json(organizations);
+  } catch (err) {
+    return res.status(500).json({
+      error: errorHandler.getErrorMessage(err),
+    });
+  }
 };
 
 /**
  * @desc Update an organization
- * @param Object req - HTTP request object
- * @param Object res - HTTP response object
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>}
  */
 const update = async (req, res) => {
-    return res.status(501).json({
-        error: StaticStrings.NotImplementedError
-    });
+  return res.status(501).json({
+    error: StaticStrings.NotImplementedError,
+  });
 };
 
 /**
- * @desc Remove an organization
- * @param Object req - HTTP request object
- * @param Object res - HTTP response object
+ * @desc Delete an organization
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>}
  */
 const remove = async (req, res) => {
-    try {
-        let deletedOrganization = await req.organization.deleteOne();
-        return res.json(deletedOrganization);
-    } catch (err) {
-        return res.status(500).json({
-            error: errorHandler.getErrorMessage(err)
-        });
-    }
+  try {
+    const deletedOrganization = await req.organization.deleteOne();
+    return res.json(deletedOrganization);
+  } catch (err) {
+    return res.status(500).json({
+      error: errorHandler.getErrorMessage(err),
+    });
+  }
 };
 
 /**
- * @desc Add employee
- * @param Object req - HTTP request object
- * @param Object res - HTTP response object
+ * @desc Add an employee to an organization
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>}
  */
 const addEmployee = async (req, res) => {
-    const employeeId = req.body.employeeId;
-    const organizationId = req.organization._id;
-    if (!employeeId){
-      return res.status(400).json({error: OrganizationControllerErrors.MissingID});
-    }
-    try {
-        await Organization.findOneAndUpdate({'_id' : organizationId}, {$addToSet: {employees: employeeId}}) // update their account
-        return res.status(200).json({message:StaticStrings.AddedFollowerSuccess});
-    } catch(err){
-        return res.status(500).json({error: StaticStrings.UnknownServerError+err.message})  // no accounts were changed
-    }
+  const employeeId = req.body.employeeId;
+  const organizationId = req.organization._id;
+  if (!employeeId) {
+    return res.status(400).json(
+        {error: OrganizationControllerErrors.MissingID});
+  }
+  const employee = await Employee.findById(employeeId);
+  if (!employee) {
+    return res.status(404).json(
+        {error: StaticStrings.EmployeeControllerErrors.EmployeeNotFound});
+  }
+  const organization = await Organization.findById(organizationId);
+  if (!organization) {
+    return res.status(404).json(
+        {error: StaticStrings.OrganizationControllerErrors.NotFoundError});
+  }
+  if (employee.organization) {
+    return res.status(400).json({error: StaticStrings.OrganizationControllerErrors.EmployeeAlreadyInOrganization});
+  }
+  try {
+    await Employee.findOneAndUpdate({'_id': employeeId}, {organization: organizationId}); // update their account
+    return res.status(200).json({message: StaticStrings.AddedFollowerSuccess});
+  } catch (err) {
+    return res.status(500).json({error: StaticStrings.UnknownServerError+err.message}); // no accounts were changed
+  }
 };
 
 /**
- * @desc Remove employee
- * @param Object req - HTTP request object
- * @param Object res - HTTP response object
+ * @desc Remove an employee from an organization
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>}
  */
 const removeEmployee = async (req, res) => {
-    const employeeId = req.body.employeeId;
-    const organizationId = req.organization._id;
-    if (!employeeId){
-      return res.status(400).json({error: OrganizationControllerErrors.MissingID});
-    }
-    try {
-        await Organization.findOneAndUpdate({'_id' : organizationId}, {$pull: {employees: employeeId}}) // update their account
-        return res.status(200).json({message:StaticStrings.AddedFollowerSuccess});
-    } catch(err){
-        return res.status(500).json({error: StaticStrings.UnknownServerError+err.message})
-    }
+  const employeeId = req.body.employeeId;
+  const organizationId = req.organization._id;
+  if (!employeeId) {
+    return res.status(400).json({error: OrganizationControllerErrors.MissingID});
+  }
+  const employee = await Employee.findById(employeeId);
+  if (!employee) {
+    return res.status(404).json({error: StaticStrings.EmployeeControllerErrors.EmployeeNotFound});
+  }
+  const organization = await Organization.findById(organizationId);
+  if (!organization) {
+    return res.status(404).json({error: StaticStrings.OrganizationControllerErrors.NotFoundError});
+  }
+  if (employee.organization) {
+    return res.status(400).json({error: StaticStrings.OrganizationControllerErrors.EmployeeAlreadyInOrganization});
+  }
+  try {
+    await Employee.findOneAndUpdate({'_id': employeeId}, {organization: undefined}); // update their account
+    return res.status(200).json({message: StaticStrings.AddedFollowerSuccess});
+  } catch (err) {
+    return res.status(500).json({error: StaticStrings.UnknownServerError+err.message}); // no accounts were changed
+  }
 };
 
 export default {
-    list,
-    create,
-    read,
-    update,
-    remove,
-    organizationByID,
-    addEmployee,
-    removeEmployee,
+  list,
+  create,
+  read,
+  update,
+  remove,
+  organizationByID,
+  addEmployee,
+  removeEmployee,
 };

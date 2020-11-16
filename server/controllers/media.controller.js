@@ -2,7 +2,7 @@
 
 // imports
 import StaticStrings from "../../config/StaticStrings";
-import S3_Services from "../services/S3.services";
+import s3Services from "../services/S3.services";
 import Sharp from "sharp";
 import Media from "../models/media.model";
 
@@ -72,7 +72,7 @@ const All_Dimensions = {
  */
 const mediaExists = (req, res, next, key) => {
   // assert that it exists in S3
-  return S3_Services.fileExistsS3(key)
+  return s3Services.fileExistsS3(key)
     .then(() => {
       return next();
     })
@@ -88,7 +88,7 @@ const mediaExists = (req, res, next, key) => {
  * @param {String} key - S3 file identifier
  */
 const getMediaByKey = (req, res, key) => {
-  return S3_Services.getMediaS3(key)
+  return s3Services.getMediaS3(key)
     .then((data) => {
       try {
         res.setHeader("Content-Length", data.ContentLength);
@@ -133,20 +133,20 @@ const getMediaByKeyResize = async (req, res, key) => {
   const {width,height} = dimensions;
   const resized_key = key + "_" + "width_" + width + "_height_" + height;
   try {
-    const resized_media = await S3_Services.getMediaS3(resized_key);
+    const resized_media = await s3Services.getMediaS3(resized_key);
     res.setHeader('Content-Type','image/png')
     res.setHeader("Content-Length", resized_media.ContentLength);
     res.write(resized_media.Body);
     return res.end(null);
   } catch (err) {
     try {
-      const original_media = await S3_Services.getMediaS3(key);
+      const original_media = await s3Services.getMediaS3(key);
       const buffer = await Sharp(original_media.Body)
         .resize(width, height)
         .toFormat("png")
         .toBuffer();
-      await S3_Services.putObjectS3(resized_key, buffer, "image/png");
-      const resized_media = await S3_Services.getMediaS3(resized_key);
+      await s3Services.putObjectS3(resized_key, buffer, "image/png");
+      const resized_media = await s3Services.getMediaS3(resized_key);
       await Media.findOneAndUpdate(
         { key: key },
         { $push: { resized_keys: resized_key } }

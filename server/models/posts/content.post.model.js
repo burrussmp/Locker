@@ -1,8 +1,9 @@
-"use strict";
+/* eslint-disable max-len */
+'use strict';
 
 // imports
 import mongoose from 'mongoose';
-import StaticStrings from "../../../config/StaticStrings";
+import StaticStrings from '../../../config/StaticStrings';
 
 const ContentPostErrors = StaticStrings.PostModelErrors.ContentPostErrors;
 
@@ -20,8 +21,8 @@ const ContentPostSchema = new mongoose.Schema({
   product: {
     type: mongoose.Schema.ObjectId,
     required: ContentPostErrors.ProductRequired,
-    ref: 'Product'
-  }
+    ref: 'Product',
+  },
 });
 
 // ContentPostSchema.pre("deleteOne",{document: true,query:false },async function(){
@@ -29,5 +30,5 @@ const ContentPostSchema = new mongoose.Schema({
 //   await media.deleteOne();
 // });
 
-export default mongoose.model('ContentPost',ContentPostSchema)
+export default mongoose.model('ContentPost', ContentPostSchema);
 

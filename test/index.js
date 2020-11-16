@@ -8,10 +8,10 @@ import EmployeeTest from './EmployeeTests/index';
 import {drop_database} from './helper';
 
 
-// drop_database()
+// drop_database();
 // describe('Auth Tests',AuthTest)
 // describe('User Tests',UserTest)
 // describe('Post Test',PostTest)
 // describe('Media Test',MediaTest)
 // describe('Organization Test', OrganizationTest)
-describe('Employee Test', EmployeeTest)
+describe('Employee Test', EmployeeTest);

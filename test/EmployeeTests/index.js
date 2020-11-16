@@ -6,11 +6,11 @@ import EmployeeAvatar from './employee.avatar.test';
 import EmployeePassword from './employee.password.test';
 import EmployeeRole from './employee.role.test';
 const employee_tests = () => {
-    // describe("PATH: '/api/ent/employees'", BasicTest);
+    describe("PATH: '/api/ent/employees'", BasicTest);
     // describe("PATH: '/api/ent/employees/:employeeId'", EmployeeSpecific)
     // describe("PATH: '/api/ent/employees/:employeeId/avatar'", EmployeeAvatar)
     // describe("PATH: '/api/ent/employees/:employeeId/password'", EmployeePassword)
-    describe("PATH: '/api/ent/employees/:employeeId/role'", EmployeeRole)
+    // describe("PATH: '/api/ent/employees/:employeeId/role'", EmployeeRole)
 }
 
 export default employee_tests;

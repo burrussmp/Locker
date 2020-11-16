@@ -5,7 +5,7 @@ import RBAC from '../models/rbac.model';
 import Media from '../models/media.model';
 import errorHandler from '../services/dbErrorHandler'
 import StaticStrings from '../../config/StaticStrings';
-import S3_Services from '../services/S3.services';
+import s3Services from '../services/S3.services';
 import _ from 'lodash';
 import fs from 'fs';
 import mediaController from './media.controller';
@@ -230,7 +230,7 @@ const uploadProfilePhoto = (req, res) => {
     'uploadedBy' : req.params.userId,
     'uploadedByType': 'user'
   };
-  S3_Services.uploadSingleMediaS3(req,res,meta, async (req,res,image)=>{ // upload to s3
+  s3Services.uploadSingleMediaS3(req,res,meta, async (req,res,image)=>{ // upload to s3
     let query = {'_id' : req.params.userId}; // at this point we have uploaded to S3 and just need to clean up
     let update = {$set:{"profile_photo" : image._id}};
     try {
