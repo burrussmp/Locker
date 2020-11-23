@@ -1,14 +1,15 @@
-"use strict";
+/* eslint-disable max-len */
+'use strict';
 
 // imports
-import StaticStrings from "../../config/StaticStrings";
-import s3Services from "../services/S3.services";
-import Sharp from "sharp";
-import Media from "../models/media.model";
+import StaticStrings from '../../config/StaticStrings';
+import s3Services from '../services/S3.services';
+import Sharp from 'sharp';
+import Media from '../models/media.model';
 
 const ErrorMessages = StaticStrings.MediaControllerErrors;
 
-const All_Dimensions = {
+const AllDimensions = {
   Avatar: {
     small: {
       width: 32,
@@ -66,113 +67,114 @@ const All_Dimensions = {
 };
 
 /**
- * @desc Get media from S3 bucket
- * @param Object req - HTTP request object
- * @param Object res - HTTP response object
+ * @desc Middleware to check if media exists in S3 bucket
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @param {Function} next The next middleware to call
+ * @param {Number} key The key of the media in S3 bucket
+ * @return {Promise<Response>} 404 if the media doesnt exist otherwise
+ * continue to next middleware
  */
 const mediaExists = (req, res, next, key) => {
   // assert that it exists in S3
   return s3Services.fileExistsS3(key)
-    .then(() => {
-      return next();
-    })
-    .catch((err) => {
-      return res.status(404).json({ error: ErrorMessages.MediaNotFound });
-    });
+      .then(() => {
+        return next();
+      })
+      .catch((err) => {
+        return res.status(404).json({error: ErrorMessages.MediaNotFound});
+      });
 };
 
 /**
- * @desc Get media from S3 bucket
- * @param {object} req - HTTP request object
- * @param {object} res - HTTP response object
- * @param {String} key - S3 file identifier
+ * @desc Retrives media from S3 bucket
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @param {Number} key The key of the media in S3 bucket
+ * @return {Promise<Response>} Returns the media from the S3 bucket
  */
 const getMediaByKey = (req, res, key) => {
   return s3Services.getMediaS3(key)
-    .then((data) => {
-      try {
-        res.setHeader("Content-Length", data.ContentLength);
-        res.write(data.Body);
-        return res.end(null);
-      } catch (err) {
-        return res
-          .status(500)
-          .json({ message: StaticStrings.S3ServiceErrors.RetrieveServerError });
-      }
-    })
-    .catch((err) => {
-      return res.status(500).json({ error: err.message });
-    });
+      .then((data) => {
+        try {
+          res.setHeader('Content-Length', data.ContentLength);
+          res.write(data.Body);
+          return res.end(null);
+        } catch (err) {
+          return res.status(500).json({message: StaticStrings.S3ServiceErrors.RetrieveServerError});
+        }
+      })
+      .catch((err) => {
+        return res.status(500).json({error: err.message});
+      });
 };
 
+
 /**
- * @desc Get media from S3 bucket with new dimensions
- * @param {object} req - HTTP request object
- * @param {object} res - HTTP response object
- * @param {String} key - S3 file identifier
+ * @desc Retrives media from S3 bucket (resized)
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @param {Number} key The key of the media in S3 bucket
+ * @return {Promise<Response>} Returns the media from the S3 bucket
  */
 const getMediaByKeyResize = async (req, res, key) => {
-  const media = await Media.findOne({ key: key });
-  if (media.mimetype != "image/png" && media.mimetype != "image/jpeg") {
-    return res.status(400).json({
-      error: ErrorMessages.CannotResizeNotImage,
-    });
+  const media = await Media.findOne({key: key});
+  if (media.mimetype != 'image/png' && media.mimetype != 'image/jpeg') {
+    return res.status(400).json({error: ErrorMessages.CannotResizeNotImage});
   }
-  const typeSizes = All_Dimensions[media.type]
-  if (!typeSizes){
-    return res.status(501).json({
-      error: ErrorMessages.MediaTypeNotImplementedResize,
-    });
+  const typeSizes = AllDimensions[media.type];
+  if (!typeSizes) {
+    return res.status(501).json({error: ErrorMessages.MediaTypeNotImplementedResize});
   }
   const dimensions = typeSizes[req.query.size];
   if (!dimensions) {
-    return res.status(400).json({
-      error: ErrorMessages.SizeQueryParameterInvalid,
-    });
+    return res.status(400).json({error: ErrorMessages.SizeQueryParameterInvalid});
   }
-  const {width,height} = dimensions;
-  const resized_key = key + "_" + "width_" + width + "_height_" + height;
+  const {width, height} = dimensions;
+  const resizedDimensionsKey = key + '_' + 'width_' + width + '_height_' + height;
   try {
-    const resizedMedia = await s3Services.getMediaS3(resized_key);
-    res.setHeader('Content-Type','image/png')
-    res.setHeader("Content-Length", resizedMedia.ContentLength);
+    const resizedMedia = await s3Services.getMediaS3(resizedDimensionsKey);
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Content-Length', resizedMedia.ContentLength);
     res.write(resizedMedia.Body);
     return res.end(null);
   } catch (err) {
     try {
-      const original_media = await s3Services.getMediaS3(key);
-      const buffer = await Sharp(original_media.Body)
-        .resize(width, height)
-        .toFormat("png")
-        .toBuffer();
-      await s3Services.putObjectS3(resized_key, buffer, "image/png");
-      const resizedMedia = await s3Services.getMediaS3(resized_key);
+      const originalMedia = await s3Services.getMediaS3(key);
+      // eslint-disable-next-line new-cap
+      const buffer = await Sharp(originalMedia.Body)
+          .resize(width, height)
+          .toFormat('png')
+          .toBuffer();
+      await s3Services.putObjectS3(resizedDimensionsKey, buffer, 'image/png');
+      const resizedMedia = await s3Services.getMediaS3(resizedDimensionsKey);
       await Media.findOneAndUpdate(
-        { key: key },
-        { $push: { resized_keys: resized_key } }
+          {key: key},
+          {$push: {'resized_keys': resizedDimensionsKey}},
       );
-      res.setHeader('Content-Type','image/png')
-      res.setHeader("Content-Length", resizedMedia.ContentLength);
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Content-Length', resizedMedia.ContentLength);
       res.write(resizedMedia.Body);
       return res.end(null);
     } catch (err) {
-      return res.status(500).json({ error: err.message });
+      return res.status(500).json({error: err.message});
     }
   }
 };
 
 /**
- * @desc Controller (pretty much a wrapper around getMEdiaBykey)
- * @param {object} req - HTTP request object
- * @param {object} res - HTTP response objec
- * @param {String} key - (Optional) can also be retrieved from URL path params
+ * @desc Retrieves media from S3 and optionally uses the resized query parameter
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @param {Number} key The key of the media in S3 bucket
+ * @return {Promise<Response>} Returns the media from the S3 bucket and if
+ * first time specific size is specified, resizes and creates that sized media
+ * in the S3 bucket
  */
 const getMedia = (req, res) => {
-  let key = req.params.key ? req.params.key : res.locals.key;
+  const key = req.params.key ? req.params.key : res.locals.key;
   if (!key) {
-    return res.status(500).json({
-      error: StaticStrings.UnknownServerError,
-    });
+    return res.status(500).json({error: StaticStrings.UnknownServerError});
   }
   if (req.query.size) {
     return getMediaByKeyResize(req, res, key);

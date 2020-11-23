@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 'use strict';
 // imports
 import User from '../models/user.model';

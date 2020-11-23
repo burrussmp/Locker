@@ -46,6 +46,10 @@ const mediaTestBasics = () => {
       });
       after(async () => {
         await dropDatabase();
+        const cursor = Media.find().cursor();
+        for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
+          await doc.deleteOne();
+        }
       });
       it('GET profile photo', async () => {
         return fetch(
