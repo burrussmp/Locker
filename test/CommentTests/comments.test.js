@@ -315,7 +315,8 @@ const commentsTest = () => {
             });
       });
       it('Bad Permissions (should fail)', async ()=>{
-        await User.findOneAndUpdate({'username': UserData[0].username}, {'permissions': ['user:read']}, {new: true});
+        const role = await RBAC.findOne({'role': 'na'});
+        await User.findOneAndUpdate({'username': UserData[0].username}, {'permissions': role._id}, {new: true});
         return agent.delete(`/api/comments/${commentId1}?access_token=${userToken0}`)
             .then(async (res)=>{
               res.status.should.eql(403);

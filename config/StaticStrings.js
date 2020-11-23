@@ -94,6 +94,9 @@ const StaticStrings = {
     MissingOrganizationId: 'The organizationId parameter is missing from the request body',
     OrganizationNotFound: 'The organizationId parameter does not match any existing organization',
     NotPartOfOrganization: 'Cannot add a user to an organization that you are not a part of',
+    OnlyOneAdminAllowed: 'Only 1 admin is allowed to be created',
+    ChangeRoleCannotUpdateSuperior: 'Cannot change the role of a higher authorized employee',
+    ChangeRoleRequireAdminOrSameOrg: 'Requester and requestee must be a part of the same organization or requester must be admin',
   },
   RBACModelErrors: {
     RoleRequired: 'Server Error: Must assign role attribute when creating new RBAC',

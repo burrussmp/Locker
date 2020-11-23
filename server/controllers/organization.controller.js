@@ -37,18 +37,12 @@ const organizationByID = async (req, res, next, id) => {
         .populate('logo', 'key blurhash mimetype')
         .exec();
     if (!organization) {
-      return res.status('404').json({
-        error: OrganizationControllerErrors.NotFoundError,
-      });
+      return res.status(404).json({error: OrganizationControllerErrors.NotFoundError});
     }
     req.organization = organization;
     next();
   } catch (err) {
-    return res
-        .status('404')
-        .json({
-          error: OrganizationControllerErrors.NotFoundError,
-        });
+    return res.status(404).json({error: OrganizationControllerErrors.NotFoundError});
   }
 };
 
@@ -77,20 +71,16 @@ const create = async (req, res) => {
           });
           organization = await organization.save();
         } catch (err) {
-          return res.status(400).json(
-              {err: errorHandler.getErrorMessage(err)});
+          return res.status(400).json({err: errorHandler.getErrorMessage(err)});
         }
         try {
           return res.status(200).json({'_id': organization._id});
         } catch (err) {
           return s3Services.deleteMediaS3(req.file.key).then(() => {
-            return res.status(400).json(
-                {error: errorHandler.getErrorMessage(err)});
+            return res.status(400).json({error: errorHandler.getErrorMessage(err)});
           }).catch((err2) => {
-            return res.status(500).json({
-              error: 'Server Error: Unable to save logo to S3' +
-                        ' because ' + err.message + ' and ' + err2.message,
-            });
+            const errMessage = `Server Error: Unable to save logo to S3 because ${err.message} and ${err2.message}`;
+            return res.status(500).json({error: errMessage});
           });
         }
       });

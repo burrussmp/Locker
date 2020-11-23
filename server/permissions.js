@@ -11,7 +11,6 @@
     - Organization profile
 */
 
-import authCtrl from './controllers/auth.controller';
 import fetch from 'node-fetch';
 import config from '../config/config';
 import RBAC from './models/rbac.model';
@@ -53,7 +52,6 @@ const EmployeePermissions = {
   Read: 'employee:read', // Read information from user
   EditContent: 'employee:edit', // Edit only editable content (like caption, etc.)
   ChangeRole: 'employee:change_role', // change the role of an employee
-  ChangeOrganizationRole: 'employee:change_organization_role', // able to change the role of someone in an organization
 };
 
 // all permissions associated with an Organization
@@ -105,7 +103,7 @@ const getPermissionArray = (type) => {
       EmployeePermissions.EditContent,
       EmployeePermissions.Delete,
       EmployeePermissions.Read,
-      EmployeePermissions.ChangeOrganizationRole,
+      EmployeePermissions.ChangeRole,
     ]);
   }
   if (type == 'admin') {
@@ -116,14 +114,6 @@ const getPermissionArray = (type) => {
     ]);
   }
   return assignedPermissions;
-};
-
-const Authorize = (permissions, requireLogin = true) => {
-  return (req, res, next) => {
-    res.locals.require_login = requireLogin;
-    res.locals.permissions = permissions;
-    authCtrl.checkLogin(req, res, next);
-  };
 };
 
 const setUpRBAC = async () => {
@@ -232,7 +222,6 @@ export default {
   OrganizationPermissions,
   CommentPermissions,
   EmployeePermissions,
-  Authorize,
   setUpRBAC,
   getPermissionArray,
 };

@@ -3,6 +3,7 @@
 // imports
 import express from 'express';
 import searchCtrl from '../controllers/search.controller';
+import authCtrl from '../controllers/auth.controller';
 import permission from '../permissions';
 
 const UserPermissions = permission.UserPermissions;
@@ -19,7 +20,7 @@ const router = express.Router();
 
 
 router.route('/api/search/users')
-    .post(permission.Authorize([UserPermissions.Read]), searchCtrl.searchUsers);
+    .post(authCtrl.authorize([UserPermissions.Read]), searchCtrl.searchUsers);
 
 export default router;
 

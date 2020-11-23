@@ -14,30 +14,25 @@ const router = express.Router();
 // handle path parameters
 router.param('employeeId', employeeCtrl.employeeByID);
 
-/*
-  * -------------- User API ------------------
-  * For specific documentation, please see /Documentation/index.html
-*/
-
 router.route('/api/ent/employees')
-    .get(permission.Authorize([EmployeePermissions.Read]), employeeCtrl.list)
-    .post(permission.Authorize([EmployeePermissions.Create]), employeeCtrl.create);
+    .get(authCtrl.authorize([EmployeePermissions.Read]), employeeCtrl.list)
+    .post(authCtrl.authorize([EmployeePermissions.Create]), employeeCtrl.create);
 
 router.route('/api/ent/employees/:employeeId')
-    .get(permission.Authorize([EmployeePermissions.Read]), employeeCtrl.read)
-    .put(permission.Authorize([EmployeePermissions.EditContent]), authCtrl.requireOwnership, employeeCtrl.update)
-    .delete(permission.Authorize([EmployeePermissions.Delete]), authCtrl.requireOwnership, employeeCtrl.remove);
+    .get(authCtrl.authorize([EmployeePermissions.Read]), employeeCtrl.read)
+    .put(authCtrl.authorize([EmployeePermissions.EditContent]), authCtrl.requireOwnership, employeeCtrl.update)
+    .delete(authCtrl.authorize([EmployeePermissions.Delete]), authCtrl.requireOwnership, employeeCtrl.remove);
 
 router.route('/api/ent/employees/:employeeId/avatar')
-    .get(permission.Authorize([EmployeePermissions.Read]), employeeCtrl.getProfilePhoto)
-    .post(permission.Authorize([EmployeePermissions.EditContent]), authCtrl.requireOwnership, employeeCtrl.uploadProfilePhoto)
-    .delete(permission.Authorize([EmployeePermissions.Delete]), authCtrl.requireOwnership, employeeCtrl.removeProfilePhoto);
+    .get(authCtrl.authorize([EmployeePermissions.Read]), employeeCtrl.getProfilePhoto)
+    .post(authCtrl.authorize([EmployeePermissions.EditContent]), authCtrl.requireOwnership, employeeCtrl.uploadProfilePhoto)
+    .delete(authCtrl.authorize([EmployeePermissions.Delete]), authCtrl.requireOwnership, employeeCtrl.removeProfilePhoto);
 
 router.route('/api/ent/employees/:employeeId/password')
-    .put(permission.Authorize([EmployeePermissions.EditContent]), authCtrl.requireOwnership, employeeCtrl.changePassword);
+    .put(authCtrl.authorize([EmployeePermissions.EditContent]), authCtrl.requireOwnership, employeeCtrl.changePassword);
 
 router.route('/api/ent/employees/:employeeId/role')
-    .put(permission.Authorize([EmployeePermissions.ChangeRole]), employeeCtrl.changeRole);
+    .put(authCtrl.authorize([EmployeePermissions.ChangeRole]), employeeCtrl.changeRole);
 
 
 export default router;

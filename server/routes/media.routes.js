@@ -2,13 +2,13 @@
 /* eslint-disable max-len */
 import express from 'express';
 import mediaController from '../controllers/media.controller';
-import permission from '../permissions';
+import authCtrl from '../controllers/auth.controller';
 
 const router = express.Router();
 
 router.param('key', mediaController.mediaExists);
 
 router.route('/api/media/:key')
-    .get(permission.Authorize([]), mediaController.getMedia);
+    .get(authCtrl.authorize([]), mediaController.getMedia);
 
 export default router;

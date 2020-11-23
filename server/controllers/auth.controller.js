@@ -281,7 +281,22 @@ const confirmForgotPassword = async (req, res) => {
   }
 };
 
+/**
+ * @desc Begin the auth process for an API call
+ * @param {Array} permissions Required permissions for API call
+ * @param {Boolean} requireLogin Whether or not this call requires being logged in
+ * @return {Promise<Response>} an HTTP response for API call
+ */
+const authorize = (permissions, requireLogin = true) => {
+  return (req, res, next) => {
+    res.locals.require_login = requireLogin;
+    res.locals.permissions = permissions;
+    checkLogin(req, res, next);
+  };
+};
+
 export default {
+  authorize,
   login,
   logout,
   checkLogin,

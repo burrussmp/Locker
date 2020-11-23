@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 // imports
 import Employee from '../models/employee.model';
 import Organization from '../models/organization.model';
@@ -15,8 +16,7 @@ import authController from './auth.controller';
 
 const CognitoServices = CognitoAPI.EmployeeCognitoPool;
 
-const DefaultProfilePhoto =
-  process.cwd() + '/client/assets/images/profile-pic.png';
+const DefaultProfilePhoto = process.cwd() + '/client/assets/images/profile-pic.png';
 
 const Errors = StaticStrings.EmployeeControllerErrors;
 
@@ -90,7 +90,7 @@ const create = async (req, res) => {
       if (!org) {
         return res.status(404).json({error: Errors.OrganizationNotFound});
       }
-      if (organizationId != req.auth.organization) {
+      if (req.auth.level != 0 && organizationId != req.auth.organization) {
         return res.status(401).json({error: Errors.NotPartOfOrganization});
       }
       role = await RBAC.findOne({role: roleType});
@@ -99,9 +99,8 @@ const create = async (req, res) => {
             {error: StaticStrings.RBACModelErrors.RoleNotFound});
       }
       if (req.auth.level > role.level) {
-        return res.status(401).json({
-          // eslint-disable-next-line max-len
-          error: `Requester authorization insufficient: Requester level ${req.auth.level} & level of attempt ${role.level}`});
+        const errMessage = `Requester authorization insufficient: Requester level ${req.auth.level} & level of attempt ${role.level}`;
+        return res.status(401).json({error: errMessage});
       }
     }
     const newEmployee = {
@@ -126,15 +125,11 @@ const create = async (req, res) => {
       _id: employee._id,
     });
   } catch (err) {
-    CognitoServices.deleteCognitoUser(cognitoUsername)
-        .then(() => {
-          return res.status(400)
-              .json({error: errorHandler.getErrorMessage(err)});
-        })
-        .catch((err) => {
-          return res.status(500)
-              .json({error: StaticStrings.UnknownServerError + err});
-        });
+    CognitoServices.deleteCognitoUser(cognitoUsername).then(() => {
+      return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+    }).catch((err) => {
+      return res.status(500).json({error: StaticStrings.UnknownServerError + err});
+    });
   }
 };
 
@@ -156,8 +151,7 @@ const read = (req, res) => {
  */
 const list = async (req, res) => {
   try {
-    const employees = await Employee.find().select(
-        '_id email updatedAt createdAt');
+    const employees = await Employee.find().select('_id email updatedAt createdAt');
     return res.json(employees);
   } catch (err) {
     return res.status(500).json({error: errorHandler.getErrorMessage(err)});
@@ -175,11 +169,8 @@ const update = async (req, res) => {
   const updateFields = Object.keys(req.body);
   const invalidFields = _.difference(updateFields, fieldsAllowed);
   if (invalidFields.length != 0) {
-    return res
-        .status(422)
-        .json({
-          error: `${StaticStrings.BadRequestInvalidFields} ${invalidFields}`,
-        });
+    const errMessage = `${StaticStrings.BadRequestInvalidFields} ${invalidFields}`;
+    return res.status(422).json({error: errMessage});
   }
   try {
     const employee = await Employee.findOneAndUpdate(
@@ -226,14 +217,14 @@ const changePassword = async (req, res) => {
   const updateFields = Object.keys(req.body);
   const fieldsNeeded = _.difference(fieldsRequired, updateFields);
   if (fieldsNeeded.length != 0) {
-    return res.status(422).json({
-      error: `${StaticStrings.BadRequestFieldsNeeded} ${fieldsNeeded}`});
+    const errMessage = `${StaticStrings.BadRequestFieldsNeeded} ${fieldsNeeded}`;
+    return res.status(422).json({error: errMessage});
   }
   // check to see if it has an extra fields
   const fieldsExtra = _.difference(updateFields, fieldsRequired);
   if (fieldsExtra.length != 0) {
-    return res.status(422).json({
-      error: `${StaticStrings.BadRequestInvalidFields} ${fieldsExtra}`});
+    const errMessage = `${StaticStrings.BadRequestInvalidFields} ${fieldsExtra}`;
+    return res.status(422).json({error: errMessage});
   }
   if (req.body.old_password == req.body.password) {
     return res.status(400).json({error: Errors.PasswordUpdateSame});
@@ -243,8 +234,7 @@ const changePassword = async (req, res) => {
         req.query.access_token,
         req.body.old_password,
         req.body.password);
-    return res.status(200)
-        .json({message: StaticStrings.UpdatedPasswordSuccess});
+    return res.status(200).json({message: StaticStrings.UpdatedPasswordSuccess});
   } catch (err) {
     const errMessage = dbErrorHandler.getErrorMessage(err);
     if (errMessage == 'Incorrect username or password.') {
@@ -294,21 +284,16 @@ const uploadProfilePhoto = (req, res) => {
           key: req.profile.profile_photo.key,
         });
         await media.deleteOne();
-        res
-            .status(200)
-            .json({message: StaticStrings.UploadProfilePhotoSuccess});
+        res.status(200).json({message: StaticStrings.UploadProfilePhotoSuccess});
       } else {
-        res.status(200).json(
-            {message: StaticStrings.UploadProfilePhotoSuccess});
+        res.status(200).json({message: StaticStrings.UploadProfilePhotoSuccess});
       }
     } catch (err) {
       if (req.file) {
         await image.deleteOne(); // delete the new one
-        res.status(500).json({
-          error: StaticStrings.UnknownServerError + ' and ' + err.message});
+        res.status(500).json({error: StaticStrings.UnknownServerError + ' and ' + err.message});
       } else {
-        res.status(500).json({
-          error: StaticStrings.UnknownServerError + ' and ' + err.message});
+        res.status(500).json({error: StaticStrings.UnknownServerError + ' and ' + err.message});
       }
     }
   });
@@ -329,15 +314,12 @@ const removeProfilePhoto = async (req, res) => {
     await Employee.findOneAndUpdate(query, update);
     if (employee.profile_photo && employee.profile_photo.key) {
       await employee.profile_photo.deleteOne();
-      res.status(200).json(
-          {message: StaticStrings.RemoveProfilePhotoSuccess});
+      res.status(200).json({message: StaticStrings.RemoveProfilePhotoSuccess});
     } else {
-      res.status(404).json({
-        error: StaticStrings.UserControllerErrors.ProfilePhotoNotFound});
+      res.status(404).json({error: StaticStrings.UserControllerErrors.ProfilePhotoNotFound});
     }
   } catch (err) {
-    res.status(500).json(
-        {error: StaticStrings.UnknownServerError + err.message});
+    res.status(500).json({error: StaticStrings.UnknownServerError + err.message});
   }
 };
 
@@ -352,33 +334,30 @@ const removeProfilePhoto = async (req, res) => {
  * 4) The requester has permission to perform the action
  */
 const changeRole = async (req, res) => {
-  // eslint-disable-next-line camelcase
-  const {new_role} = req.body;
+  const newRoleName = req.body.new_role;
   const employeeId = req.params.employeeId;
   const employeeRole = req.profile.permissions;
-  const newRole = await RBAC.findOne({role: new_role});
-  if (!newRole) {
-    return res
-        .status(400)
-        .json({error: StaticStrings.RBACModelErrors.RoleNotFound});
+  const newRole = await RBAC.findOne({role: newRoleName});
+  if (!newRole) { // if the role doesn't exist
+    return res.status(400).json({error: StaticStrings.RBACModelErrors.RoleNotFound});
   }
-  if (newRole.level < req.auth.level) {
-    return res.status(401).json({
-      // eslint-disable-next-line max-len
-      error: `Requester authorization insufficient: Requester level ${req.auth.level} & level of attempt ${newRole.level}`});
+  if (req.auth.level > newRole.level) { // if requester is less authorized than requested role
+    const errMessage = `Requester authorization insufficient: Requester level ${req.auth.level} & level of attempt ${newRole.level}`;
+    return res.status(401).json({error: errMessage});
   }
-  if (employeeRole.level < req.auth.level) {
-    return res.status(401).json({
-      error: `Cannot change the role of a higher authorized employee.`});
+  if (req.auth.level > employeeRole.level) { // if requester is less authorized than requestee
+    return res.status(401).json({error: Errors.ChangeRoleCannotUpdateSuperior});
+  }
+  if (req.auth.level != 0 && req.auth.organization.toString() != req.profile.organization.toString()) { // Not part of the same organization
+    return res.status(401).json({error: Errors.ChangeRoleRequireAdminOrSameOrg});
   }
   try {
     const update = {permissions: newRole._id};
     const query = {_id: employeeId};
     await Employee.findOneAndUpdate(query, update);
-    return res.status(200);
+    return res.status(200).json({'role_id': newRole._id, 'employee_id': employeeId});
   } catch (err) {
-    res.status(500).json(
-        {error: StaticStrings.UnknownServerError + err.message});
+    res.status(500).json({error: StaticStrings.UnknownServerError + err.message});
   }
 };
 
