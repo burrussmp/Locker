@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 'use strict';
 // imports
 const AmazonCognitoIdentity = require('amazon-cognito-identity-js');
@@ -18,11 +19,17 @@ aws.config.update({
   region: config.aws_config.aws_s3_region,
 });
 
+/**
+ * @desc Generate an object that can be used to interact with a Congito User Pool
+ * @param {String} type The type of Cognito User Pool to connect to and return API interface
+ *  Must be either 'user' or 'employee'
+ * @return {object} An API interface for a specific Cognito User Pool
+ */
 const generateCognitoAPI = (type) => {
   // Configure User Pool
   const CognitoServiceProvider = new aws.CognitoIdentityServiceProvider();
   let UserPoolConfig; let UserPoolRegion; let UserPool;
-  let __cognito_can_update__;
+  let cognitoCanUpdate;
   if (type == 'user') {
     UserPoolConfig = {
       UserPoolId: config.aws_config.aws_user_pool_id,
@@ -30,7 +37,7 @@ const generateCognitoAPI = (type) => {
     };
     UserPoolRegion = config.aws_config.aws_user_pool_region;
     UserPool = new AmazonCognitoIdentity.CognitoUserPool(UserPoolConfig);
-    __cognito_can_update__ = ['username', 'email', 'phone_number'];
+    cognitoCanUpdate = ['username', 'email', 'phone_number'];
   } else if (type == 'employee') {
     UserPoolConfig = {
       UserPoolId: config.aws_config.aws_employee_pool_id,
@@ -38,7 +45,7 @@ const generateCognitoAPI = (type) => {
     };
     UserPoolRegion = config.aws_config.aws_employee_pool_region;
     UserPool = new AmazonCognitoIdentity.CognitoUserPool(UserPoolConfig);
-    __cognito_can_update__ = ['email'];
+    cognitoCanUpdate = ['email'];
   }
 
   // get the public key to verify JWT token signatures
@@ -51,39 +58,36 @@ const generateCognitoAPI = (type) => {
         const keys = body['keys'];
         for (let i = 0; i < keys.length; i++) {
         // Convert each key to PEM
-          const key_id = keys[i].kid;
+          const keyID = keys[i].kid;
           const modulus = keys[i].n;
           const exponent = keys[i].e;
-          const key_type = keys[i].kty;
-          const jwk = {kty: key_type, n: modulus, e: exponent};
+          const keyType = keys[i].kty;
+          const jwk = {kty: keyType, n: modulus, e: exponent};
           const pem = jwkToPem(jwk);
-          pems[key_id] = pem;
+          pems[keyID] = pem;
         }
       });
 
   /**
    * @desc Verifies a JWT token according to public signature and returns a promise.
-   * @param String token : Token to verify
-   * @param String tokenType : Useful in debugging
-   * @return a promise
+   * @param {String} token Token to verify
+   * @param {String} tokenType Useful in debugging
+   * @return {Promise<String>} Resolves if token is verified
    */
   const verifyToken = (token, tokenType) => {
     return new Promise((resolve, reject) => {
       const decodedJwt = jwt.decode(token, {complete: true});
       if (!decodedJwt) {
-        reject(`Not a valid JWT ${tokenType} token. Unable to decode`);
+        reject(Error(`Not a valid JWT ${tokenType} token. Unable to decode`));
       }
       const kid = decodedJwt.header.kid;
       const pem = pems[kid];
       if (!pem) {
-        reject(
-            `The local key ID (kid) of ${tokenType} does not match public kid`,
-        );
+        reject(Error(`The local key ID (kid) of ${tokenType} does not match public kid`));
       }
       jwt.verify(token, pem, function(err, payload) {
         if (err) {
-          console.log(err);
-          reject(`Public signature does not match ${tokenType} token`);
+          reject(Error(`Public signature does not match ${tokenType} token`));
         } else {
           resolve(decodedJwt);
         }
@@ -92,10 +96,10 @@ const generateCognitoAPI = (type) => {
   };
 
   /**
-   * @desc Retrieves a session token
-   * @param String cognitoUsername : The UUIDv4 Cognito username
-   * @param String password : The password of the Cognito user
-   * @return a promise that resolves into an object with session key and newPasswordrequired key
+   * @desc Retrieves a user from Cognito
+   * @param {String} cognitoUsername The UUIDv4 Cognito username
+   * @param {String} password The password of the Cognito user
+   * @return {Promise<object>} a promise that resolves into an object with session key and newPasswordrequired key
    */
   const getAuthenticateUserAsync = (cognitoUsername, password) => {
     const cognitoUser = new AmazonCognitoIdentity.CognitoUser({
@@ -125,10 +129,11 @@ const generateCognitoAPI = (type) => {
     });
   };
 
+
   /**
    * @desc Parses a Cognito user session retrieved from AWS Cognito
-   * @param CognitoUserSession session : The Cognito user session
-   * @return an Object with idToken, accessToken, refreshToken keys and payload key with id and access sub-keys
+   * @param {CognitoUserSession} session The Cognito user session
+   * @return {object} an Object with idToken, accessToken, refreshToken keys and payload key with id and access sub-keys
    */
   const parseSession = (session) => {
     const idToken = session.getIdToken();
@@ -148,17 +153,20 @@ const generateCognitoAPI = (type) => {
   };
 
   /**
-   * @desc Get the Cognito username from a parsed session object
+   * @desc Get congito username from parsed session object
+   * @param {CognitoUserSession} session The Cognito user session
+   * @return {String} The congito username
    */
   const getCognitoUsername = (session) => {
-    const parsed_session = parseSession(session);
-    return parsed_session.payloads.id['cognito:username'];
+    const parsedSession = parseSession(session);
+    return parsedSession.payloads.id['cognito:username'];
   };
+
 
   /**
    * @desc Verifies that the ID token and Access token can be trusted
-   * @param Object session : The parsed Cognito user session
-   * @return A promise that resolves if successful
+   * @param {CognitoUserSession} session The Cognito user session
+   * @return {Promise<Error, String>} A promise that resolves if session is verified
    */
   const verifySession = async (session) => {
     try {
@@ -172,11 +180,12 @@ const generateCognitoAPI = (type) => {
     }
   };
 
+
   /**
    * @desc Deletes a Cognito user using admin privilege. Should only be called by server on clean up
    * of user from database
-   * @param String : cognitoUsername : The UUIDv4 cognito username to remove
-   * @return A promise that resolves if successful
+   * @param {String} cognitoUsername The UUIDv4 cognito username to remove
+   * @return {Promise<Error, String>} A promise that resolves if user deleted successfully
    */
   const deleteCognitoUser = async (cognitoUsername) => {
     return new Promise((resolve, reject) => {
@@ -191,22 +200,22 @@ const generateCognitoAPI = (type) => {
   };
 
   /**
-   * @desc Update a Cognito user with admin privelege
-   * @param String : cognitoUsername : The UUIDv4 cognito username to remove
-   * @param String : cognitoUsername : The UUIDv4 cognito username to remove
-   * @return A promise that resolves if successful
+   * @desc Update a Cognito user with admin privilege
+   * @param {String} cognitoUsername The UUIDv4 cognito username to update
+   * @param {Object} update The update object with fields to update
+   * @return {Promise<Error, String>} A promise that resolves if successful
    */
   const updateCognitoUser = async (cognitoUsername, update) => {
     const values = Object.values(update);
     const keys = Object.keys(update);
     const attributeList = [];
     for (let i = 0; i < values.length; ++i) {
-      if (__cognito_can_update__.includes(keys[i])) {
+      if (cognitoCanUpdate.includes(keys[i])) {
         if (keys[i] == 'username') {
           keys[i] = 'preferred_username';
-          const username_error = validators.isValidUsername(values[i]);
-          if (username_error) {
-            throw username_error;
+          const usernameError = validators.isValidUsername(values[i]);
+          if (usernameError) {
+            throw usernameError;
           }
         }
         attributeList.push({
@@ -228,27 +237,28 @@ const generateCognitoAPI = (type) => {
     });
   };
 
+
   /**
-   * @desc Create a new user (User) in Cognito Pool
-   * @param String : username : the preferred_username of the new user
-   * @param String : password : the unencrypted password
-   * @param String : email : A valid email address
-   * @param String : phone_number : A valid phone number
-   * @return A promise that resolves if successful to a session
+   * @desc Update a Cognito user with admin privilege
+   * @param {String} username The preferred_username of the new user
+   * @param {String} password The unencrypted password (validated by method)
+   * @param {String} email An email address (validated by method)
+   * @param {String} phoneNumber A valid phone number (validated by method)
+   * @return {Promise<Error, String>} A promise that resolves if successful
    */
-  const signup_user = async (username, password, email, phone_number) => {
+  const signupUser = async (username, password, email, phoneNumber) => {
     if (!email) {
       throw StaticStrings.UserModelErrors.EmailRequired;
-    } else if (!phone_number) {
+    } else if (!phoneNumber) {
       throw StaticStrings.UserModelErrors.PhoneNumberRequired;
     }
-    const password_error = validators.isValidPassword(password);
-    if (password_error) {
-      throw password_error;
+    const passwordError = validators.isValidPassword(password);
+    if (passwordError) {
+      throw passwordError;
     }
-    const username_error = validators.isValidUsername(username);
-    if (username_error) {
-      throw username_error;
+    const usernameError = validators.isValidUsername(username);
+    if (usernameError) {
+      throw usernameError;
     }
     const attributeList = [];
     attributeList.push(
@@ -260,7 +270,7 @@ const generateCognitoAPI = (type) => {
     attributeList.push(
         new AmazonCognitoIdentity.CognitoUserAttribute({
           Name: 'phone_number',
-          Value: phone_number,
+          Value: phoneNumber,
         }),
     );
     return new Promise((resolve, reject) => {
@@ -294,18 +304,18 @@ const generateCognitoAPI = (type) => {
   };
 
   /**
-   * @desc Create a new employee in Cognito Pool
-   * @param String : email : A valid email address
-   * @param String : password : the unencrypted password
-   * @return A promise that resolves if successful to a session
+   * @desc Update a Cognito user with admin privilege
+   * @param {String} email An email address (validated by method)
+   * @param {String} password The unencrypted password (validated by method)
+   * @return {Promise<Error, String>} A promise that resolves if successful
    */
-  const signup_employee = async (email, password) => {
+  const signUpEmployee = async (email, password) => {
     if (!email) {
       throw StaticStrings.UserModelErrors.EmailRequired;
     }
-    const password_error = validators.isValidPassword(password);
-    if (password_error) {
-      throw password_error;
+    const passwordError = validators.isValidPassword(password);
+    if (passwordError) {
+      throw passwordError;
     }
     const attributeList = [];
     attributeList.push(
@@ -339,18 +349,19 @@ const generateCognitoAPI = (type) => {
 
   const getSignup = (type) => {
     if (type == 'user') {
-      return signup_user;
+      return signupUser;
     } else if (type == 'employee') {
-      return signup_employee;
+      return signUpEmployee;
     } else {
       throw new Error(`Cognito pool type ${type} does not exist`);
     }
   };
 
+
   /**
    * @desc Refreshes a session token
-   * @param String : prevSession : Previously parsed session object
-   * @return A promise that resolves if successful to a parsed session object
+   * @param {object} prevSession Previously parsed session object
+   * @return {Promise<Error, String>} A promise that resolves if successful if refreshed
    */
   const refreshSession = async (prevSession) => {
     return new Promise((resolve, reject) => {
@@ -373,12 +384,12 @@ const generateCognitoAPI = (type) => {
 
   /**
    * @desc Can retrieve a user from cognito using their cognito usernames
-   * @param {string} cognito_username : The cognito username of the person
-   * @return A promise that resolves to the retrieved user
+   * @param {String} cognitoUsername The cognito username of the person
+   * @return {Promise<Error, String>} A promise that resolves to the user from Cognito if successful
    */
-  const getUser = (cognito_username) => {
+  const getUser = (cognitoUsername) => {
     const params = {
-      Username: cognito_username,
+      Username: cognitoUsername,
       UserPoolId: UserPoolConfig.UserPoolId,
     };
     return new Promise((resolve, reject) => {
@@ -389,11 +400,9 @@ const generateCognitoAPI = (type) => {
   };
 
   /**
-   * @desc Retrieve a user from Cognito by querying for their email
-   * @param {string} email : the email of the user
-   * of the user to retrieve from Cognito
-   * @return A promise that resolve for the user and retrieves all
-   * of their attributes on a match
+   * @desc Can retrieve a user from cognito using email address
+   * @param {String} email The email of a potential user
+   * @return {Promise<Error, String>} A promise that resolves if successful if refreshed
    */
   const getUserByEmail = (email) => {
     const params = {
@@ -412,20 +421,18 @@ const generateCognitoAPI = (type) => {
     });
   };
 
+
   /**
-   * @desc See if user logged in
-   * @param String : username : can be username, phone number, or email, or preferred_username
-   * @param String : password : unencrypted password
-   * @return A promise that resolves if successful to a session
+   * @desc Retrieve a cognito session for a user using their username and password
+   * @param {String} username The username of the user to retrieve
+   * @param {String} password The password of the person to login
+   * @return {Promise<Error, CognitoSession>} A promise that resolves if successful to a session
    */
   const getCognitoSession = async (username, password) => {
     try {
-      const {session, newPasswordRequired} = await getAuthenticateUserAsync(
-          username,
-          password,
-      );
+      const {session, newPasswordRequired} = await getAuthenticateUserAsync(username, password);
       if (newPasswordRequired) {
-        throw 'New password required';
+        throw Error('New password required');
       }
       return session;
     } catch (err) {
@@ -434,10 +441,10 @@ const generateCognitoAPI = (type) => {
   };
 
   /**
-   * @desc Login
-   * @param login : username
-   * @param String : password
-   * @return Promise that resolves to session token if it worked
+   * @desc Login a user with a valid username and password
+   * @param {String} username The username of the user to retrieve
+   * @param {String} password The password of the person to login
+   * @return {Promise<Error, CognitoSession>} A promise that resolves if successful to a session
    */
   const login = async (username, password) => {
     try {
@@ -449,11 +456,13 @@ const generateCognitoAPI = (type) => {
     }
   };
 
+
   /**
    * @desc Confirm a user with a code sent to email or SMS
-   * @param String : session : Unparsed session
-   * @param String : code : Code that the user was sent
-   * @return Promise that resolves if user is confirmed
+   * @param {CognitoSession} session Unparsed session object
+   * @param {String} code The 5 letter code sent to the user through SMS or email
+   * @return {Promise<Error, CognitoSession>} A promise that resolves if user is
+   * confirmed else returns the error
    */
   const confirmUser = (session, code) => {
     const username = getCognitoUsername(session);
@@ -470,15 +479,17 @@ const generateCognitoAPI = (type) => {
     });
   };
 
+
   /**
-   * @desc Resets password if forgotten by sending a temporary password
-   * @param String : cognito_username : Cognito username
-   * @return Promise that resolves if user is confirmed
+   * @desc Initiate workflow for forgotten password
+   * @param {String} cognitoUsername Cognito username
+   * @return {Promise<Error, CognitoSession>} A promise that resolves if forgotten
+   * password workflow initiated for user
    */
-  const forgotPassword = (cognito_username) => {
+  const forgotPassword = (cognitoUsername) => {
     const params = {
       ClientId: UserPoolConfig.ClientId,
-      Username: cognito_username,
+      Username: cognitoUsername,
     };
     return new Promise((resolve, reject) => {
       CognitoServiceProvider.forgotPassword(params, (err, results) => {
@@ -488,16 +499,17 @@ const generateCognitoAPI = (type) => {
   };
 
   /**
-   * @desc Confirm the forgotten password by entering temporary and code
-   * @param String : cognito_username : The cognito username
-   * @param String : password : the password sent to confirm
-   * @param String : code : The code sent to verify login
-   * @return Promise that resolves if password forgot has been confirmed
+   * @desc Initiate workflow for forgotten password
+   * @param {String} cognitoUsername Cognito username
+   * @param {String} password the password sent to confirm
+   * @param {String} code The 5 letter code sent to the user through SMS or email
+   * @return {Promise<Error, CognitoSession>} A promise that resolves if forgotten password
+   * confirmed with new password
    */
-  const confirmForgotPassword = (cognito_username, password, code) => {
+  const confirmForgotPassword = (cognitoUsername, password, code) => {
     const params = {
       ClientId: UserPoolConfig.ClientId,
-      Username: cognito_username,
+      Username: cognitoUsername,
       ConfirmationCode: code,
       Password: password,
     };
@@ -510,25 +522,26 @@ const generateCognitoAPI = (type) => {
 
   /**
    * @desc Change password. First verify the token and then ping Cognito API.
-   * @param String : access_token : Access token sent to user
-   * @param String : old_password :  The old password
-   * @param String : password : A valid new password
-   * @return Promise that resolves if the password has been changed
+   * @param {String} accessToken Access token sent to user
+   * @param {String} oldPassword the old password
+   * @param {String} newPassword The new password
+   * @return {Promise<Error, CognitoSession>} A promise that resolves if password successfully
+   * changed
    */
-  const changePassword = async (access_token, old_password, password) => {
-    const password_error = validators.isValidPassword(password);
-    if (password_error) {
-      throw password_error;
+  const changePassword = async (accessToken, oldPassword, newPassword) => {
+    const passwordError = validators.isValidPassword(newPassword);
+    if (passwordError) {
+      throw passwordError;
     }
     try {
-      await verifyToken(access_token);
+      await verifyToken(accessToken);
     } catch (err) {
       throw err;
     }
     const params = {
-      AccessToken: access_token,
-      PreviousPassword: old_password,
-      ProposedPassword: password,
+      AccessToken: accessToken,
+      PreviousPassword: oldPassword,
+      ProposedPassword: newPassword,
     };
     return new Promise((resolve, reject) => {
       CognitoServiceProvider.changePassword(params, (err, results) => {

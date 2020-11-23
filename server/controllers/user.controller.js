@@ -19,9 +19,10 @@ const DefaultProfilePhoto = process.cwd() + '/client/assets/images/profile-pic.p
 
 /**
   * @desc Filter user for data
-  * @param Object User query result
+  * @param {Object} user query result
+  * @return {Object} The user document with certain private fields removed
 */
-const filter_user = (user) => {
+const filterUser = (user) => {
   user.permissions = undefined;
   user.gender = undefined;
   user.__v = undefined;
@@ -29,57 +30,15 @@ const filter_user = (user) => {
 };
 
 /**
-  * @desc creates a new User
-  * @param Object req - HTTP request object
-  * @param Object res - HTTP response object
-*/
-const create = async (req, res) => {
-  const {username, password, email, phone_number} = req.body;
-  let session; let cognito_user;
-  try {
-    session = await CognitoServices.signup(username, password, email, phone_number);
-  } catch (err) {
-    return res.status(400).json({error: errorHandler.getErrorMessage(err)});
-  }
-  try {
-    cognito_user = CognitoServices.getCognitoUsername(session);
-    const UserRole = await RBAC.findOne({'role': 'user'});
-    const new_user = {
-      cognito_username: cognito_user,
-      username: username,
-      first_name: req.body.first_name,
-      last_name: req.body.last_name,
-      gender: req.body.gender,
-      date_of_birth: req.body.date_of_birth,
-      about: req.body.about,
-      permissions: UserRole._id,
-    };
-    let user = new User(new_user);
-    user = await user.save();
-    res.cookie('t', session, {
-      expire: new Date() + 9999,
-    });
-    const parsed_session = CognitoServices.parseSession(session);
-    return res.json({
-      access_token: parsed_session.accessToken,
-      id_token: parsed_session.idToken,
-      refresh_token: parsed_session.refreshToken,
-      _id: user._id,
-    });
-  } catch (err) {
-    CognitoServices.deleteCognitoUser(cognito_user).then(()=>{
-      return res.status(400).json({error: errorHandler.getErrorMessage(err)});
-    }).catch((err)=>{
-      return res.status(500).json({error: StaticStrings.UnknownServerError + err});
-    });
-  }
-};
-
-/**
-  * @desc Middleware: Query a user by the path parameter ID
-  * @param Object req - HTTP request object
-  * @param Object res - HTTP response object
-*/
+ * @desc Middleware: Query a user by the path parameter ID
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @param {Function} next Next express middleware function
+ * @param {Number} id The ID of the user
+ * @return {Promise<Response>} Sends the HTTP response or continues
+ * to next middleware. A 404 error code is sent if the user is not
+ * found.
+ */
 const userByID = async (req, res, next, id) => {
   try {
     const user = await User.findById(id)
@@ -100,21 +59,76 @@ const userByID = async (req, res, next, id) => {
   }
 };
 
+
 /**
-  * @desc Controller to filter user data
-  * @param Object req - HTTP request object
-  * @param Object res - HTTP response object
-*/
+ * @desc Creates a new user
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} Sends the HTTP response or continues
+ * to next middleware. A 404 error code is sent if the user is not
+ * found.
+ */
+const create = async (req, res) => {
+  // eslint-disable-next-line camelcase
+  const {username, password, email, phone_number} = req.body;
+  let session; let congitoUser;
+  try {
+    session = await CognitoServices.signup(username, password, email, phone_number);
+  } catch (err) {
+    return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+  }
+  try {
+    congitoUser = CognitoServices.getCognitoUsername(session);
+    const UserRole = await RBAC.findOne({'role': 'user'});
+    const newUser = {
+      cognito_username: congitoUser,
+      username: username,
+      first_name: req.body.first_name,
+      last_name: req.body.last_name,
+      gender: req.body.gender,
+      date_of_birth: req.body.date_of_birth,
+      about: req.body.about,
+      permissions: UserRole._id,
+    };
+    let user = new User(newUser);
+    user = await user.save();
+    res.cookie('t', session, {
+      expire: new Date() + 9999,
+    });
+    const parsedSession = CognitoServices.parseSession(session);
+    return res.json({
+      access_token: parsedSession.accessToken,
+      id_token: parsedSession.idToken,
+      refresh_token: parsedSession.refreshToken,
+      _id: user._id,
+    });
+  } catch (err) {
+    CognitoServices.deleteCognitoUser(parsedSession).then(()=>{
+      return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+    }).catch((err)=>{
+      return res.status(500).json({error: StaticStrings.UnknownServerError + err});
+    });
+  }
+};
+
+
+/**
+ * @desc Retrieve information of a specific user
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} Returns the user with private data removed
+ */
 const read = (req, res) => {
-  req.profile = filter_user(req.profile);
+  req.profile = filterUser(req.profile);
   return res.status(200).json(req.profile);
 };
 
 /**
-  * @desc Controller to list all users
-  * @param Object req - HTTP request object
-  * @param Object res - HTTP response object
-*/
+ * @desc List all users
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} A list of all users id and username
+ */
 const list = async (req, res) => {
   try {
     const users = await User.find().select('_id username updatedAt createdAt');
@@ -125,12 +139,13 @@ const list = async (req, res) => {
 };
 
 /**
-  * @desc Controller to update specific user
-  * @param Object req - HTTP request object
-  * @param Object res - HTTP response object
-*/
+ * @desc Update an existing user
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} Return the updated user
+ */
 const update = async (req, res) => {
-  const fields_allowed = [
+  const fieldsAllowed = [
     'first_name',
     'phone_number',
     'last_name',
@@ -140,10 +155,10 @@ const update = async (req, res) => {
     'date_of_birth',
     'about',
   ];
-  const update_fields = Object.keys(req.body);
-  const invalid_fields = _.difference(update_fields, fields_allowed);
-  if (invalid_fields.length != 0) {
-    return res.status(422).json({error: `${StaticStrings.BadRequestInvalidFields} ${invalid_fields}`});
+  const updateFields = Object.keys(req.body);
+  const invalidFields = _.difference(updateFields, fieldsAllowed);
+  if (invalidFields.length != 0) {
+    return res.status(422).json({error: `${StaticStrings.BadRequestInvalidFields} ${invalidFields}`});
   }
   try {
     const user = await User.findOneAndUpdate({'_id': req.params.userId}, req.body, {new: true, runValidators: true});
@@ -156,10 +171,11 @@ const update = async (req, res) => {
 };
 
 /**
-  * @desc Controller to remove a specific user
-  * @param Object req - HTTP request object
-  * @param Object res - HTTP response object
-*/
+ * @desc Delete a user from DB
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} Return the deleted user
+ */
 const remove = async (req, res) => {
   try {
     const deletedUser = await req.profile.deleteOne();
@@ -170,25 +186,26 @@ const remove = async (req, res) => {
 };
 
 /**
-  * @desc Change password handler
-  * @param Object req - HTTP request object
-  * @param Object res - HTTP response object
-*/
+ * @desc Change the password of a user
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} Return the deleted user
+ */
 const changePassword = async (req, res) => {
-  const fields_required = [
+  const fieldsRequired = [
     'password',
     'old_password',
   ];
   // check to see if only contains proper fields
-  const update_fields = Object.keys(req.body);
-  const fields_needed = _.difference(fields_required, update_fields);
-  if (fields_needed.length != 0) {
-    return res.status(422).json({error: `${StaticStrings.BadRequestFieldsNeeded} ${fields_needed}`});
+  const updateFields = Object.keys(req.body);
+  const fieldsNeeded = _.difference(fieldsRequired, updateFields);
+  if (fieldsNeeded.length != 0) {
+    return res.status(422).json({error: `${StaticStrings.BadRequestFieldsNeeded} ${fieldsNeeded}`});
   }
   // check to see if it has an extra fields
-  const fields_extra = _.difference(update_fields, fields_required);
-  if (fields_extra.length != 0) {
-    return res.status(422).json({error: `${StaticStrings.BadRequestInvalidFields} ${fields_extra}`});
+  const fieldsExtra = _.difference(updateFields, fieldsRequired);
+  if (fieldsExtra.length != 0) {
+    return res.status(422).json({error: `${StaticStrings.BadRequestInvalidFields} ${fieldsExtra}`});
   }
   if (req.body.old_password == req.body.password) {
     return res.status(400).json({error: StaticStrings.UserModelErrors.PasswordUpdateSame});
@@ -207,24 +224,25 @@ const changePassword = async (req, res) => {
 };
 
 /**
-  * @desc Get profile photo (if not uploaded, default image is sent)
-  * @param Object req - HTTP request object
-  * @param Object res - HTTP response object
-*/
+ * @desc Retrieve the profile photo of a user (return default if doesn't exist)
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} The image as a stream of data
+ */
 const getProfilePhoto = (req, res) => {
   if (req.profile.profile_photo && req.profile.profile_photo.key) {
     res.locals.key = req.profile.profile_photo.key;
-    mediaController.getMedia(req, res);
+    return mediaController.getMedia(req, res);
   } else {
-    fs.createReadStream(DefaultProfilePhoto).pipe(res);
+    return fs.createReadStream(DefaultProfilePhoto).pipe(res);
   }
 };
 
 /**
-  * @desc Upload profile photo to S3 bucket and update MongoDB
-  * @param Object req - HTTP request object
-  * @param Object res - HTTP response object
-*/
+ * @desc Upload new profile photo
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ */
 const uploadProfilePhoto = (req, res) => {
   const meta = {
     'type': 'Avatar',
@@ -255,9 +273,10 @@ const uploadProfilePhoto = (req, res) => {
 };
 
 /**
-  * @desc Remove profile photo from S3 bucket and MongoDB
-  * @param Object req - HTTP request object
-  * @param Object res - HTTP response object
+ * @desc Remove profile photo from S3 bucket and MongoDB
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} A 200 if success else an error message
 */
 const removeProfilePhoto = async (req, res) => {
   const query = {'_id': req.params.userId};
@@ -267,19 +286,20 @@ const removeProfilePhoto = async (req, res) => {
     await User.findOneAndUpdate(query, update);
     if (user.profile_photo && user.profile_photo.key) {
       await user.profile_photo.deleteOne();
-      res.status(200).json({message: StaticStrings.RemoveProfilePhotoSuccess}); // Successfully removed photo
+      return res.status(200).json({message: StaticStrings.RemoveProfilePhotoSuccess}); // Successfully removed photo
     } else {
-      res.status(404).json({error: StaticStrings.UserControllerErrors.ProfilePhotoNotFound}); // no profile to remove
+      return res.status(404).json({error: StaticStrings.UserControllerErrors.ProfilePhotoNotFound}); // no profile to remove
     }
   } catch (err) {
-    res.status(500).json({error: StaticStrings.UnknownServerError+err.message}); // some other error
+    return res.status(500).json({error: StaticStrings.UnknownServerError+err.message}); // some other error
   }
 };
 
 /**
-  * @desc Get list of followers and following of :userId
-  * @param Object req - HTTP request object
-  * @param Object res - HTTP response object
+ * @desc Get all the followers of a user
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} A 200 if success else an error message
 */
 const listFollow = async (req, res) => {
   try {
@@ -299,9 +319,10 @@ const listFollow = async (req, res) => {
 };
 
 /**
-  * @desc The requester is asking to follow :userId
-  * @param Object req - HTTP request object
-  * @param Object res - HTTP response object
+ * @desc Follow a user
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} A 200 if success else an error message
 */
 const Follow = async (req, res) => {
   const myID = req.auth._id;
@@ -328,9 +349,10 @@ const Follow = async (req, res) => {
 };
 
 /**
-  * @desc The requester is asking to unfollow :userId
-  * @param Object req - HTTP request object
-  * @param Object res - HTTP response object
+ * @desc Unfollow a user
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} A 200 if success else an error message
 */
 const Unfollow = async (req, res) => {
   const myID = req.auth._id;

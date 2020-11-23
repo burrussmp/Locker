@@ -3,7 +3,6 @@ import chai from 'chai';
 import chaiHttp from 'chai-http';
 import {app} from '../../server/server';
 import {UserData} from '../../development/user.data';
-import {PostData} from '../../development/post.data';
 import Media from '../../server/models/media.model';
 import User from '../../server/models/user.model';
 import StaticStrings from '../../config/StaticStrings';
@@ -16,7 +15,6 @@ chai.use(chaiHttp);
 chai.should();
 
 const image1 = process.cwd() + '/test/resources/profile1.png';
-const video = process.cwd() + '/test/resources/sample_vid.mp4';
 
 const mediaTestBasics = () => {
   describe('Media test basics', () => {

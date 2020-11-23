@@ -1,16 +1,18 @@
+/* eslint-disable new-cap */
+/* eslint-disable max-len */
 // imports
-import express from 'express'
+import express from 'express';
 import employeeCtrl from '../controllers/employee.controller';
 import authCtrl from '../controllers/auth.controller';
-import permission from '../permissions'
+import permission from '../permissions';
 
 const EmployeePermissions = permission.EmployeePermissions;
 
 // create new router
-const router = express.Router()
+const router = express.Router();
 
 // handle path parameters
-router.param('employeeId', employeeCtrl.employeeByID)
+router.param('employeeId', employeeCtrl.employeeByID);
 
 /*
   * -------------- User API ------------------
@@ -18,24 +20,24 @@ router.param('employeeId', employeeCtrl.employeeByID)
 */
 
 router.route('/api/ent/employees')
-  .get(permission.Authorize([EmployeePermissions.Read]), employeeCtrl.list)
-  .post(permission.Authorize([EmployeePermissions.Create]),employeeCtrl.create);
+    .get(permission.Authorize([EmployeePermissions.Read]), employeeCtrl.list)
+    .post(permission.Authorize([EmployeePermissions.Create]), employeeCtrl.create);
 
 router.route('/api/ent/employees/:employeeId')
-  .get(permission.Authorize([EmployeePermissions.Read]), employeeCtrl.read)
-  .put(permission.Authorize([EmployeePermissions.EditContent]),authCtrl.requireOwnership, employeeCtrl.update)
-  .delete(permission.Authorize([EmployeePermissions.Delete]), authCtrl.requireOwnership, employeeCtrl.remove);
+    .get(permission.Authorize([EmployeePermissions.Read]), employeeCtrl.read)
+    .put(permission.Authorize([EmployeePermissions.EditContent]), authCtrl.requireOwnership, employeeCtrl.update)
+    .delete(permission.Authorize([EmployeePermissions.Delete]), authCtrl.requireOwnership, employeeCtrl.remove);
 
 router.route('/api/ent/employees/:employeeId/avatar')
-  .get(permission.Authorize([EmployeePermissions.Read]), employeeCtrl.getProfilePhoto)
-  .post(permission.Authorize([EmployeePermissions.EditContent]), authCtrl.requireOwnership,employeeCtrl.uploadProfilePhoto)
-  .delete(permission.Authorize([EmployeePermissions.Delete]),authCtrl.requireOwnership,employeeCtrl.removeProfilePhoto);
+    .get(permission.Authorize([EmployeePermissions.Read]), employeeCtrl.getProfilePhoto)
+    .post(permission.Authorize([EmployeePermissions.EditContent]), authCtrl.requireOwnership, employeeCtrl.uploadProfilePhoto)
+    .delete(permission.Authorize([EmployeePermissions.Delete]), authCtrl.requireOwnership, employeeCtrl.removeProfilePhoto);
 
 router.route('/api/ent/employees/:employeeId/password')
-  .put(permission.Authorize([EmployeePermissions.EditContent]),authCtrl.requireOwnership,employeeCtrl.changePassword);
+    .put(permission.Authorize([EmployeePermissions.EditContent]), authCtrl.requireOwnership, employeeCtrl.changePassword);
 
 router.route('/api/ent/employees/:employeeId/role')
-  .put(permission.Authorize([EmployeePermissions.ChangeRole]), employeeCtrl.changeRole);
+    .put(permission.Authorize([EmployeePermissions.ChangeRole]), employeeCtrl.changeRole);
 
-  
-export default router
+
+export default router;

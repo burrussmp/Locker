@@ -5,7 +5,7 @@ import User from '../server/models/user.model';
 import Post from '../server/models/post.model';
 import mongoose from 'mongoose';
 
-const filter_user_signup = (data) => {
+const filterUser_signup = (data) => {
   return {
     username: data.username,
     first_name: data.first_name,
@@ -59,7 +59,7 @@ const update_fuzzy = async (attrs) => {
 };
 
 
-exports.filter_user_signup = filter_user_signup;
+exports.filterUser_signup = filterUser_signup;
 exports.filter_content_post_create = filter_content_post_create;
 exports.filter_comment_create = filter_comment_create;
 exports.filter_reply_create = filter_reply_create;

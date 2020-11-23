@@ -24,7 +24,7 @@ require('../server/models/posts/content.post.model');
   await helper.dropDatabase();
   console.log('Populating with users and adding their profile photos...');
   for (let i = 0; i < Users.data.length; ++i) {
-    const user_signup = helper.filter_user_signup(Users.data[i]); // signup
+    const user_signup = helper.filterUser_signup(Users.data[i]); // signup
     const {_id, token} = await API.SignUp(user_signup);
     Users.data[i]['token'] = token;
     Users.data[i]['_id'] = _id;
@@ -52,9 +52,9 @@ require('../server/models/posts/content.post.model');
         const comments = posts[j].comments;
         if (comments) {
           for (let k = 0; k < comments.length; ++k) {
-            const comment_data = helper.filter_comment_create(comments[k]);
-            const _id2 = await API.CreateComment(comment_data, _id, token);
-            console.log(`Created comment ${comment_data.text}`);
+            const commentData = helper.filter_comment_create(comments[k]);
+            const _id2 = await API.CreateComment(commentData, _id, token);
+            console.log(`Created comment ${commentData.text}`);
             Users.data[i].posts[j].comments[k]['_id'] = _id2;
             const replies = comments[k].replies;
             if (replies) {

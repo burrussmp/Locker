@@ -1,11 +1,13 @@
+/* eslint-disable new-cap */
+/* eslint-disable max-len */
 // imports
-import express from 'express'
+import express from 'express';
 import searchCtrl from '../controllers/search.controller';
-import permission from '../permissions'
+import permission from '../permissions';
 
 const UserPermissions = permission.UserPermissions;
 // create new router
-const router = express.Router()
+const router = express.Router();
 
 // handle path parameters
 // router.param('userId', userCtrl.userByID)
@@ -16,9 +18,8 @@ const router = express.Router()
 */
 
 
-
 router.route('/api/search/users')
-  .post(permission.Authorize([UserPermissions.Read]), searchCtrl.searchUsers)
+    .post(permission.Authorize([UserPermissions.Read]), searchCtrl.searchUsers);
 
-export default router
+export default router;
 

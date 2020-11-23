@@ -1,3 +1,4 @@
+/* eslint-disable new-cap */
 /* eslint-disable max-len */
 
 'use strict';
@@ -26,12 +27,15 @@ const ReactionTypes = mongoose.models.Post.schema.tree.reactions[0].tree.type.en
 
 
 /**
-  * @desc Retrieve the post by ID and sets ownership field of req to the id
-  * @param Object   req   - HTTP request object
-  * @param Object   res   - HTTP response object
-  * @param Function next  - Next express middleware function
-  * @param String   id    - The ID of the post
-*/
+ * @desc Retrieve the post by ID and sets ownership field of req to the id
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @param {Function} next Next express middleware function
+ * @param {Number} id The ID of the post
+ * @return {Promise<Response>} Sends the HTTP response or continues
+ * to next middleware. A 404 error code is sent if the post is not
+ * found.
+ */
 const postByID = async (req, res, next, id) => {
   try {
     const post = await Post.findById(id);
@@ -50,12 +54,11 @@ const postByID = async (req, res, next, id) => {
   }
 };
 
-
 /**
  * @desc List all the posts (just id and who uploaded them)
- * @param Object   req - HTTP request object
- * @param Object   res - HTTP response object
- * @return A list of all the posts by their ID and when they were posted
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} A list of all the posts by their ID and when they were posted
  */
 const listPosts = async (req, res) => {
   try {
@@ -67,10 +70,10 @@ const listPosts = async (req, res) => {
 };
 
 /**
- * @desc Create a post
- * @param Object   req - HTTP request object
- * @param Object   res - HTTP response object
- * @return Creates a post
+ * @desc Create a post based on the query parameter 'type'. Accepted types include 'ContentPost'
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} Create a new post.
  */
 const createPost = async (req, res) => {
   const type = req.query.type;
@@ -81,12 +84,11 @@ const createPost = async (req, res) => {
   }
 };
 
-
 /**
- * @desc Gets a post by a particular ID
- * @param Object   req - HTTP request object
- * @param Object   res - HTTP response object
- * @return Gets post info: type, contentId, createdAt, caption, tags, postedBy,
+ * @desc Retrieve a post
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} The retrieved post object
  */
 const getPost = async (req, res) => {
   try {
@@ -102,9 +104,9 @@ const getPost = async (req, res) => {
 
 /**
  * @desc Edit a post. This delegates editing to the particular type of post
- * @param Object   req - HTTP request object
- * @param Object   res - HTTP response object
- * @return Creates a post
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} The edited post object
  */
 const editPost = async (req, res) => {
   try {
@@ -120,8 +122,10 @@ const editPost = async (req, res) => {
 
 /**
  * @desc Delegates deletion to type of post
- * @param Object   req - HTTP request object
- * @param Object   res - HTTP response object
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} Sends 200 with post ID if successfully
+ * deleted
  */
 const deletePost = async (req, res) => {
   try {
@@ -134,9 +138,10 @@ const deletePost = async (req, res) => {
 };
 
 /**
- * @desc Gets all the comments from a post and returns their ID and creation timestamp
- * @param Object   req - HTTP request object
- * @param Object   res - HTTP response object
+ * @desc List all comments of a post as well as reaction stats for each comment
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} Returns a list of comment IDs
  */
 const listComments = async (req, res) => {
   try {
@@ -170,10 +175,12 @@ const listComments = async (req, res) => {
   }
 };
 
+
 /**
- * @desc Retrieves a specific comment
- * @param Object   req - HTTP request object
- * @param Object   res - HTTP response object
+ * @desc Retrieve a particular comment and its stats from a post
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} A specific comment from a post
  */
 const getComment = async (req, res) => {
   try {
@@ -196,27 +203,27 @@ const getComment = async (req, res) => {
   }
 };
 
-
 /**
  * @desc Creates a comment. The required fields are text, filling in postedBy.
- * @param Object   req - HTTP request object
- * @param Object   res - HTTP response object
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} If successful return the ID of the new comment
  */
 const createComment = async (req, res) => {
   try {
-    const comment_data = {
+    const commentData = {
       text: req.body.text,
       postedBy: req.auth._id,
       postId: req.params.postId,
     };
-    let new_comment = new Comment(comment_data);
-    new_comment = await new_comment.save();
+    let newComment = new Comment(commentData);
+    newComment = await newComment.save();
     try {
       await Post.findOneAndUpdate(
           {'_id': req.params.postId},
-          {$push: {comments: new_comment._id}},
+          {$push: {comments: newComment._id}},
           {runValidators: true});
-      return res.status(200).json({'_id': new_comment._id});
+      return res.status(200).json({'_id': newComment._id});
     } catch (err) {
       return res.status(400).json({error: errorHandler.getErrorMessage(err)});
     }
@@ -226,9 +233,10 @@ const createComment = async (req, res) => {
 };
 
 /**
- * @desc Deletes comments. No crazy clean up to do
- * @param Object   req - HTTP request object
- * @param Object   res - HTTP response object
+ * @desc Delete a comment (ID retrieved from URL path parameter)
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} If successful return the ID of deleted comment
  */
 const deleteComment = async (req, res) => {
   try {
@@ -240,11 +248,11 @@ const deleteComment = async (req, res) => {
   }
 };
 
-
 /**
  * @desc List all reactions of a particular post
- * @param Object   req - HTTP request object
- * @param Object   res - HTTP response object
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} Aggregate result of reactions if successful
  */
 const getReaction = async (req, res) => {
   try {
@@ -272,8 +280,10 @@ const getReaction = async (req, res) => {
 
 /**
  * @desc Change the reaction. You can react to your own post
- * @param Object   req - HTTP request object
- * @param Object   res - HTTP response object
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} The ID of the post whose reaction has been
+ * adjusted for a user
  */
 const changeReaction = async (req, res) => {
   try {
@@ -298,9 +308,11 @@ const changeReaction = async (req, res) => {
 };
 
 /**
- * @desc Remove reaction
- * @param Object   req - HTTP request object
- * @param Object   res - HTTP response object
+ * @desc Remove your reaction from a post
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} The ID of the post whose reaction has
+ * been removed for a particular user
  */
 const removeReaction = async (req, res) => {
   try {
