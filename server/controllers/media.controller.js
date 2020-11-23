@@ -133,10 +133,10 @@ const getMediaByKeyResize = async (req, res, key) => {
   const {width,height} = dimensions;
   const resized_key = key + "_" + "width_" + width + "_height_" + height;
   try {
-    const resized_media = await s3Services.getMediaS3(resized_key);
+    const resizedMedia = await s3Services.getMediaS3(resized_key);
     res.setHeader('Content-Type','image/png')
-    res.setHeader("Content-Length", resized_media.ContentLength);
-    res.write(resized_media.Body);
+    res.setHeader("Content-Length", resizedMedia.ContentLength);
+    res.write(resizedMedia.Body);
     return res.end(null);
   } catch (err) {
     try {
@@ -146,14 +146,14 @@ const getMediaByKeyResize = async (req, res, key) => {
         .toFormat("png")
         .toBuffer();
       await s3Services.putObjectS3(resized_key, buffer, "image/png");
-      const resized_media = await s3Services.getMediaS3(resized_key);
+      const resizedMedia = await s3Services.getMediaS3(resized_key);
       await Media.findOneAndUpdate(
         { key: key },
         { $push: { resized_keys: resized_key } }
       );
       res.setHeader('Content-Type','image/png')
-      res.setHeader("Content-Length", resized_media.ContentLength);
-      res.write(resized_media.Body);
+      res.setHeader("Content-Length", resizedMedia.ContentLength);
+      res.write(resizedMedia.Body);
       return res.end(null);
     } catch (err) {
       return res.status(500).json({ error: err.message });

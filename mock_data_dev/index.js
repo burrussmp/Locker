@@ -46,8 +46,8 @@ require('../server/models/posts/content.post.model');
     if (posts) {
       for (let j = 0; j < posts.length; ++j) {
         const post = posts[j];
-        const post_data = helper.filter_content_post_create(post);
-        const _id = await API.CreateContentPost(post_data, token);
+        const postData = helper.filter_content_post_create(post);
+        const _id = await API.CreateContentPost(postData, token);
         Users.data[i].posts[j]['_id'] = _id;
         const comments = posts[j].comments;
         if (comments) {

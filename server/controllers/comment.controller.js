@@ -99,8 +99,8 @@ const createReply = async (req,res) => {
         text : req.body.text,
     }
     try {
-        let new_reply = await Comment_Services.addReply(req.params.commentId,reply);
-        return res.status(200).json({"_id":new_reply._id});
+        let newReply = await Comment_Services.addReply(req.params.commentId,reply);
+        return res.status(200).json({"_id":newReply._id});
     } catch (err) {
         if (errorHandler.getErrorMessage(err).includes(StaticStrings.CommentModelErrors.ReplyTextRequired))
             return res.status(400).json({error: StaticStrings.CommentModelErrors.ReplyTextRequired}) 
