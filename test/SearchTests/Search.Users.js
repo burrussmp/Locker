@@ -3,7 +3,7 @@ import chaiHttp from "chai-http";
 import { app } from "../../server/server";
 import { UserData } from "../../development/user.data";
 import User from "../../server/models/user.model";
-import { drop_database, createUser } from "../helper";
+import { dropDatabase, createUser } from "../helper";
 
 chai.use(chaiHttp);
 chai.should();
@@ -15,7 +15,7 @@ const auth_password_tests = () => {
       let agent = chai.request.agent(app);
       let userToken0, userToken1;
       before(async () => {
-        await drop_database();
+        await dropDatabase();
         let user = await createUser(UserData[0]);
         userId0 = user._id;
         userToken0 = user.access_token;
@@ -26,7 +26,7 @@ const auth_password_tests = () => {
         userId2 = user._id;
       });
       after(async () => {
-        await drop_database();
+        await dropDatabase();
       });
       it("Basic (empty, missing, and strings should succeed)", async () => {
         return agent

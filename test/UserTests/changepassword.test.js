@@ -3,7 +3,7 @@ import chaiHttp from 'chai-http';
 
 import {app} from '../../server/server';
 import {UserData} from '../../development/user.data'
-import {drop_database, createUser, getAccessToken} from  '../helper';
+import {dropDatabase, createUser, getAccessToken} from  '../helper';
 import User from '../../server/models/user.model';
 import RBAC from '../../server/models/rbac.model';
 import StaticStrings from '../../config/StaticStrings';
@@ -15,11 +15,11 @@ const change_password_test = () => {
         describe('PUT /api/users/:userId/password', ()=>{
             let id0,id1;
             let agent = chai.request.agent(app);
-            let valid_password = "myNewPassword12$";
-            let invalid_password = "bad";
+            let validPassword = "myNewPassword12$";
+            let invalidPassword = "bad";
             let access_token0,access_token1;
             before( async () =>{
-                await drop_database();
+                await dropDatabase();
                 let user = await createUser(UserData[0]);
                 id0 = user._id;
                 access_token0 = user.access_token;
@@ -28,13 +28,13 @@ const change_password_test = () => {
                 id1 = user._id;
             });
             after( async ()=>{
-                await drop_database();
+                await dropDatabase();
             })
             it("Not owner (should fail)",async ()=>{
                 return agent.put(`/api/users/${id1}/password?access_token=${access_token0}`)
                     .send({
                         'old_password' : UserData[0].password,
-                        'password' : valid_password
+                        'password' : validPassword
                     })
                     .then(res=>{
                         res.status.should.eql(403);
@@ -45,7 +45,7 @@ const change_password_test = () => {
                 return agent.put(`/api/users/${id0}/password`)
                 .send({
                     'old_password' : UserData[0].password,
-                    'password' : valid_password
+                    'password' : validPassword
                 })
                 .then(res=>{
                     res.status.should.eql(401);
@@ -56,7 +56,7 @@ const change_password_test = () => {
                 return agent.put(`/api/users/fdafd/password?access_token=${access_token0}`)
                 .send({
                     'old_password' : UserData[0].password,
-                    'password' : valid_password
+                    'password' : validPassword
                 })
                 .then(res=>{
                     res.status.should.eql(404);
@@ -69,12 +69,12 @@ const change_password_test = () => {
                 return agent.put(`/api/users/${id0}/password?access_token=${access_token0}`)
                 .send({
                     'old_password' : UserData[0].password,
-                    'password' : valid_password
+                    'password' : validPassword
                 })
                 .then(async res=>{
                     res.status.should.eql(403);
                     res.body.error.should.eql(StaticStrings.InsufficientPermissionsError)
-                    await drop_database();
+                    await dropDatabase();
                     let user = await createUser(UserData[0]);
                     id0 = user._id;
                     access_token0 = user.access_token;
@@ -87,7 +87,7 @@ const change_password_test = () => {
                 return agent.put(`/api/users/${id0}/password?access_token=${access_token0}`)
                 .send({
                     'old_password' : UserData[1].password,
-                    'password' : valid_password
+                    'password' : validPassword
                 })
                 .then(res=>{
                     res.status.should.eql(400);
@@ -97,7 +97,7 @@ const change_password_test = () => {
             it("/PUT missing old password (should fail)", async ()=>{
                 return agent.put(`/api/users/${id0}/password?access_token=${access_token0}`)
                 .send({
-                    'password' : valid_password
+                    'password' : validPassword
                 })
                 .then(res=>{
                     res.status.should.eql(422);
@@ -107,7 +107,7 @@ const change_password_test = () => {
             it("/PUT missing new password (should fail)", async ()=>{
                 return agent.put(`/api/users/${id0}/password?access_token=${access_token0}`)
                 .send({
-                    'old_password' : valid_password
+                    'old_password' : validPassword
                 })
                 .then(res=>{
                     res.status.should.eql(422);
@@ -129,7 +129,7 @@ const change_password_test = () => {
                 return agent.put(`/api/users/${id0}/password?access_token=${access_token0}`)
                 .send({
                     'old_password' : UserData[0].password,
-                    'password' : invalid_password
+                    'password' : invalidPassword
                 })
                 .then(res=>{
                     res.status.should.eql(400);
@@ -140,7 +140,7 @@ const change_password_test = () => {
                 return agent.put(`/api/users/${id0}/password?access_token=${access_token0}`)
                 .send({
                     'old_password' : UserData[0].password,
-                    'password' : invalid_password,
+                    'password' : invalidPassword,
                     'username' : 'Changethis'
                 })
                 .then(res=>{
@@ -152,14 +152,14 @@ const change_password_test = () => {
                 return agent.put(`/api/users/${id0}/password?access_token=${access_token0}`)
                 .send({
                     'old_password' : UserData[0].password,
-                    'password' : valid_password,
+                    'password' : validPassword,
                 })
                 .then(async res=>{
                     res.status.should.eql(200);
                     res.body.message.should.eql(StaticStrings.UpdatedPasswordSuccess)
                     let login = {
                         login: UserData[0].username,
-                        password:valid_password
+                        password:validPassword
                     };
                     return getAccessToken(login);
                 });

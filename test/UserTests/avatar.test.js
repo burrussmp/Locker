@@ -4,7 +4,7 @@ const fs = require('fs').promises
 import fetch from 'node-fetch';
 import {app} from '../../server/server';
 import {UserData} from '../../development/user.data'
-import {drop_database,buffer_equality, createUser} from  '../helper';
+import {dropDatabase,bufferEquality, createUser} from  '../helper';
 import User from '../../server/models/user.model';
 import RBAC from '../../server/models/rbac.model';
 import Media from '../../server/models/media.model';
@@ -16,7 +16,7 @@ import permissions from '../../server/permissions';
 chai.use(chaiHttp);
 chai.should();
 
-const default_profile_photo = '/client/assets/images/profile-pic.png'
+const defaultProfilePhoto = '/client/assets/images/profile-pic.png'
 
 const avatar_test = () => {
     describe("Profile Photo",()=>{
@@ -26,7 +26,7 @@ const avatar_test = () => {
             let agent = chai.request.agent(app);
             let user = UserData[0];
             beforeEach( async () =>{
-                await drop_database();
+                await dropDatabase();
                 let user = await createUser(UserData[0]);
                 id0 = user._id;
                 access_token0 = user.access_token;
@@ -151,16 +151,16 @@ const avatar_test = () => {
                     });
             })
             it("Invalid permissions (should fail)", async()=>{
-                const na_role = await RBAC.findOne({'role':'none'});
-                await User.findOneAndUpdate({'username':user.username},{'permissions': na_role._id},{new:true});
+                const NARole = await RBAC.findOne({'role':'none'});
+                await User.findOneAndUpdate({'username':user.username},{'permissions': NARole._id},{new:true});
                 return agent.post(`/api/users/${id0}/avatar`)
                     .set('Authorization',`Bearer ${access_token0}`)
                     .attach("media", process.cwd()+'/test/resources/profile1.png', "profile_photo")
                     .then(async res=>{
                         res.status.should.eql(403);
                         res.body.error.should.eql(StaticStrings.InsufficientPermissionsError)
-                        let user_role = await RBAC.findOne({'role':'user'});
-                        await User.findOneAndUpdate({'username':user.username},{'permissions': user_role._id},{new:true});
+                        let UserRole = await RBAC.findOne({'role':'user'});
+                        await User.findOneAndUpdate({'username':user.username},{'permissions': UserRole._id},{new:true});
                     });
             });
             it("Not an image file (should fail)",async ()=>{
@@ -246,12 +246,12 @@ const avatar_test = () => {
             let access_token0,access_token1;
             let agent = chai.request.agent(app);
             let user = UserData[0];
-            let login_user = {
+            let loginUser = {
                 login: user.email,
                 password: user.password
             };
             beforeEach( async () =>{
-                await drop_database();
+                await dropDatabase();
                 let user = await createUser(UserData[0]);
                 id0 = user._id;
                 access_token0 = user.access_token;
@@ -283,8 +283,8 @@ const avatar_test = () => {
                     }).then(res=>res.blob())
                     .then(async res=>{
                         let buffer = await res.arrayBuffer();
-                        return fs.readFile(process.cwd()+default_profile_photo).then(data=>{
-                            buffer_equality(data,buffer).should.be.true;
+                        return fs.readFile(process.cwd()+defaultProfilePhoto).then(data=>{
+                            bufferEquality(data,buffer).should.be.true;
                         })
                     })
             })
@@ -310,8 +310,8 @@ const avatar_test = () => {
                 });
             })
             it("Invalid permissions (should fail)", async()=>{
-                const na_role = await RBAC.findOne({'role':'none'});
-                await User.findOneAndUpdate({'username':user.username},{'permissions':na_role._id},{new:true});
+                const NARole = await RBAC.findOne({'role':'none'});
+                await User.findOneAndUpdate({'username':user.username},{'permissions':NARole._id},{new:true});
                 return agent.get(`/api/users/${id0}/avatar`)
                 .set('Authorization',`Bearer ${access_token0}`)
                 .then(res=>{
@@ -339,7 +339,7 @@ const avatar_test = () => {
                         .then(async res=>{
                             let buffer = await res.arrayBuffer();
                             return fs.readFile(process.cwd()+'/test/resources/profile1.png').then(data=>{
-                                buffer_equality(data,buffer).should.be.true;
+                                bufferEquality(data,buffer).should.be.true;
                                 return agent.delete(`/api/users/${id}/avatar`)
                                 .set('Authorization',`Bearer ${token}`)
                                 .then(async (res)=>{
@@ -355,8 +355,8 @@ const avatar_test = () => {
                                         }).then(res=>res.blob())
                                         .then(async res=>{
                                             let buffer = await res.arrayBuffer();
-                                            return fs.readFile(process.cwd()+default_profile_photo).then(data=>{
-                                                buffer_equality(data,buffer).should.be.true;
+                                            return fs.readFile(process.cwd()+defaultProfilePhoto).then(data=>{
+                                                bufferEquality(data,buffer).should.be.true;
                                             })
                                         })
                                 });
@@ -370,13 +370,13 @@ const avatar_test = () => {
             let access_token0,access_token1;
             let agent = chai.request.agent(app);
             let user = UserData[0];
-            let login_user = {
+            let loginUser = {
                 login: user.email,
                 password: user.password
             };
             let token;
             beforeEach( async () =>{
-                await drop_database();
+                await dropDatabase();
                 let user = await createUser(UserData[0]);
                 id0 = user._id;
                 access_token0 = user.access_token;
@@ -387,7 +387,7 @@ const avatar_test = () => {
                     res.body.length.should.eql(2);
                     res.body[0].username.should.eql(UserData[0].username)
                 });           
-                await agent.post('/auth/login').send(login_user).then((res) => {
+                await agent.post('/auth/login').send(loginUser).then((res) => {
                     let id = id0;
                     token = access_token0;
                     return agent.post(`/api/users/${id}/avatar`).set('Authorization',`Bearer ${token}`).attach("media", process.cwd()+'/test/resources/profile1.png', "profile_photo")
@@ -467,8 +467,8 @@ const avatar_test = () => {
                     });
             });
             it("Invalid permissions (should fail)", async()=>{
-                const na_role = await RBAC.findOne({'role':'none'});
-                await User.findOneAndUpdate({'username':user.username},{'permissions':na_role._id},{new:true});
+                const NARole = await RBAC.findOne({'role':'none'});
+                await User.findOneAndUpdate({'username':user.username},{'permissions':NARole._id},{new:true});
                 let id = id0;
                 let m_token = token;
                 return agent.delete(`/api/users/${id}/avatar`).set('Authorization',`Bearer ${m_token}`).then(res=>{

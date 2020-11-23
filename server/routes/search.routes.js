@@ -3,7 +3,7 @@ import express from 'express'
 import searchCtrl from '../controllers/search.controller';
 import permission from '../permissions'
 
-const UserPermissions = permission.User_Permissions;
+const UserPermissions = permission.UserPermissions;
 // create new router
 const router = express.Router()
 

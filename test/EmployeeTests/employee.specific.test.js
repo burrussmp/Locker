@@ -1,212 +1,211 @@
-import chai  from 'chai';
+/* eslint-disable max-len */
+import chai from 'chai';
 import chaiHttp from 'chai-http';
 import {app} from '../../server/server';
 import Media from '../../server/models/media.model';
-import {OrganizationData, getOrganizationConstructor} from '../../development/organization.data';
 import {EmployeeData, getEmployeeConstructor} from '../../development/employee.data';
 
 import StaticStrings from '../../config/StaticStrings';
-import {drop_database, loginAdminEmployee, createEmployee} from  '../helper';
-import permissions from '../../server/permissions';
+import {dropDatabase, loginAdminEmployee, createEmployee} from '../helper';
 
 
 chai.use(chaiHttp);
 chai.should();
 
-const employee_specific = () => {
-    describe("Basics Test",()=>{
-        describe("GET /api/ent/employees/:employeeId",()=>{
-            let agent = chai.request.agent(app);
-            let admin;
-            beforeEach(async()=>{
-                await drop_database();
-                admin = await loginAdminEmployee();
+const employeeSpecificTest = () => {
+  describe('Basics Test', ()=>{
+    describe('GET /api/ent/employees/:employeeId', ()=>{
+      const agent = chai.request.agent(app);
+      let admin;
+      beforeEach(async ()=>{
+        await dropDatabase();
+        admin = await loginAdminEmployee();
+      });
+      it('Get an employee by ID (success)', async ()=>{
+        return agent.get(`/api/ent/employees/${admin.id}?access_token=${admin.access_token}`)
+            .then((res)=>{
+              res.status.should.eql(200);
             });
-            it("Get an employee by ID (success)",async()=>{
-                return agent.get(`/api/ent/employees/${admin.id}?access_token=${admin.access_token}`)
-                    .then((res)=>{
-                        res.status.should.eql(200);
-                })
+      });
+      it('Get an employee by incorrect ID (should fail)', async ()=>{
+        return agent.get(`/api/ent/employees/${3214323}?access_token=${admin.access_token}`)
+            .then((res)=>{
+              res.status.should.eql(404);
             });
-            it("Get an employee by incorrect ID (should fail)",async()=>{
-                return agent.get(`/api/ent/employees/${3214323}?access_token=${admin.access_token}`)
-                    .then((res)=>{
-                        res.status.should.eql(404);
-                })
+      });
+      it('Not logged in (should fail)', async ()=>{
+        return agent.get(`/api/ent/employees/${admin.id}`)
+            .then((res)=>{
+              res.status.should.eql(401);
             });
-            it("Not logged in (should fail)",async()=>{
-                return agent.get(`/api/ent/employees/${admin.id}`)
-                    .then((res)=>{
-                        res.status.should.eql(401);
-                })
+      });
+    });
+    describe('PUT /api/ent/employees/:employeeId', ()=>{
+      const agent = chai.request.agent(app);
+      let admin;
+      let employee;
+      beforeEach(async ()=>{
+        await dropDatabase();
+        admin = await loginAdminEmployee();
+        employee = await createEmployee(admin, getEmployeeConstructor(EmployeeData[1]));
+      });
+      it('Update employee first_name (should succeed)', async ()=>{
+        const newField = {'first_name': 'first_name'};
+        return agent.put(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
+            .send(newField)
+            .then((res)=>{
+              return agent.get(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
+                  .then((res)=>{
+                    res.status.should.eql(200);
+                    res.body.first_name.should.eql(newField.first_name);
+                  });
             });
-        });
-        describe("PUT /api/ent/employees/:employeeId",()=>{
-            let agent = chai.request.agent(app);
-            let admin;
-            let employee;
-            beforeEach(async()=>{
-                await drop_database();
-                admin = await loginAdminEmployee();
-                employee = await createEmployee(admin, getEmployeeConstructor(EmployeeData[1]))
+      });
+      it('Update employee last_name (should succeed)', async ()=>{
+        const newField = {'last_name': 'last_name'};
+        return agent.put(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
+            .send(newField)
+            .then((res)=>{
+              return agent.get(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
+                  .then((res)=>{
+                    res.status.should.eql(200);
+                    res.body.last_name.should.eql(newField.last_name);
+                  });
             });
-            it("Update employee first_name (should succeed)", async()=>{
-                const new_field = {'first_name': 'first_name'};
-                return agent.put(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
-                    .send(new_field)
-                    .then((res)=>{
-                        return agent.get(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
-                        .then((res)=>{
-                            res.status.should.eql(200);
-                            res.body.first_name.should.eql(new_field.first_name);
-                    })
-                })
+      });
+      it('Update employee date_of_birth (should succeed)', async ()=>{
+        const newField = {'date_of_birth': new Date()};
+        return agent.put(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
+            .send(newField)
+            .then((res)=>{
+              return agent.get(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
+                  .then((res)=>{
+                    res.status.should.eql(200);
+                  });
             });
-            it("Update employee last_name (should succeed)", async()=>{
-                const new_field = {'last_name': 'last_name'};
-                return agent.put(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
-                    .send(new_field)
-                    .then((res)=>{
-                        return agent.get(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
-                        .then((res)=>{
-                            res.status.should.eql(200);
-                            res.body.last_name.should.eql(new_field.last_name);
-                    })
-                })
+      });
+      it('Update employee email (should succeed)', async ()=>{
+        const newField = {'email': 'test@mail.com'};
+        return agent.put(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
+            .send(newField)
+            .then((res)=>{
+              res.status.should.eql(200);
             });
-            it("Update employee date_of_birth (should succeed)", async()=>{
-                const new_field = {'date_of_birth': new Date()};
-                return agent.put(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
-                    .send(new_field)
-                    .then((res)=>{
-                        return agent.get(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
-                        .then((res)=>{
-                            res.status.should.eql(200);
-                    })
-                })
+      });
+      it('Update employee email with email that already exists (should fail)', async ()=>{
+        const newField = {'email': process.env.ADMIN_EMAIL};
+        return agent.put(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
+            .send(newField)
+            .then((res)=>{
+              res.status.should.eql(400);
             });
-            it("Update employee email (should succeed)", async()=>{
-                const new_field = {'email': 'test@mail.com'};
-                return agent.put(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
-                    .send(new_field)
-                    .then((res)=>{
-                        res.status.should.eql(200);
-                })
+      });
+      it('Update an employee (incorrect ID) (should fail)', async ()=>{
+        const newField = {'first_name': 'first_name'};
+        return agent.put(`/api/ent/employees/${1234}?access_token=${employee.access_token}`)
+            .send(newField)
+            .then((res)=>{
+              res.status.should.eql(404);
+              return agent.get(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
+                  .then((res)=>{
+                    res.status.should.eql(200);
+                    res.body.first_name.should.eql(EmployeeData[1].first_name);
+                  });
             });
-            it("Update employee email with email that already exists (should fail)",async()=>{
-                const new_field = {'email': process.env.ADMIN_EMAIL};
-                return agent.put(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
-                    .send(new_field)
-                    .then((res)=>{
-                        res.status.should.eql(400);
-                })
+      });
+      it('Not logged in (should fail)', async ()=>{
+        const newField = {'first_name': 'first_name'};
+        return agent.put(`/api/ent/employees/${employee.id}`)
+            .send(newField)
+            .then((res)=>{
+              res.status.should.eql(401);
+              res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError);
+              return agent.get(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
+                  .then((res)=>{
+                    res.status.should.eql(200);
+                    res.body.first_name.should.eql(EmployeeData[1].first_name);
+                  });
             });
-            it("Update an employee (incorrect ID) (should fail)",async()=>{
-                const new_field = {'first_name': 'first_name'};
-                return agent.put(`/api/ent/employees/${1234}?access_token=${employee.access_token}`)
-                    .send(new_field)
-                    .then((res)=>{
-                        res.status.should.eql(404);
-                        return agent.get(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
-                            .then((res)=>{
-                                res.status.should.eql(200);
-                                res.body.first_name.should.eql(EmployeeData[1].first_name);
-                        })
-                    })
+      });
+      it('Not owner (should fail)', async ()=>{
+        const newField = {'first_name': 'first_name'};
+        return agent.put(`/api/ent/employees/${admin.id}?access_token=${employee.access_token}`)
+            .send(newField)
+            .then((res)=>{
+              res.status.should.eql(403);
+              res.body.error.should.eql(StaticStrings.NotOwnerError);
+              return agent.get(`/api/ent/employees/${admin.id}?access_token=${employee.access_token}`)
+                  .then((res)=>{
+                    res.status.should.eql(200);
+                    res.body._id.should.eql(admin.id);
+                  });
             });
-            it("Not logged in (should fail)",async()=>{
-                const new_field = {'first_name': 'first_name'};
-                return agent.put(`/api/ent/employees/${employee.id}`)
-                    .send(new_field)
-                    .then((res)=>{
-                        res.status.should.eql(401);
-                        res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError);
-                        return agent.get(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
-                            .then((res)=>{
-                                res.status.should.eql(200);
-                                res.body.first_name.should.eql(EmployeeData[1].first_name);
-                        })
-                    })
+      });
+    });
+    describe('DELETE /api/ent/employees/:employeeId', ()=>{
+      const agent = chai.request.agent(app);
+      let admin;
+      let employee;
+      beforeEach(async ()=>{
+        await dropDatabase();
+        admin = await loginAdminEmployee();
+        employee = await createEmployee(admin, getEmployeeConstructor(EmployeeData[1]));
+      });
+      it('Delete an employee (should succeed)', async ()=>{
+        return agent.delete(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
+            .then((res)=>{
+              res.status.should.eql(200);
+              return agent.get(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
+                  .then((res)=>{
+                    res.status.should.eql(404);
+                  });
             });
-            it("Not owner (should fail)",async()=>{
-                const new_field = {'first_name': 'first_name'};
-                return agent.put(`/api/ent/employees/${admin.id}?access_token=${employee.access_token}`)
-                    .send(new_field)
-                    .then((res)=>{
-                        res.status.should.eql(403);
-                        res.body.error.should.eql(StaticStrings.NotOwnerError);
-                        return agent.get(`/api/ent/employees/${admin.id}?access_token=${employee.access_token}`)
-                            .then((res)=>{
-                                res.status.should.eql(200);
-                                res.body._id.should.eql(admin.id);
-                        })
-                    })
+      });
+      it('Delete an employee, profile should be deleted (should succeed)', async ()=>{
+        return agent.post(`/api/ent/employees/${employee.id}/avatar?access_token=${employee.access_token}`)
+            .attach('media', EmployeeData[1].profile)
+            .then(async (res)=> {
+              res.status.should.eql(200);
+              let media = await Media.findOne({uploadedBy: employee.id});
+              (media == undefined || media == null).should.be.false;
+              return agent.delete(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
+                  .then(async (res)=>{
+                    res.status.should.eql(200);
+                    media = await Media.findOne({uploadedBy: employee.id});
+                    (media == undefined || media == null).should.be.true;
+                  });
             });
-        });
-        describe("DELETE /api/ent/employees/:employeeId",()=>{
-            let agent = chai.request.agent(app);
-            let admin;
-            let employee;
-            beforeEach(async()=>{
-                await drop_database();
-                admin = await loginAdminEmployee();
-                employee = await createEmployee(admin, getEmployeeConstructor(EmployeeData[1]))
+      });
+      it('Not logged in (should fail)', async ()=>{
+        const newField = {'first_name': 'first_name'};
+        return agent.delete(`/api/ent/employees/${employee.id}`)
+            .send(newField)
+            .then((res)=>{
+              res.status.should.eql(401);
+              res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError);
+              return agent.get(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
+                  .then((res)=>{
+                    res.status.should.eql(200);
+                    res.body.first_name.should.eql(EmployeeData[1].first_name);
+                  });
             });
-            it("Delete an employee (should succeed)", async()=>{
-                return agent.delete(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
-                    .then((res)=>{
-                        res.status.should.eql(200);
-                        return agent.get(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
-                        .then((res)=>{
-                            res.status.should.eql(404);
-                    })
-                })
+      });
+      it('Not owner (should fail)', async ()=>{
+        const newField = {'first_name': 'first_name'};
+        return agent.delete(`/api/ent/employees/${admin.id}?access_token=${employee.access_token}`)
+            .send(newField)
+            .then((res)=>{
+              res.status.should.eql(403);
+              res.body.error.should.eql(StaticStrings.NotOwnerError);
+              return agent.get(`/api/ent/employees/${admin.id}?access_token=${employee.access_token}`)
+                  .then((res)=>{
+                    res.status.should.eql(200);
+                    res.body._id.should.eql(admin.id);
+                  });
             });
-            it("Delete an employee, profile should be deleted (should succeed)", async()=>{
-                return agent.post(`/api/ent/employees/${employee.id}/avatar?access_token=${employee.access_token}`)
-                    .attach("media", EmployeeData[1].profile)
-                    .then(async(res)=> {
-                        res.status.should.eql(200);
-                        let media = await Media.findOne({uploadedBy: employee.id});
-                        (media == undefined || media == null).should.be.false;
-                        return agent.delete(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
-                        .then(async (res)=>{
-                            res.status.should.eql(200);
-                            media = await Media.findOne({uploadedBy: employee.id});
-                            (media == undefined || media == null).should.be.true;
-                    });
-                });
-            });
-            it("Not logged in (should fail)",async()=>{
-                const new_field = {'first_name': 'first_name'};
-                return agent.delete(`/api/ent/employees/${employee.id}`)
-                    .send(new_field)
-                    .then((res)=>{
-                        res.status.should.eql(401);
-                        res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError);
-                        return agent.get(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)
-                            .then((res)=>{
-                                res.status.should.eql(200);
-                                res.body.first_name.should.eql(EmployeeData[1].first_name);
-                        })
-                    })
-            });
-            it("Not owner (should fail)",async()=>{
-                const new_field = {'first_name': 'first_name'};
-                return agent.delete(`/api/ent/employees/${admin.id}?access_token=${employee.access_token}`)
-                    .send(new_field)
-                    .then((res)=>{
-                        res.status.should.eql(403);
-                        res.body.error.should.eql(StaticStrings.NotOwnerError);
-                        return agent.get(`/api/ent/employees/${admin.id}?access_token=${employee.access_token}`)
-                            .then((res)=>{
-                                res.status.should.eql(200);
-                                res.body._id.should.eql(admin.id);
-                        })
-                    })
-            });
-        });
-    })
-}
+      });
+    });
+  });
+};
 
-export default employee_specific;
+export default employeeSpecificTest;

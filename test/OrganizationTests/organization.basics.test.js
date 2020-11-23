@@ -4,7 +4,7 @@ import {app} from '../../server/server';
 import {OrganizationData, getConstructorData} from '../../development/organization.data';
 import Organization from '../../server/models/organization.model';
 import StaticStrings from '../../config/StaticStrings';
-import {drop_database, createUser} from  '../helper';
+import {dropDatabase, createUser} from  '../helper';
 import _ from 'lodash';
 import permissions from '../../server/permissions';
 
@@ -17,7 +17,7 @@ const organization_basics_test = () => {
         describe("GET/POST /api/organizations`",()=>{
             let agent = chai.request.agent(app);
             before (async()=>{
-                await drop_database();
+                await dropDatabase();
             });
             afterEach(async()=>{ 
                 let organizations = await Organization.find();

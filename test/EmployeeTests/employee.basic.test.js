@@ -5,7 +5,7 @@ import chaiHttp from 'chai-http';
 import {app} from '../../server/server';
 import {EmployeeData, getEmployeeConstructor} from '../../development/employee.data';
 import Organization from '../../server/models/organization.model';
-import {drop_database, loginAdminEmployee} from '../helper';
+import {dropDatabase, loginAdminEmployee} from '../helper';
 
 
 chai.use(chaiHttp);
@@ -18,7 +18,7 @@ const employee_basics_test = () => {
       let admin;
       let organizationId;
       beforeEach(async ()=>{
-        await drop_database();
+        await dropDatabase();
         admin = await loginAdminEmployee();
         organizationId = (await Organization.findOne({'name': 'Locker Company'}))._id;
       });
@@ -28,7 +28,6 @@ const employee_basics_test = () => {
         return agent.post(`/api/ent/employees?access_token=${admin.access_token}`)
             .send(employee_data)
             .then((res)=>{
-              console.log(res.body.error);
               res.status.should.eql(200);
               return agent.get(`/api/ent/employees?access_token=${admin.access_token}`)
                   .then((res)=>{

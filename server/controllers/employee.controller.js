@@ -93,7 +93,7 @@ const create = async (req, res) => {
       if (organizationId != req.auth.organization) {
         return res.status(401).json({error: Errors.NotPartOfOrganization});
       }
-      role = await RBAC.findOne({role: role_type});
+      role = await RBAC.findOne({role: roleType});
       if (!role) {
         return res.status(404).json(
             {error: StaticStrings.RBACModelErrors.RoleNotFound});
@@ -230,8 +230,8 @@ const changePassword = async (req, res) => {
       error: `${StaticStrings.BadRequestFieldsNeeded} ${fieldsNeeded}`});
   }
   // check to see if it has an extra fields
-  const fieldsExtra = _.difference(update_fields, fieldsRequired);
-  if (fields_extra.length != 0) {
+  const fieldsExtra = _.difference(updateFields, fieldsRequired);
+  if (fieldsExtra.length != 0) {
     return res.status(422).json({
       error: `${StaticStrings.BadRequestInvalidFields} ${fieldsExtra}`});
   }

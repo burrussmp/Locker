@@ -4,7 +4,7 @@ import userCtrl from '../controllers/user.controller';
 import authCtrl from '../controllers/auth.controller';
 import permission from '../permissions'
 
-const UserPermissions = permission.User_Permissions;
+const UserPermissions = permission.UserPermissions;
 
 // create new router
 const router = express.Router()

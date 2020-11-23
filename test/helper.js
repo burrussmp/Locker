@@ -1,11 +1,9 @@
 /* eslint-disable max-len */
-/* eslint-disable camelcase */
 'use strict';
 
 
 import User from '../server/models/user.model';
 import Employee from '../server/models/employee.model';
-import RBAC from '../server/models/rbac.model';
 import Organization from '../server/models/organization.model';
 import Post from '../server/models/post.model';
 import permissions from '../server/permissions';
@@ -66,7 +64,7 @@ const loginAdminEmployee = async () => {
 };
 
 const getAccessToken = async (data) => {
-  const login_info = {
+  const loginInfo = {
     'login': data.username,
     'password': data.password,
   };
@@ -75,24 +73,22 @@ const getAccessToken = async (data) => {
     'headers': {
       'Content-Type': 'application/json',
     },
-    'body': JSON.stringify(login_info),
+    'body': JSON.stringify(loginInfo),
   }).then((res)=>res.json());
   return session.access_token;
 };
 
-const drop_database = async () => {
-  const admin = await RBAC.findOne({role: 'admin'});
+const dropDatabase = async () => {
   for (const model of [User, Post, Employee, Organization]) {
     const cursor = model.find().cursor();
     for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
-      if (model != Employee && doc.permissions != admin._id) {
-        await doc.deleteOne();
-      }
+      await doc.deleteOne();
     }
   }
+  await permissions.setUpRBAC();
 };
 
-const buffer_equality = (buf1, buf2) => {
+const bufferEquality = (buf1, buf2) => {
   if (buf1.byteLength != buf2.byteLength) return false;
   const dv1 = new Int8Array(buf1);
   const dv2 = new Int8Array(buf2);
@@ -103,8 +99,8 @@ const buffer_equality = (buf1, buf2) => {
 };
 
 export {
-  drop_database,
-  buffer_equality,
+  dropDatabase,
+  bufferEquality,
   createUser,
   createEmployee,
   getAccessToken,

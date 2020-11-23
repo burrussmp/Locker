@@ -8,7 +8,7 @@ import User from '../../server/models/user.model';
 import Comment from '../../server/models/comment.model';
 import Post from '../../server/models/post.model';
 import StaticStrings from '../../config/StaticStrings';
-import {drop_database, createUser} from  '../helper';
+import {dropDatabase, createUser} from  '../helper';
 import _ from 'lodash';
 import permissions from '../../server/permissions';
 
@@ -27,7 +27,7 @@ const comments_test = () => {
             let userToken0,userToken1;
             let postId0,postId1;
             before (async()=>{
-                await drop_database();
+                await dropDatabase();
                 let user = await createUser(UserData[0]);
                 userId0 = user._id;
                 userToken0 = user.access_token;
@@ -233,7 +233,7 @@ const comments_test = () => {
             let postId0;
             let commentId0,commentId1,commentId2;
             before (async()=>{
-                await drop_database();
+                await dropDatabase();
                 let user = await createUser(UserData[0]);
                 userId0 = user._id;
                 userToken0 = user.access_token;
@@ -281,7 +281,7 @@ const comments_test = () => {
                 for (let comment of comments){
                     await comment.deleteOne();
                 }
-                await drop_database()
+                await dropDatabase()
             })
             it("Delete twice (first succeeds and second 404s)",async()=>{
                 return agent.delete(`/api/comments/${commentId2}?access_token=${userToken1}`)

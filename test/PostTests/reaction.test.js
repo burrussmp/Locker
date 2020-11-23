@@ -6,7 +6,7 @@ import {PostData,ReactionData} from '../../development/post.data';
 import User from '../../server/models/user.model';
 import RBAC from '../../server/models/rbac.model';
 import StaticStrings from '../../config/StaticStrings';
-import {drop_database,createUser} from  '../helper';
+import {dropDatabase,createUser} from  '../helper';
 import _, { drop } from 'lodash';
 import mongoose from 'mongoose';
 import permissions from '../../server/permissions';
@@ -31,7 +31,7 @@ const reaction_test = () => {
             let userToken0,userToken1;
             let postId0,postId1;
             before (async()=>{
-                await drop_database();
+                await dropDatabase();
                 let user = await createUser(UserData[0]);
                 userId0 = user._id;
                 userToken0 = user.access_token;
@@ -56,7 +56,7 @@ const reaction_test = () => {
                 })
             });
             after(async()=>{ 
-                await drop_database();
+                await dropDatabase();
             });
             it("See if all valid reactions work",async()=>{
                 for (let reaction of ReactionTypes){

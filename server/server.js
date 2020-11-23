@@ -12,7 +12,9 @@ mongoose.connect(config.mongoUri, {useNewUrlParser: true, useCreateIndex: true, 
 // See if connection is valid
 mongoose.connection.on('connected', async ()=>{
   console.log(`Connected to database: ${config.mongoUri}`);
-  await permissions.setUpRBAC();
+  if (process.env.NODE_ENV != 'test') {
+    await permissions.setUpRBAC();
+  }
 });
 mongoose.connection.on('error', () => {
   throw new Error(`unable to connect to database: ${config.mongoUri}`);

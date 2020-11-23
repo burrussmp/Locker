@@ -4,8 +4,8 @@ import commentCtrl from '../controllers/comment.controller';
 import authCtrl from '../controllers/auth.controller';
 import permission from '../permissions';
 
-const PostPermissions = permission.Post_Permissions;
-const CommentPermissions = permission.Comment_Permissions;
+const PostPermissions = permission.PostPermissions;
+const CommentPermissions = permission.CommentPermissions;
 
 const router = express.Router()
 

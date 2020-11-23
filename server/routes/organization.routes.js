@@ -4,7 +4,7 @@ import orgCtrl from "../controllers/organization.controller";
 import permission from "../permissions";
 import multer from 'multer';
 
-const OrganizationPermissions = permission.Organization_Permissions;
+const OrganizationPermissions = permission.OrganizationPermissions;
 
 const router = express.Router();
 

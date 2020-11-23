@@ -1,12 +1,13 @@
+/* eslint-disable max-len */
 
-"use strict";
+'use strict';
 
 // imports
-import Post from '../models/post.model'
+import Post from '../models/post.model';
 import Comment from '../models/comment.model';
 import StaticStrings from '../../config/StaticStrings';
-import errorHandler from '../services/dbErrorHandler'
-import ContentPostServices from "../services/database/content.post.services";
+import errorHandler from '../services/dbErrorHandler';
+import ContentPostServices from '../services/database/content.post.services';
 import mongoose from 'mongoose';
 
 const ReactionTypes = mongoose.models.Post.schema.tree.reactions[0].tree.type.enum.values;
@@ -30,24 +31,24 @@ const ReactionTypes = mongoose.models.Post.schema.tree.reactions[0].tree.type.en
   * @param Object   res   - HTTP response object
   * @param Function next  - Next express middleware function
   * @param String   id    - The ID of the post
-*/ 
-const postByID = async (req,res,next,id) => {
+*/
+const postByID = async (req, res, next, id) => {
   try {
-    let post = await Post.findById(id);
+    const post = await Post.findById(id);
     if (!post) {
-        return res.status('404').json({
-            error: StaticStrings.PostModelErrors.PostNotFoundError
-        })
+      return res.status('404').json({
+        error: StaticStrings.PostModelErrors.PostNotFoundError,
+      });
     }
-    req.post = post
+    req.post = post;
     req.owner = post.postedBy.toString();
-    next()
+    next();
   } catch (err) {
-      return res.status(404).json({
-          error: StaticStrings.PostModelErrors.PostNotFoundError
-      })
+    return res.status(404).json({
+      error: StaticStrings.PostModelErrors.PostNotFoundError,
+    });
   }
-}
+};
 
 
 /**
@@ -56,14 +57,14 @@ const postByID = async (req,res,next,id) => {
  * @param Object   res - HTTP response object
  * @return A list of all the posts by their ID and when they were posted
  */
-const listPosts = async (req,res) => {
+const listPosts = async (req, res) => {
   try {
-    let posts = await Post.find().select('createdAt')
+    const posts = await Post.find().select('createdAt');
     return res.status(200).json(posts);
-  }catch(err){
-    return res.status(500).json({error:errorHandler.getErrorMessage(err)})
+  } catch (err) {
+    return res.status(500).json({error: errorHandler.getErrorMessage(err)});
   }
-}
+};
 
 /**
  * @desc Create a post
@@ -71,33 +72,33 @@ const listPosts = async (req,res) => {
  * @param Object   res - HTTP response object
  * @return Creates a post
  */
-const createPost = async (req,res) => {
-  let type = req.query.type;
-  if (type == 'ContentPost'){
-    return ContentPostServices.createContentPost(req,res);
+const createPost = async (req, res) => {
+  const type = req.query.type;
+  if (type == 'ContentPost') {
+    return ContentPostServices.createContentPost(req, res);
   } else {
-    return res.status(501).json({error:StaticStrings.NotImplementedError})
+    return res.status(501).json({error: StaticStrings.NotImplementedError});
   }
-}
+};
 
 
 /**
  * @desc Gets a post by a particular ID
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
- * @return Gets post info: type, contentId, createdAt, caption, tags, postedBy, 
+ * @return Gets post info: type, contentId, createdAt, caption, tags, postedBy,
  */
-const getPost = async (req,res) => {
+const getPost = async (req, res) => {
   try {
-    if (req.post.type == 'ContentPost'){
-      return ContentPostServices.getContentPost(req,res)
+    if (req.post.type == 'ContentPost') {
+      return ContentPostServices.getContentPost(req, res);
     } else {
-      return res.status(501).json({error:StaticStrings.NotImplementedError})
+      return res.status(501).json({error: StaticStrings.NotImplementedError});
     }
-  }catch(err){
-    return res.status(500).json({error:StaticStrings.UnknownServerError +'\nReason: '+err.message})
+  } catch (err) {
+    return res.status(500).json({error: StaticStrings.UnknownServerError +'\nReason: '+err.message});
   }
-}
+};
 
 /**
  * @desc Edit a post. This delegates editing to the particular type of post
@@ -105,94 +106,95 @@ const getPost = async (req,res) => {
  * @param Object   res - HTTP response object
  * @return Creates a post
  */
-const editPost = async (req,res) => {
+const editPost = async (req, res) => {
   try {
-    if (req.post.type == 'ContentPost'){
-      return ContentPostServices.editContentPost(req,res)
+    if (req.post.type == 'ContentPost') {
+      return ContentPostServices.editContentPost(req, res);
     } else {
-      return res.status(501).json({error:StaticStrings.NotImplementedError})
+      return res.status(501).json({error: StaticStrings.NotImplementedError});
     }
-  }catch(err){
-    return res.status(500).json({error:StaticStrings.UnknownServerError +'\nReason: '+err.message})
+  } catch (err) {
+    return res.status(500).json({error: StaticStrings.UnknownServerError +'\nReason: '+err.message});
   }
-}
+};
 
 /**
  * @desc Delegates deletion to type of post
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  */
-const deletePost = async (req,res) => {
+const deletePost = async (req, res) => {
   try {
-    let post = await Post.findById(req.params.postId);
+    const post = await Post.findById(req.params.postId);
     await post.deleteOne();
-    return res.status(200).send({'_id':post._id});
-  } catch (err){
+    return res.status(200).send({'_id': post._id});
+  } catch (err) {
     return res.status(500).send({error: StaticStrings.UnknownServerError+'\nReason: '+err.message});
   }
-}
+};
 
 /**
  * @desc Gets all the comments from a post and returns their ID and creation timestamp
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  */
-const listComments = async (req,res) => {
+const listComments = async (req, res) => {
   try {
     const postId = mongoose.Types.ObjectId(req.params.postId);
     const reqId = mongoose.Types.ObjectId(req.auth._id);
     const pipeline = [
-      { "$match": { "_id" : postId } },
-      { "$lookup": {
-        "from": "comments",
-        "foreignField": "_id",
-        "localField": "comments",
-        "as": "comments"
+      {'$match': {'_id': postId}},
+      {'$lookup': {
+        'from': 'comments',
+        'foreignField': '_id',
+        'localField': 'comments',
+        'as': 'comments',
       }},
-      { "$project" : {"_id":0, "comments": "$comments" }},
-      { "$unwind" : "$comments"},
+      {'$project': {'_id': 0, 'comments': '$comments'}},
+      {'$unwind': '$comments'},
       {
-        "$project": {
-        "text" : "$comments.text",
-        "postedBy" : "$comments.postedBy",
-        "createdAt" : "$comments.createdAt",
-        "_id" : "$comments._id",
-        "likes": {$cond: { if: { $isArray: "$comments.likes" }, then: { $size: "$comments.likes" }, else: 0}},
-        "liked": {$cond: { if: { $and : [{$isArray: "$comments.likes" },{ $in: [ reqId, "$comments.likes" ] }	]}, then: true, else: false}},
-        }
-      }
+        '$project': {
+          'text': '$comments.text',
+          'postedBy': '$comments.postedBy',
+          'createdAt': '$comments.createdAt',
+          '_id': '$comments._id',
+          'likes': {$cond: {if: {$isArray: '$comments.likes'}, then: {$size: '$comments.likes'}, else: 0}},
+          'liked': {$cond: {if: {$and: [{$isArray: '$comments.likes'}, {$in: [reqId, '$comments.likes']}]}, then: true, else: false}},
+        },
+      },
     ];
-    let comments = await Post.aggregate(pipeline).exec();
+    const comments = await Post.aggregate(pipeline).exec();
     return res.status(200).json(comments);
-  }catch(err){
-    return res.status(500).json({error:errorHandler.getErrorMessage(err)})
-  }}
+  } catch (err) {
+    return res.status(500).json({error: errorHandler.getErrorMessage(err)});
+  }
+};
 
 /**
  * @desc Retrieves a specific comment
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  */
-const getComment = async (req,res) => {
+const getComment = async (req, res) => {
   try {
-    let commentId = mongoose.Types.ObjectId(req.params.commentId);
-    let reqId = mongoose.Types.ObjectId(req.auth._id);
-    let comment = await Comment.aggregate([
-      {$match: { _id : commentId }},
+    const commentId = mongoose.Types.ObjectId(req.params.commentId);
+    const reqId = mongoose.Types.ObjectId(req.auth._id);
+    const comment = await Comment.aggregate([
+      {$match: {_id: commentId}},
       {$project: {
-        "text" : "$text",
-        "postedBy" : "$postedBy",
-        "createdAt" : "$createdAt",
-        "likes": {$cond: { if: { $isArray: "$likes" }, then: { $size: "$likes" }, else: 0}},
-        "liked": {$cond: { if: { $and : [{$isArray: "$likes" },{ $in: [ reqId, "$likes" ] }	]}, then: true, else: false}},
-        }
-      }
-    ])
+        'text': '$text',
+        'postedBy': '$postedBy',
+        'createdAt': '$createdAt',
+        'likes': {$cond: {if: {$isArray: '$likes'}, then: {$size: '$likes'}, else: 0}},
+        'liked': {$cond: {if: {$and: [{$isArray: '$likes'}, {$in: [reqId, '$likes']}]}, then: true, else: false}},
+      },
+      },
+    ]);
     return res.status(200).json(comment[0]);
-  }catch(err){
-    return res.status(500).json({error:errorHandler.getErrorMessage(err)})
+  } catch (err) {
+    return res.status(500).json({error: errorHandler.getErrorMessage(err)});
   }
-}
+};
 
 
 /**
@@ -200,42 +202,43 @@ const getComment = async (req,res) => {
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  */
-const createComment = async (req,res) => {
+const createComment = async (req, res) => {
   try {
-    let comment_data = {
+    const comment_data = {
       text: req.body.text,
       postedBy: req.auth._id,
-      postId: req.params.postId
-    }
+      postId: req.params.postId,
+    };
     let new_comment = new Comment(comment_data);
     new_comment = await new_comment.save();
     try {
       await Post.findOneAndUpdate(
-        {'_id':req.params.postId},
-        {$push: {comments:new_comment._id }},
-        {runValidators:true});
-      return res.status(200).json({'_id':new_comment._id});
-    } catch(err){
-      return res.status(400).json({error:errorHandler.getErrorMessage(err)})
+          {'_id': req.params.postId},
+          {$push: {comments: new_comment._id}},
+          {runValidators: true});
+      return res.status(200).json({'_id': new_comment._id});
+    } catch (err) {
+      return res.status(400).json({error: errorHandler.getErrorMessage(err)});
     }
-  } catch(err){
-    return res.status(400).json({error:errorHandler.getErrorMessage(err)})
+  } catch (err) {
+    return res.status(400).json({error: errorHandler.getErrorMessage(err)});
   }
-}
+};
 
 /**
  * @desc Deletes comments. No crazy clean up to do
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  */
-const deleteComment = async (req,res) => {
+const deleteComment = async (req, res) => {
   try {
-    let comment = await Comment.findById(req.params.commentId);
+    const comment = await Comment.findById(req.params.commentId);
     await comment.deleteOne();
-    return res.status(200).json({"_id":comment._id});
-  } catch(err){
-    return res.status(400).json({error:errorHandler.getErrorMessage(err)})
-}}
+    return res.status(200).json({'_id': comment._id});
+  } catch (err) {
+    return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+  }
+};
 
 
 /**
@@ -243,79 +246,77 @@ const deleteComment = async (req,res) => {
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  */
-const getReaction = async (req,res) => {
+const getReaction = async (req, res) => {
   try {
-    let postId = mongoose.Types.ObjectId(req.params.postId);
-    let reqId = mongoose.Types.ObjectId(req.auth._id);
-    let reactions = await Post.aggregate([
-      {$match: {"_id":postId}},
-      {$unwind: "$reactions"},
+    const postId = mongoose.Types.ObjectId(req.params.postId);
+    const reqId = mongoose.Types.ObjectId(req.auth._id);
+    const reactions = await Post.aggregate([
+      {$match: {'_id': postId}},
+      {$unwind: '$reactions'},
       {$group: {
-          "_id": "$reactions.type",
-          "total": {$sum: 1},
-          "selected": {$max: {$eq: ["$reactions.postedBy",reqId]}}}
-      }
-    ])
-    let reactionData = Object.assign({selected:false}, ...Object.entries({...ReactionTypes}).map(([a,b]) => ({ [b]: 0 })))
-    for (let reaction of reactions){
+        '_id': '$reactions.type',
+        'total': {$sum: 1},
+        'selected': {$max: {$eq: ['$reactions.postedBy', reqId]}}},
+      },
+    ]);
+    const reactionData = Object.assign({selected: false}, ...Object.entries({...ReactionTypes}).map(([a, b]) => ({[b]: 0})));
+    for (const reaction of reactions) {
       reactionData[reaction._id] = reaction.total;
       if (reaction.selected) reactionData.selected=reaction._id;
     }
     return res.status(200).json(reactionData);
-  }catch(err){
-    return res.status(500).json({error:errorHandler.getErrorMessage(err)})
-  }}
+  } catch (err) {
+    return res.status(500).json({error: errorHandler.getErrorMessage(err)});
+  }
+};
 
 /**
  * @desc Change the reaction. You can react to your own post
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  */
-const changeReaction = async (req,res) => {
+const changeReaction = async (req, res) => {
   try {
-    if (!ReactionTypes.includes(req.body.reaction)){
-      return res.status(400).json({error:StaticStrings.PostModelErrors.InvalidReaction})
+    if (!ReactionTypes.includes(req.body.reaction)) {
+      return res.status(400).json({error: StaticStrings.PostModelErrors.InvalidReaction});
     } else {
-      let reaction = {
-        type:req.body.reaction,
-        postedBy:req.auth._id
+      const reaction = {
+        type: req.body.reaction,
+        postedBy: req.auth._id,
       };
-      let post = await Post.findOne({'_id':req.params.postId,'reactions.postedBy':req.auth._id});
-      if (post){
-        post = await Post.findOneAndUpdate({'_id':req.params.postId,'reactions.postedBy':req.auth._id},{ $set:{ "reactions.$.type": reaction.type } },)        
+      let post = await Post.findOne({'_id': req.params.postId, 'reactions.postedBy': req.auth._id});
+      if (post) {
+        post = await Post.findOneAndUpdate({'_id': req.params.postId, 'reactions.postedBy': req.auth._id}, {$set: {'reactions.$.type': reaction.type}});
       } else {
-        post = await Post.findOneAndUpdate({'_id':req.params.postId},{ $push:{ "reactions": reaction } },)
+        post = await Post.findOneAndUpdate({'_id': req.params.postId}, {$push: {'reactions': reaction}});
       }
-      return res.status(200).send({'_id':post._id});
+      return res.status(200).send({'_id': post._id});
     }
-
-  } catch (err){
-    return res.status(500).json({error:errorHandler.getErrorMessage(err)})
+  } catch (err) {
+    return res.status(500).json({error: errorHandler.getErrorMessage(err)});
   }
-
-}
+};
 
 /**
  * @desc Remove reaction
  * @param Object   req - HTTP request object
  * @param Object   res - HTTP response object
  */
-const removeReaction = async (req,res) => {
+const removeReaction = async (req, res) => {
   try {
-    let post = await Post.findOneAndUpdate(
-      {'_id':req.params.postId,'reactions.postedBy':req.auth._id},
-      { $pull: {"reactions":{"postedBy":req.auth._id} }},
-      {runValidators:true,new:true});// update their account
-    if (post){
-      return res.status(200).send({'_id':post._id});
+    const post = await Post.findOneAndUpdate(
+        {'_id': req.params.postId, 'reactions.postedBy': req.auth._id},
+        {$pull: {'reactions': {'postedBy': req.auth._id}}},
+        {runValidators: true, new: true});// update their account
+    if (post) {
+      return res.status(200).send({'_id': post._id});
     } else {
-      return res.status(404).send({error:StaticStrings.PostModelErrors.NoReactionToDelete});
+      return res.status(404).send({error: StaticStrings.PostModelErrors.NoReactionToDelete});
     }
-  } catch (err){
-    return res.status(500).json({error:errorHandler.getErrorMessage(err)})
+  } catch (err) {
+    return res.status(500).json({error: errorHandler.getErrorMessage(err)});
   }
-
-}
+};
 
 export default {
   postByID,
@@ -331,5 +332,5 @@ export default {
   getReaction,
   changeReaction,
   ReactionTypes,
-  removeReaction
-}
+  removeReaction,
+};

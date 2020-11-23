@@ -10,7 +10,7 @@ import StaticStrings from "../../config/StaticStrings";
 const fs = require("fs").promises;
 import s3Services from "../../server/services/S3.services";
 import fetch from "node-fetch";
-import { drop_database, buffer_equality, createUser } from "../helper";
+import { dropDatabase, buffer_equality, createUser } from "../helper";
 import _ from "lodash";
 
 chai.use(chaiHttp);
@@ -26,7 +26,7 @@ const media_test_basics = () => {
       let agent = chai.request.agent(app);
       let userToken0;
       before(async () => {
-        await drop_database();
+        await dropDatabase();
         let user = await createUser(UserData[0]);
         userId0 = user._id;
         userToken0 = user.access_token;
@@ -39,7 +39,7 @@ const media_test_basics = () => {
         Key = medias[0].key;
       });
       after(async () => {
-        await drop_database();
+        await dropDatabase();
       });
       it("GET profile photo", async () => {
         return fetch(
@@ -187,7 +187,7 @@ const media_test_basics = () => {
       let agent = chai.request.agent(app);
       let userToken0;
       before(async () => {
-        await drop_database();
+        await dropDatabase();
         let user = await createUser(UserData[0]);
         userId0 = user._id;
         userToken0 = user.access_token;
@@ -215,7 +215,7 @@ const media_test_basics = () => {
           });
       });
       after(async () => {
-        await drop_database();
+        await dropDatabase();
       });
       it("See if you can get an image w/out any query parameters (should be fine)", async () => {
         return fetch(

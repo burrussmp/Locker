@@ -11,7 +11,7 @@ import StaticStrings from '../../config/StaticStrings';
 const fs = require('fs').promises
 import s3Services from '../../server/services/S3.services';
 import fetch from 'node-fetch';
-import {drop_database,buffer_equality, createUser} from  '../helper';
+import {dropDatabase,buffer_equality, createUser} from  '../helper';
 import _ from 'lodash';
 import permissions from '../../server/permissions';
 
@@ -77,7 +77,7 @@ const content_post_test_basics = () => {
             let agent = chai.request.agent(app);
             let userToken0,userToken1;
             before (async()=>{
-                await drop_database();
+                await dropDatabase();
                 let user = await createUser(UserData[0]);
                 userId0 = user._id;
                 userToken0 = user.access_token;
@@ -322,7 +322,7 @@ const content_post_test_basics = () => {
             let agent = chai.request.agent(app);
             let userToken0,userToken1;
             before(async()=>{
-                await drop_database();
+                await dropDatabase();
                 let user = await createUser(UserData[0]);
                 userId0 = user._id;
                 userToken0 = user.access_token;
@@ -504,7 +504,7 @@ const content_post_test_basics = () => {
             let userToken0,userToken1;
             let postId;
             beforeEach(async()=>{
-                await drop_database();
+                await dropDatabase();
                 let user = await createUser(UserData[0]);
                 userId0 = user._id;
                 userToken0 = user.access_token;

@@ -3,7 +3,7 @@ import chaiHttp from 'chai-http';
 import {app} from '../../server/server';
 import {Setup,CommentData} from '../../development/comments.data';
 import {UserData} from '../../development/user.data';
-import {drop_database,createUser} from  '../helper';
+import {dropDatabase,createUser} from  '../helper';
 import User from '../../server/models/user.model';
 import Comment from '../../server/models/comment.model';
 import StaticStrings from '../../config/StaticStrings';
@@ -25,7 +25,7 @@ const reply_test = () => {
             let userToken0,userToken1,userToken2;
             let postId0;
             before (async()=>{
-                await drop_database();
+                await dropDatabase();
                 let user = await createUser(UserData[0]);
                 userId0 = user._id;
                 userToken0 = user.access_token;
@@ -85,7 +85,7 @@ const reply_test = () => {
                 }
             });
             after(async()=>{
-                await drop_database()
+                await dropDatabase()
             })
             it("See if all replies are of the proper length",async()=>{
                 return agent.get(`/api/${comment_id_array[0]}/replies?access_token=${userToken0}`)
@@ -138,7 +138,7 @@ const reply_test = () => {
             let userToken0,userToken1,userToken2;
             let postId0;
             before (async()=>{
-                await drop_database();
+                await dropDatabase();
                 let user = await createUser(UserData[0]);
                 userId0 = user._id;
                 userToken0 = user.access_token;
@@ -197,7 +197,7 @@ const reply_test = () => {
                 }
             });
             after(async()=>{
-                await drop_database()
+                await dropDatabase()
             })
             let new_reply = "This is a new reply";
             it("Correctly posts reply",async()=>{
@@ -310,7 +310,7 @@ const reply_test = () => {
             let userToken0,userToken1,userToken2;
             let postId0;
             before (async()=>{
-                await drop_database();
+                await dropDatabase();
                 let user = await createUser(UserData[0]);
                 userId0 = user._id;
                 userToken0 = user.access_token;
@@ -369,7 +369,7 @@ const reply_test = () => {
                 }
             });
             after(async()=>{
-                await drop_database()
+                await dropDatabase()
             })
             it("Like a comment twice (should succeed and only place 1 like)",async()=>{
                 return agent.put(`/api/${comment_id_array[0]}/likes?access_token=${userToken0}`)
@@ -453,7 +453,7 @@ const reply_test = () => {
             let userToken0,userToken1,userToken2;
             let postId0;
             before (async()=>{
-                await drop_database();
+                await dropDatabase();
                 let user = await createUser(UserData[0]);
                 userId0 = user._id;
                 userToken0 = user.access_token;
@@ -512,7 +512,7 @@ const reply_test = () => {
                 }
             });
             after(async()=>{
-                await drop_database()
+                await dropDatabase()
             })
             it("Get a specific reply (should succeed)",async()=>{
                 return agent.post(`/api/${comment_id_array[0]}/replies?access_token=${userToken0}`)
@@ -590,7 +590,7 @@ const reply_test = () => {
         //     let agent = chai.request.agent(app);
         //     let userToken0,userToken1;
         //     beforeEach(async()=>{
-        //         await drop_database();
+        //         await dropDatabase();
         //         await Setup();
         //         let num_comments = await Comment.countDocuments();
         //         num_comments.should.eql(UserData.length);
@@ -776,7 +776,7 @@ const reply_test = () => {
             let userToken0,userToken1,userToken2;
             let postId0;
             before (async()=>{
-                await drop_database();
+                await dropDatabase();
                 let user = await createUser(UserData[0]);
                 userId0 = user._id;
                 userToken0 = user.access_token;
@@ -835,7 +835,7 @@ const reply_test = () => {
                 }
             });
             after(async()=>{
-                await drop_database()
+                await dropDatabase()
             })
             it("Delete a reply (should succeed)",async()=>{
                 return agent.post(`/api/${comment_id_array[0]}/replies?access_token=${userToken0}`)
@@ -921,7 +921,7 @@ const reply_test = () => {
             let userToken0,userToken1,userToken2;
             let postId0;
             before (async()=>{
-                await drop_database();
+                await dropDatabase();
                 let user = await createUser(UserData[0]);
                 userId0 = user._id;
                 userToken0 = user.access_token;
@@ -980,7 +980,7 @@ const reply_test = () => {
                 }
             });
             after(async()=>{
-                await drop_database()
+                await dropDatabase()
             })
             it("Like a reply (should succeed)",async()=>{
                 return agent.post(`/api/${comment_id_array[0]}/replies?access_token=${userToken0}`)

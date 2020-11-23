@@ -3,7 +3,7 @@ import chaiHttp from 'chai-http';
 
 import {app} from '../../server/server';
 import {UserData} from '../../development/user.data'
-import {drop_database, createUser,getAccessToken} from  '../helper';
+import {dropDatabase, createUser,getAccessToken} from  '../helper';
 import User from '../../server/models/user.model';
 import RBAC from '../../server/models/rbac.model';
 import StaticStrings from '../../config/StaticStrings';
@@ -16,7 +16,7 @@ const profile_test = () => {
             let id0,id1;
             let access_token0,access_token1;
             before( async () =>{
-                await drop_database();
+                await dropDatabase();
                 let user = await createUser(UserData[0]);
                 id0 = user._id;
                 access_token0 = user.access_token;
@@ -25,7 +25,7 @@ const profile_test = () => {
                 access_token1 = user.access_token;
             });
             after(async () =>{
-                await drop_database();
+                await dropDatabase();
             })
             let agent = chai.request.agent(app);
             it("/GET Attempt w/out login", async ()=>{
@@ -90,13 +90,13 @@ const profile_test = () => {
             let id1;
             let access_token1;
             before( async () =>{
-                await drop_database();
+                await dropDatabase();
                 let user = await createUser(UserData[1]);
                 id1 = user._id;
                 access_token1 = user.access_token;
             });
             after(async () =>{
-                await drop_database();
+                await dropDatabase();
             })
             let agent = chai.request.agent(app);
             it("/GET w/ correct privileges", async ()=>{

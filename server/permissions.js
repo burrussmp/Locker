@@ -20,7 +20,7 @@ import FormData from 'form-data';
 import dbErrorHandler from './services/dbErrorHandler';
 
 // all permissions associated with Post collection
-const Post_Permissions = {
+const PostPermissions = {
   Create: 'post:create', // Create Post
   Read: 'post:read', // Read Post
   Delete: 'post:delete', // Delete Post
@@ -29,7 +29,7 @@ const Post_Permissions = {
 };
 
 // all permissions associated with Comment collection
-const Comment_Permissions = {
+const CommentPermissions = {
   Create: 'comment:create', // Create comment
   Read: 'comment:read', // Read comment
   Delete: 'comment:delete', // Delete comment
@@ -38,7 +38,7 @@ const Comment_Permissions = {
 };
 
 // all permissions associated with User
-const User_Permissions = {
+const UserPermissions = {
   Create: 'user:create', // Create User
   Delete: 'user:delete', // Delete user
   Read: 'user:read', // Read information from user
@@ -47,7 +47,7 @@ const User_Permissions = {
 };
 
 // all permissions associated with User
-const Employee_Permissions = {
+const EmployeePermissions = {
   Create: 'employee:create', // Create User
   Delete: 'employee:delete', // Delete user
   Read: 'employee:read', // Read information from user
@@ -57,7 +57,7 @@ const Employee_Permissions = {
 };
 
 // all permissions associated with an Organization
-const Organization_Permissions = {
+const OrganizationPermissions = {
   Create: 'organization:create',
   Delete: 'organization:delete',
   Read: 'organization:read',
@@ -67,52 +67,52 @@ const Organization_Permissions = {
   DeleteEmployee: 'organization:delete_employee',
 };
 
-const get_permission_array = (type) => {
+const getPermissionArray = (type) => {
   let assignedPermissions = [];
   if (type == 'user' || type == 'supervisor' || type == 'admin' || type == 'employee') {
     assignedPermissions = assignedPermissions.concat([
-      Post_Permissions.Read,
-      Post_Permissions.Interact,
-      Post_Permissions.Create,
-      Post_Permissions.EditContent,
-      Post_Permissions.Delete,
-      User_Permissions.EditContent,
-      User_Permissions.Delete,
-      User_Permissions.Read,
-      User_Permissions.ChangePassword,
-      Comment_Permissions.Create,
-      Comment_Permissions.EditContent,
-      Comment_Permissions.Read,
-      Comment_Permissions.Delete,
-      Comment_Permissions.Interact,
+      PostPermissions.Read,
+      PostPermissions.Interact,
+      PostPermissions.Create,
+      PostPermissions.EditContent,
+      PostPermissions.Delete,
+      UserPermissions.EditContent,
+      UserPermissions.Delete,
+      UserPermissions.Read,
+      UserPermissions.ChangePassword,
+      CommentPermissions.Create,
+      CommentPermissions.EditContent,
+      CommentPermissions.Read,
+      CommentPermissions.Delete,
+      CommentPermissions.Interact,
     ]);
   }
   if (type == 'employee') {
     assignedPermissions = assignedPermissions.concat([
-      Employee_Permissions.EditContent,
-      Employee_Permissions.Delete,
-      Employee_Permissions.Read,
+      EmployeePermissions.EditContent,
+      EmployeePermissions.Delete,
+      EmployeePermissions.Read,
     ]);
   }
   if (type == 'supervisor' || type == 'admin') {
     assignedPermissions = assignedPermissions.concat([
-      Organization_Permissions.EditAccessList,
-      Organization_Permissions.Read,
-      Organization_Permissions.EditContent,
-      Organization_Permissions.AddEmployee,
-      Organization_Permissions.DeleteEmployee,
-      Employee_Permissions.Create,
-      Employee_Permissions.EditContent,
-      Employee_Permissions.Delete,
-      Employee_Permissions.Read,
-      Employee_Permissions.ChangeOrganizationRole,
+      OrganizationPermissions.EditAccessList,
+      OrganizationPermissions.Read,
+      OrganizationPermissions.EditContent,
+      OrganizationPermissions.AddEmployee,
+      OrganizationPermissions.DeleteEmployee,
+      EmployeePermissions.Create,
+      EmployeePermissions.EditContent,
+      EmployeePermissions.Delete,
+      EmployeePermissions.Read,
+      EmployeePermissions.ChangeOrganizationRole,
     ]);
   }
   if (type == 'admin') {
     assignedPermissions = assignedPermissions.concat([
-      Organization_Permissions.Create,
-      Organization_Permissions.Delete,
-      Employee_Permissions.ChangeRole,
+      OrganizationPermissions.Create,
+      OrganizationPermissions.Delete,
+      EmployeePermissions.ChangeRole,
     ]);
   }
   return assignedPermissions;
@@ -127,60 +127,60 @@ const Authorize = (permissions, requireLogin = true) => {
 };
 
 const setUpRBAC = async () => {
-  const User_Role = {
+  const UserRole = {
     role: 'user',
     level: 50,
-    permissions: get_permission_array('user'),
+    permissions: getPermissionArray('user'),
   };
   try {
-    await (new RBAC(User_Role)).save();
+    await (new RBAC(UserRole)).save();
   } catch (err) {
     // console.log(dbErrorHandler.getErrorMessage(err));
   }
 
-  const Admin_Role = {
+  const adminRole = {
     role: 'admin',
     level: 0,
-    permissions: get_permission_array('admin'),
+    permissions: getPermissionArray('admin'),
   };
 
   try {
-    await (new RBAC(Admin_Role)).save();
+    await (new RBAC(adminRole)).save();
   } catch (err) {
     // console.log(dbErrorHandler.getErrorMessage(err));
   }
 
-  const Supervisor_Role = {
+  const supervisorRole = {
     role: 'supervisor',
     level: 5,
-    permissions: get_permission_array('supervisor'),
+    permissions: getPermissionArray('supervisor'),
   };
 
   try {
-    await (new RBAC(Supervisor_Role)).save();
+    await (new RBAC(supervisorRole)).save();
   } catch (err) {
     // console.log(dbErrorHandler.getErrorMessage(err));
   }
 
-  const Employee_Role = {
+  const employeeRole = {
     role: 'employee',
     level: 10,
-    permissions: get_permission_array('employee'),
+    permissions: getPermissionArray('employee'),
   };
   try {
-    await (new RBAC(Employee_Role)).save();
+    await (new RBAC(employeeRole)).save();
   } catch (err) {
     // console.log(dbErrorHandler.getErrorMessage(err));
   }
 
-  const NA_Role = {
+  const NARole = {
     role: 'none',
     level: 100000,
     permissions: [],
   };
 
   try {
-    await (new RBAC(NA_Role)).save();
+    await (new RBAC(NARole)).save();
   } catch (err) {
     // console.log(dbErrorHandler.getErrorMessage(err));
   }
@@ -227,12 +227,12 @@ const setUpRBAC = async () => {
 };
 
 export default {
-  User_Permissions,
-  Post_Permissions,
-  Organization_Permissions,
-  Comment_Permissions,
-  Employee_Permissions,
+  UserPermissions,
+  PostPermissions,
+  OrganizationPermissions,
+  CommentPermissions,
+  EmployeePermissions,
   Authorize,
   setUpRBAC,
-  get_permission_array,
+  getPermissionArray,
 };

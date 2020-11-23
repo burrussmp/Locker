@@ -38,7 +38,7 @@ const filter_reply_create = (data) => {
   };
 };
 
-const drop_database = async () => {
+const dropDatabase = async () => {
   let cursor = User.find().cursor();
   for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
     await doc.deleteOne();
@@ -63,5 +63,5 @@ exports.filter_user_signup = filter_user_signup;
 exports.filter_content_post_create = filter_content_post_create;
 exports.filter_comment_create = filter_comment_create;
 exports.filter_reply_create = filter_reply_create;
-exports.drop_database = drop_database;
+exports.dropDatabase = dropDatabase;
 exports.update_fuzzy = update_fuzzy;

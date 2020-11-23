@@ -3,7 +3,7 @@ import chaiHttp from 'chai-http';
 
 import {app} from '../../server/server';
 import {UserData} from '../../development/user.data'
-import {drop_database, createUser} from  '../helper';
+import {dropDatabase, createUser} from  '../helper';
 import User from '../../server/models/user.model';
 import RBAC from '../../server/models/rbac.model';
 import StaticStrings from '../../config/StaticStrings';
@@ -19,7 +19,7 @@ const follow_test = () => {
         let token0,token1;
         describe('GET /api/users/:userID/follow', ()=>{
             before( async () =>{
-                await drop_database();
+                await dropDatabase();
                 let user = await createUser(UserData[0]);
                 id0 = user._id;
                 token0 = user.access_token;
@@ -213,7 +213,7 @@ const follow_test = () => {
         });
         describe('Scenario: User A follows User B and User C and then deletes their account', ()=>{
             before( async () =>{
-                await drop_database();
+                await dropDatabase();
                 let user = await createUser(UserData[0]);
                 id0 = user._id;
                 token0 = user.access_token;
@@ -226,7 +226,7 @@ const follow_test = () => {
                 await agent.put(`/api/users/${id2}/follow?access_token=${token0}`)
             });
             after( async ()=>{
-                await drop_database();
+                await dropDatabase();
             })
             it("Circular references properly removed", async()=>{
                 return agent.get(`/api/users/${id0}/follow?access_token=${token0}`)
@@ -254,7 +254,7 @@ const follow_test = () => {
         });
         describe('Scenario: User A deletes their account and their token is no longer valid', ()=>{
             before( async () =>{
-                await drop_database();
+                await dropDatabase();
                 let user = await createUser(UserData[0]);
                 id0 = user._id;
                 token0 = user.access_token;
@@ -265,7 +265,7 @@ const follow_test = () => {
                 id2 = user._id
             });
             after( async ()=>{
-                await drop_database();
+                await dropDatabase();
             })
             it("Should fail", async()=>{
                 return agent.delete(`/api/users/${id0}?access_token=${token0}`)
