@@ -72,4 +72,18 @@ OrgSchema.pre('deleteOne', {document: true, query: false}, async function() {
   }
 });
 
+OrgSchema.pre('findOneAndUpdate', async function() {
+  // sanitize
+  const update = await this.getUpdate();
+  if (!update) return; // no updates
+  const doc = await this.model.findOne(this.getFilter());
+  if (!doc) return; // nothing to update
+  for (const key of Object.keys(update)) {
+    if (update[key] == doc[key]) {
+      delete update[key];
+    }
+  }
+  this.setUpdate(update);
+});
+
 export default mongoose.model('Organization', OrgSchema);

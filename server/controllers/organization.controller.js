@@ -7,6 +7,7 @@ import Employee from '../models/employee.model';
 import errorHandler from '../services/dbErrorHandler';
 import StaticStrings from '../../config/StaticStrings';
 import s3Services from '../services/S3.services';
+import _ from 'lodash';
 
 const OrganizationControllerErrors = StaticStrings.OrganizationControllerErrors;
 
@@ -71,7 +72,7 @@ const create = async (req, res) => {
           });
           organization = await organization.save();
         } catch (err) {
-          return res.status(400).json({err: errorHandler.getErrorMessage(err)});
+          return res.status(400).json({error: errorHandler.getErrorMessage(err)});
         }
         try {
           return res.status(200).json({'_id': organization._id});
@@ -128,10 +129,49 @@ const list = async (req, res) => {
  * @return {Promise<Response>}
  */
 const update = async (req, res) => {
+  const fieldsAllowed = [
+    'name',
+    'url',
+    'description',
+  ];
+  const updateFields = Object.keys(req.body);
+  const invalidFields = _.difference(updateFields, fieldsAllowed);
+  if (invalidFields.length != 0) {
+    return res.status(422).json({error: `${StaticStrings.BadRequestInvalidFields} ${invalidFields}`});
+  }
+  try {
+    const organization = await Organization.findOneAndUpdate({'_id': req.params.organizationId}, req.body, {new: true, runValidators: true});
+    if (!organization) return res.status(500).json({error: StaticStrings.UnknownServerError}); // possibly unable to fetch
+    return res.status(200).json(filterOrganization(organization));
+  } catch (err) {
+    return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+  }
+};
+
+/**
+ * @desc Update the logo of an organization
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>}
+ */
+const updateLogo = async (req, res) => {
   return res.status(501).json({
     error: StaticStrings.NotImplementedError,
   });
 };
+
+/**
+ * @desc Retrieve the logo of an organization
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>}
+ */
+const getLogo = async (req, res) => {
+  return res.status(501).json({
+    error: StaticStrings.NotImplementedError,
+  });
+};
+
 
 /**
  * @desc Delete an organization
@@ -224,4 +264,6 @@ export default {
   organizationByID,
   addEmployee,
   removeEmployee,
+  updateLogo,
+  getLogo,
 };

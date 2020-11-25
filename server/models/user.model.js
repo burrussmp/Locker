@@ -131,13 +131,13 @@ UserSchema.pre('findOneAndUpdate', async function() {
       delete update[key];
     }
   }
-  this.setUpdate(update);
   if (update.first_name) {
     update.first_name = update.first_name.replace(/<(?:.|\n)*?>/gm, '');
   }
   if (update.last_name) {
     update.last_name = update.last_name.replace(/<(?:.|\n)*?>/gm, '');
   }
+  this.setUpdate(update);
 });
 
 UserSchema.plugin(mongoose_fuzzy_searching, {

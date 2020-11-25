@@ -10,7 +10,7 @@ const OrganizationData = [
   {
     name: 'Agolde',
     logo: process.cwd() + '/test/resources/agolde_logo.jpeg',
-    description: '',
+    description: 'nothing',
     url: 'https://agolde.com/',
   },
   {

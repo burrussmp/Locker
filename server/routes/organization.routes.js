@@ -17,8 +17,12 @@ router.route('/api/ent/organizations')
 
 router.route('/api/ent/organizations/:organizationId')
     .get(authCtrl.authorize([], false), orgCtrl.read)
-    .put(authCtrl.authorize([OrganizationPermissions.Edit]), orgCtrl.update)
+    .put(authCtrl.authorize([OrganizationPermissions.EditContent]), orgCtrl.update)
     .delete(authCtrl.authorize([OrganizationPermissions.Delete]), orgCtrl.remove);
+
+router.route('/api/ent/organizations/:organizationId/logo')
+    .post(authCtrl.authorize([OrganizationPermissions.EditContent]), orgCtrl.updateLogo)
+    .get(authCtrl.authorize([], false), orgCtrl.getLogo);
 
 router.route('/api/ent/organizations/:organizationId/employees')
     .post(authCtrl.authorize([OrganizationPermissions.AddEmployee]), orgCtrl.addEmployee)
