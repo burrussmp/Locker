@@ -3,7 +3,7 @@
 // imports
 import Organization from '../models/organization.model';
 import Employee from '../models/employee.model';
-
+import mediaCtrl from '../controllers/media.controller';
 import errorHandler from '../services/dbErrorHandler';
 import StaticStrings from '../../config/StaticStrings';
 import s3Services from '../services/S3.services';
@@ -155,8 +155,31 @@ const update = async (req, res) => {
  * @return {Promise<Response>}
  */
 const updateLogo = async (req, res) => {
-  return res.status(501).json({
-    error: StaticStrings.NotImplementedError,
+  const mediaMeta = {
+    'type': 'Logo',
+    'uploadedBy': req.auth._id,
+    'uploadedByType': 'employee',
+  };
+  s3Services.uploadSingleMediaS3(req, res, mediaMeta, async (req, res, image)=>{ // upload to s3
+    const query = {'_id': req.params.organizationId}; // at this point we have uploaded to S3 and just need to clean up
+    const update = {$set: {'logo': image._id}};
+    try {
+      const organization = await Organization.findOneAndUpdate(query, update, {runValidators: true}); // update
+      if (organization.logo) {
+        const media = await Media.findOne({key: req.organization.logo.key});
+        await media.deleteOne();
+      } else {
+        console.log(`Server Error: Should not see this message, organization should always have logo`);
+      }
+      res.status(200).json({logo_key: req.organization.logo.key});
+    } catch (err) {
+      if (req.file) {
+        await image.deleteOne(); // delete the new one
+        res.status(500).json({error: StaticStrings.UnknownServerError + ' and ' + err.message});
+      } else {
+        res.status(500).json({error: StaticStrings.UnknownServerError + ' and ' + err.message}); // should never see this... if we have req.file we parsed correctly
+      }
+    }
   });
 };
 
@@ -167,9 +190,12 @@ const updateLogo = async (req, res) => {
  * @return {Promise<Response>}
  */
 const getLogo = async (req, res) => {
-  return res.status(501).json({
-    error: StaticStrings.NotImplementedError,
-  });
+  if (req.organization.logo && req.organization.logo.key) {
+    res.locals.key = req.organization.logo.key;
+    return mediaCtrl.getMedia(req, res);
+  } else {
+    return res.status(500).json({error: StaticStrings.UnknownServerError + '\nReason: Organization missing logo'});
+  }
 };
 
 

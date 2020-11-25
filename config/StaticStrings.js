@@ -118,6 +118,7 @@ const StaticStrings = {
     NotFoundError: 'Organization not found',
     MissingID: 'Missing parameter "employeeId" in request body',
     EmployeeAlreadyInOrganization: 'This employee is already added to an organization. Please contact support if this is wrong',
+    UpdateLogoSuccess: 'Successfully updated the logo',
   },
   ProductModelErrors: {
     PriceRequired: 'Must provide a price for the product',
