@@ -110,7 +110,6 @@ const getPermissionArray = (type) => {
     assignedPermissions = assignedPermissions.concat([
       OrganizationPermissions.Create,
       OrganizationPermissions.Delete,
-      EmployeePermissions.ChangeRole,
     ]);
   }
   return assignedPermissions;

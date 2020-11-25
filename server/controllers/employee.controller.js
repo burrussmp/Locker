@@ -349,7 +349,7 @@ const changeRole = async (req, res) => {
     return res.status(401).json({error: Errors.ChangeRoleCannotUpdateSuperior});
   }
   if (req.auth.level != 0 && req.auth.organization.toString() != req.profile.organization.toString()) { // Not part of the same organization
-    return res.status(401).json({error: Errors.ChangeRoleRequireAdminOrSameOrg});
+    return res.status(401).json({error: Errors.RequireAdminOrSameOrg});
   }
   try {
     const update = {permissions: newRole._id};

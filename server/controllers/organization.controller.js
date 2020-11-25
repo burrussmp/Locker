@@ -2,7 +2,9 @@
 'use strict';
 // imports
 import Organization from '../models/organization.model';
+import Media from '../models/media.model';
 import Employee from '../models/employee.model';
+import RBAC from '../models/rbac.model';
 import mediaCtrl from '../controllers/media.controller';
 import errorHandler from '../services/dbErrorHandler';
 import StaticStrings from '../../config/StaticStrings';
@@ -44,6 +46,23 @@ const organizationByID = async (req, res, next, id) => {
     next();
   } catch (err) {
     return res.status(404).json({error: OrganizationControllerErrors.NotFoundError});
+  }
+};
+
+/**
+ * @desc enforce that requester is in the requested organization or has admin privilege
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @param {Function} next Next express middleware function
+ * @return {Promise<Response>} Sends the HTTP response or continues
+ * to next middleware. A 403 is sent if requester not in the same organization and does
+ * not have admin privilege
+ */
+const enforceSameOrganization = async (req, res, next) => {
+  if (req.auth.level != 0 && req.organization._id.toString() != req.auth.organization.toString()) {
+    return res.status(401).json({error: StaticStrings.EmployeeControllerErrors.RequireAdminOrSameOrg});
+  } else {
+    next();
   }
 };
 
@@ -175,9 +194,9 @@ const updateLogo = async (req, res) => {
     } catch (err) {
       if (req.file) {
         await image.deleteOne(); // delete the new one
-        res.status(500).json({error: StaticStrings.UnknownServerError + ' and ' + err.message});
+        res.status(500).json({error: StaticStrings.UnknownServerError + ': (S3 cleaned) ' + err.message});
       } else {
-        res.status(500).json({error: StaticStrings.UnknownServerError + ' and ' + err.message}); // should never see this... if we have req.file we parsed correctly
+        res.status(500).json({error: StaticStrings.UnknownServerError + ': (unable to clean S3) ' + err.message}); // should never see this... if we have req.file we parsed correctly
       }
     }
   });
@@ -223,28 +242,33 @@ const remove = async (req, res) => {
  * @return {Promise<Response>}
  */
 const addEmployee = async (req, res) => {
-  const employeeId = req.body.employeeId;
-  const organizationId = req.organization._id;
-  if (!employeeId) {
-    return res.status(400).json(
-        {error: OrganizationControllerErrors.MissingID});
+  const fieldsRequired = ['employee_id', 'role'];
+  const updateFields = Object.keys(req.body);
+  const missingFields = _.difference(fieldsRequired, updateFields);
+  if (missingFields.length != 0) {
+    return res.status(422).json({error: `Missing required fields in body: ${missingFields}`});
   }
+  const employeeId = req.body.employee_id;
   const employee = await Employee.findById(employeeId);
   if (!employee) {
-    return res.status(404).json(
-        {error: StaticStrings.EmployeeControllerErrors.EmployeeNotFound});
-  }
-  const organization = await Organization.findById(organizationId);
-  if (!organization) {
-    return res.status(404).json(
-        {error: StaticStrings.OrganizationControllerErrors.NotFoundError});
+    return res.status(404).json({error: StaticStrings.EmployeeControllerErrors.EmployeeNotFound});
   }
   if (employee.organization) {
     return res.status(400).json({error: StaticStrings.OrganizationControllerErrors.EmployeeAlreadyInOrganization});
   }
+  const role = req.body.role;
+  const rbacRole = await RBAC.findOne({'role': role});
+  if (!rbacRole) {
+    return res.status(400).json({error: StaticStrings.RBACModelErrors.RoleNotFound});
+  }
+  if (req.auth.level > rbacRole.level) {
+    const errMessage = `Requester authorization insufficient: Requester level ${req.auth.level} & level of role to create ${rbacRole.level}`;
+    return res.status(401).json({error: errMessage});
+  }
   try {
-    await Employee.findOneAndUpdate({'_id': employeeId}, {organization: organizationId}); // update their account
-    return res.status(200).json({message: StaticStrings.AddedFollowerSuccess});
+    const organizationId = req.organization._id;
+    await Employee.findOneAndUpdate({'_id': employeeId}, {organization: organizationId, permissions: rbacRole._id}); // update their account
+    return res.status(200).json({'employee_id': employeeId, 'org_id': organizationId});
   } catch (err) {
     return res.status(500).json({error: StaticStrings.UnknownServerError+err.message}); // no accounts were changed
   }
@@ -258,24 +282,20 @@ const addEmployee = async (req, res) => {
  */
 const removeEmployee = async (req, res) => {
   const employeeId = req.body.employeeId;
-  const organizationId = req.organization._id;
   if (!employeeId) {
-    return res.status(400).json({error: OrganizationControllerErrors.MissingID});
+    return res.status(400).json({error: OrganizationControllerErrors.MissingEmployeeID});
   }
-  const employee = await Employee.findById(employeeId);
+  const employee = await Employee.findById(employeeId).populate('permissions').exec();
   if (!employee) {
     return res.status(404).json({error: StaticStrings.EmployeeControllerErrors.EmployeeNotFound});
   }
-  const organization = await Organization.findById(organizationId);
-  if (!organization) {
-    return res.status(404).json({error: StaticStrings.OrganizationControllerErrors.NotFoundError});
-  }
-  if (employee.organization) {
-    return res.status(400).json({error: StaticStrings.OrganizationControllerErrors.EmployeeAlreadyInOrganization});
+  if (req.auth.level > employee.permissions.level) {
+    const errMessage = `Requester authorization insufficient: Requester level ${req.auth.level} & level of employee ${employee.permissions.level}`;
+    return res.status(401).json({error: errMessage});
   }
   try {
-    await Employee.findOneAndUpdate({'_id': employeeId}, {organization: undefined}); // update their account
-    return res.status(200).json({message: StaticStrings.AddedFollowerSuccess});
+    await Employee.findOneAndUpdate({'_id': employeeId}, {organization: undefined, permissions: undefined});
+    return res.status(200).json({'employee_id': employeeId, 'org_id': organizationId});
   } catch (err) {
     return res.status(500).json({error: StaticStrings.UnknownServerError+err.message}); // no accounts were changed
   }
@@ -288,6 +308,7 @@ export default {
   update,
   remove,
   organizationByID,
+  enforceSameOrganization,
   addEmployee,
   removeEmployee,
   updateLogo,

@@ -96,7 +96,7 @@ const StaticStrings = {
     NotPartOfOrganization: 'Cannot add a user to an organization that you are not a part of',
     OnlyOneAdminAllowed: 'Only 1 admin is allowed to be created',
     ChangeRoleCannotUpdateSuperior: 'Cannot change the role of a higher authorized employee',
-    ChangeRoleRequireAdminOrSameOrg: 'Requester and requestee must be a part of the same organization or requester must be admin',
+    RequireAdminOrSameOrg: 'Requester and requestee must be a part of the same organization or requester must be admin',
   },
   RBACModelErrors: {
     RoleRequired: 'Server Error: Must assign role attribute when creating new RBAC',
@@ -104,7 +104,7 @@ const StaticStrings = {
     ActionRequired: 'An action is required to define a permission',
     InvalidActionType: 'The action you have specified is invalid',
     LevelRequired: 'Must provide a level for the RBAC (e.g. 0 === Admin)',
-    RoleNotFound: 'The role type was not found',
+    RoleNotFound: 'The role was not found',
     RoleAlreadyExists: 'A role with this name already exists',
   },
   OrganizationModelErrors: {
@@ -116,7 +116,7 @@ const StaticStrings = {
   },
   OrganizationControllerErrors: {
     NotFoundError: 'Organization not found',
-    MissingID: 'Missing parameter "employeeId" in request body',
+    MissingEmployeeID: 'Missing parameter "employeeId" in request body',
     EmployeeAlreadyInOrganization: 'This employee is already added to an organization. Please contact support if this is wrong',
     UpdateLogoSuccess: 'Successfully updated the logo',
   },

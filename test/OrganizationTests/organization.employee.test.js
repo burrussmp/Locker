@@ -15,60 +15,25 @@ import StaticStrings from '../../config/StaticStrings';
 chai.use(chaiHttp);
 chai.should();
 
-const organizationSpecificTests = () => {
-  describe('Organization Specific Test', ()=>{
-    // describe('GET /api/ent/organizations/:organizationId`', ()=>{
-    //   const agent = chai.request.agent(app);
-    //   let admin; let org;
-    //   beforeEach(async ()=>{
-    //     await dropDatabase();
-    //     admin = await loginAdminEmployee();
-    //     org = await createOrg(admin.access_token, OrganizationData[0]);
-    //   });
-    //   it('Cannot find an organization (should fail)', async ()=>{
-    //     return agent.get(`/api/ent/organizations/${1234567}?access_token=${admin.access_token}`)
-    //         .then(async (res)=>{
-    //           res.status.should.eql(404);
-    //           res.body.error.should.eql(StaticStrings.OrganizationControllerErrors.NotFoundError);
-    //         });
-    //   });
-    //   it('Get an organization, not logged in (should succeed)', async ()=>{
-    //     return agent.get(`/api/ent/organizations/${org._id}`).then((res)=>{
-    //       res.status.should.eql(200);
-    //       res.body._id.toString().should.eql(org._id);
-    //     });
-    //   });
-    //   it('Get an organization, logged in (should succeed)', async ()=>{
-    //     return agent.get(`/api/ent/organizations/${org._id}?access_token=${admin.access_token}`).then((res)=>{
-    //       res.status.should.eql(200);
-    //       res.body._id.toString().should.eql(org._id);
-    //     });
-    //   });
-    //   it('Get an organization, no permissions (should succeed)', async ()=>{
-    //     const NARole = await RBAC.findOne({'role': 'none'});
-    //     await Employee.findByIdAndUpdate(admin.id, {'permissions': NARole._id}, {new: true});
-    //     return agent.get(`/api/ent/organizations/${org._id}?access_token=${admin.access_token}`).then((res)=>{
-    //       res.status.should.eql(200);
-    //       res.body._id.toString().should.eql(org._id);
-    //     });
-    //   });
-    // });
-    describe('PUT /api/ent/organizations/:organizationId`', ()=>{
+const organizationEmployeeTest = () => {
+  describe('Organization Employee Test', ()=>{
+    describe('POST /api/ent/organizations/:organizationId/employee`', ()=>{
       const agent = chai.request.agent(app);
-      let admin; let org;
+      let admin; let org; let employee;
       beforeEach(async ()=>{
         await dropDatabase();
         admin = await loginAdminEmployee();
         org = await createOrg(admin.access_token, OrganizationData[0]);
+        employee = await createEmployee(getEmployeeConstructor(EmployeeData[1]));
+        await Employee.findByIdAndUpdate(employee.id, {'organization': undefined});
       });
-      it('Update Organization: Not employee of organization (should fail)', async ()=>{
-        const otherCompanySupervisor = createEmployee(admin, getEmployeeConstructor(EmployeeData[4]));
-        const update = {'name': 'new name'};
-        return agent.post(`/api/ent/organizations/${org._id}?access_token=${otherCompanySupervisor.access_token}`)
-            .send(update)
+      it('Add Employee to Organization: Already part of organization (should fail)', async ()=>{
+        await Employee.findByIdAndUpdate(employee.id, {'organization': org._id});
+        return agent.post(`/api/ent/organizations/${org._id}/employee?access_token=${admin.access_token}`)
+            .send({employeeId: employee.id})
             .then(async (res)=>{
-              res.status.should.eql(401);
-              res.body.error.should.eql(StaticStrings.EmployeeControllerErrors.RequireAdminOrSameOrg);
+              res.status.should.eql(400);
+              res.body.error.should.eql(StaticStrings.OrganizationControllerErrors.EmployeeAlreadyInOrganization);
             });
       });
       // it('Update an organization, not logged in (should fail)', async ()=>{
@@ -296,4 +261,4 @@ const organizationSpecificTests = () => {
   });
 };
 
-export default organizationSpecificTests;
+export default organizationEmployeeTest;

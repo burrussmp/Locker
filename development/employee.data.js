@@ -37,6 +37,15 @@ const EmployeeData = [
     organization: 'Gymshark',
     profile: process.cwd() + '/test/resources/profile1.png',
   },
+  {
+    first_name: 'gym shark supervisor',
+    last_name: 'gym shark supervisor',
+    email: 'gym@mail.com',
+    password: 'Admin125$',
+    role_type: 'supervisor',
+    organization: 'Locker Company',
+    profile: process.cwd() + '/test/resources/profile1.png',
+  },
 ];
 
 const getEmployeeConstructor = (data) => {
