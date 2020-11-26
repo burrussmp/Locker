@@ -16,112 +16,112 @@ chai.should();
 
 const organizationEmployeeTest = () => {
   describe('Organization Employee Test', ()=>{
-    // describe('POST /api/ent/organizations/:organizationId/employee`', ()=>{
-    //   const agent = chai.request.agent(app);
-    //   let admin; let org; let employee;
-    //   beforeEach(async ()=>{
-    //     await dropDatabase();
-    //     admin = await loginAdminEmployee();
-    //     org = await createOrg(admin.access_token, OrganizationData[0]);
-    //     employee = await createEmployee(admin, getEmployeeConstructor(EmployeeData[1]));
-    //     await Employee.findByIdAndUpdate(employee.id, {'organization': undefined});
-    //   });
-    //   it('Add Employee to Organization: Already part of organization (should fail)', async ()=>{
-    //     await Employee.findByIdAndUpdate(employee.id, {'organization': org._id});
-    //     return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
-    //         .send({employee_id: employee.id, role: 'supervisor'})
-    //         .then(async (res)=>{
-    //           res.status.should.eql(400);
-    //           res.body.error.should.eql(StaticStrings.OrganizationControllerErrors.EmployeeAlreadyInOrganization);
-    //         });
-    //   });
-    //   it('Add Employee to Organization: Not logged in (should fail)', async ()=>{
-    //     return agent.post(`/api/ent/organizations/${org._id}/employees`)
-    //         .send({employeeId: employee.id})
-    //         .then(async (res)=>{
-    //           res.status.should.eql(401);
-    //           res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError);
-    //         });
-    //   });
-    //   it('Add Employee to Organization: Missing permissions (should fail)', async ()=>{
-    //     const NARole = await RBAC.findOne({'role': 'none'});
-    //     await Employee.findByIdAndUpdate(admin.id, {'permissions': NARole._id}, {new: true});
-    //     return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
-    //         .send({employeeId: employee.id})
-    //         .then(async (res)=>{
-    //           res.status.should.eql(403);
-    //           res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
-    //         });
-    //   });
-    //   it('Add Employee to Organization: Not supervisor or higher (should fail)', async ()=>{
-    //     return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${employee.access_token}`)
-    //         .send({employee_id: employee.id, role: 'supervisor'})
-    //         .then(async (res)=>{
-    //           res.status.should.eql(403);
-    //           res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
-    //         });
-    //   });
-    //   it('Add Employee to Organization: Missing \'employee_id\' field (should fail)', async ()=>{
-    //     return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
-    //         .send({role: 'supervisor'})
-    //         .then(async (res)=>{
-    //           res.status.should.eql(422);
-    //           res.body.error.should.include('Missing required fields');
-    //         });
-    //   });
-    //   it('Add Employee to Organization: Missing \'role\' field (should fail)', async ()=>{
-    //     return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
-    //         .send({employee_id: employee.id})
-    //         .then(async (res)=>{
-    //           res.status.should.eql(422);
-    //           res.body.error.should.include('Missing required fields');
-    //         });
-    //   });
-    //   it('Add Employee to Organization: Employee not found (should fail)', async ()=>{
-    //     return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
-    //         .send({employee_id: org._id, role: 'supervisor'})
-    //         .then(async (res)=>{
-    //           res.status.should.eql(404);
-    //           res.body.error.should.eql(StaticStrings.EmployeeControllerErrors.EmployeeNotFound);
-    //         });
-    //   });
-    //   it('Add Employee to Organization: \'employee_id\' is invalid (should fail)', async ()=>{
-    //     return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
-    //         .send({employee_id: 123456, role: 'supervisor'})
-    //         .then(async (res)=>{
-    //           res.status.should.eql(400);
-    //           res.body.error.should.eql(StaticStrings.EmployeeControllerErrors.InvalidEmployeeID);
-    //         });
-    //   });
-    //   it('Add Employee to Organization: Role not found (should fail)', async ()=>{
-    //     return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
-    //         .send({employee_id: employee.id, role: '404'})
-    //         .then(async (res)=>{
-    //           res.status.should.eql(400);
-    //           res.body.error.should.eql(StaticStrings.RBACModelErrors.RoleNotFound);
-    //         });
-    //   });
-    //   it('Add Employee to Organization: Role higher than requester role (should fail)', async ()=>{
-    //     const supervisor = await createEmployee(admin, getEmployeeConstructor(EmployeeData[0]));
-    //     return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${supervisor.access_token}`)
-    //         .send({employee_id: employee.id, role: 'admin'})
-    //         .then(async (res)=>{
-    //           res.status.should.eql(401);
-    //           res.body.error.should.include('Requester authorization insufficient');
-    //         });
-    //   });
-    //   it('Add Employee to Organization: Supervisor adds employee to organization with correct role (should succeed)', async ()=>{
-    //     const supervisor = await createEmployee(admin, getEmployeeConstructor(EmployeeData[0]));
-    //     return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${supervisor.access_token}`)
-    //         .send({employee_id: employee.id, role: 'supervisor'})
-    //         .then(async (res)=>{
-    //           res.status.should.eql(200);
-    //           const employeeUpdated = await Employee.findById(employee.id).populate('permissions').exec();
-    //           employeeUpdated.organization.toString().should.eql(org._id);
-    //           employeeUpdated.permissions.role.should.eql('supervisor');
-    //         });
-    //   });
-    // });
+    describe('POST /api/ent/organizations/:organizationId/employee`', ()=>{
+      const agent = chai.request.agent(app);
+      let admin; let org; let employee;
+      beforeEach(async ()=>{
+        await dropDatabase();
+        admin = await loginAdminEmployee();
+        org = await createOrg(admin.access_token, OrganizationData[0]);
+        employee = await createEmployee(admin, getEmployeeConstructor(EmployeeData[1]));
+        await Employee.findByIdAndUpdate(employee.id, {'organization': undefined});
+      });
+      it('Add Employee to Organization: Already part of organization (should fail)', async ()=>{
+        await Employee.findByIdAndUpdate(employee.id, {'organization': org._id});
+        return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
+            .send({employee_id: employee.id, role: 'supervisor'})
+            .then(async (res)=>{
+              res.status.should.eql(400);
+              res.body.error.should.eql(StaticStrings.OrganizationControllerErrors.EmployeeAlreadyInOrganization);
+            });
+      });
+      it('Add Employee to Organization: Not logged in (should fail)', async ()=>{
+        return agent.post(`/api/ent/organizations/${org._id}/employees`)
+            .send({employeeId: employee.id})
+            .then(async (res)=>{
+              res.status.should.eql(401);
+              res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError);
+            });
+      });
+      it('Add Employee to Organization: Missing permissions (should fail)', async ()=>{
+        const NARole = await RBAC.findOne({'role': 'none'});
+        await Employee.findByIdAndUpdate(admin.id, {'permissions': NARole._id}, {new: true});
+        return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
+            .send({employeeId: employee.id})
+            .then(async (res)=>{
+              res.status.should.eql(403);
+              res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
+            });
+      });
+      it('Add Employee to Organization: Not supervisor or higher (should fail)', async ()=>{
+        return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${employee.access_token}`)
+            .send({employee_id: employee.id, role: 'supervisor'})
+            .then(async (res)=>{
+              res.status.should.eql(403);
+              res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
+            });
+      });
+      it('Add Employee to Organization: Missing \'employee_id\' field (should fail)', async ()=>{
+        return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
+            .send({role: 'supervisor'})
+            .then(async (res)=>{
+              res.status.should.eql(422);
+              res.body.error.should.include('Missing required fields');
+            });
+      });
+      it('Add Employee to Organization: Missing \'role\' field (should fail)', async ()=>{
+        return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
+            .send({employee_id: employee.id})
+            .then(async (res)=>{
+              res.status.should.eql(422);
+              res.body.error.should.include('Missing required fields');
+            });
+      });
+      it('Add Employee to Organization: Employee not found (should fail)', async ()=>{
+        return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
+            .send({employee_id: org._id, role: 'supervisor'})
+            .then(async (res)=>{
+              res.status.should.eql(404);
+              res.body.error.should.eql(StaticStrings.EmployeeControllerErrors.EmployeeNotFound);
+            });
+      });
+      it('Add Employee to Organization: \'employee_id\' is invalid (should fail)', async ()=>{
+        return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
+            .send({employee_id: 123456, role: 'supervisor'})
+            .then(async (res)=>{
+              res.status.should.eql(400);
+              res.body.error.should.eql(StaticStrings.EmployeeControllerErrors.InvalidEmployeeID);
+            });
+      });
+      it('Add Employee to Organization: Role not found (should fail)', async ()=>{
+        return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
+            .send({employee_id: employee.id, role: '404'})
+            .then(async (res)=>{
+              res.status.should.eql(400);
+              res.body.error.should.eql(StaticStrings.RBACModelErrors.RoleNotFound);
+            });
+      });
+      it('Add Employee to Organization: Role higher than requester role (should fail)', async ()=>{
+        const supervisor = await createEmployee(admin, getEmployeeConstructor(EmployeeData[0]));
+        return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${supervisor.access_token}`)
+            .send({employee_id: employee.id, role: 'admin'})
+            .then(async (res)=>{
+              res.status.should.eql(401);
+              res.body.error.should.include('Requester authorization insufficient');
+            });
+      });
+      it('Add Employee to Organization: Supervisor adds employee to organization with correct role (should succeed)', async ()=>{
+        const supervisor = await createEmployee(admin, getEmployeeConstructor(EmployeeData[0]));
+        return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${supervisor.access_token}`)
+            .send({employee_id: employee.id, role: 'supervisor'})
+            .then(async (res)=>{
+              res.status.should.eql(200);
+              const employeeUpdated = await Employee.findById(employee.id).populate('permissions').exec();
+              employeeUpdated.organization.toString().should.eql(org._id);
+              employeeUpdated.permissions.role.should.eql('supervisor');
+            });
+      });
+    });
     describe('DELETE /api/ent/organizations/:organizationId/employee`', ()=>{
       const agent = chai.request.agent(app);
       let admin; let org; let employee;
