@@ -17,15 +17,15 @@ router.route('/api/ent/organizations')
 
 router.route('/api/ent/organizations/:organizationId')
     .get(authCtrl.authorize([], false), orgCtrl.read)
-    .put(authCtrl.authorize([OrganizationPermissions.EditContent]), orgCtrl.enforceSameOrganization, orgCtrl.update)
-    .delete(authCtrl.authorize([OrganizationPermissions.Delete]), orgCtrl.enforceSameOrganization, orgCtrl.remove);
+    .put(authCtrl.authorize([OrganizationPermissions.EditContent]), orgCtrl.enforceRequesterInOrganization, orgCtrl.update)
+    .delete(authCtrl.authorize([OrganizationPermissions.Delete]), orgCtrl.enforceRequesterInOrganization, orgCtrl.remove);
 
 router.route('/api/ent/organizations/:organizationId/logo')
-    .post(authCtrl.authorize([OrganizationPermissions.EditContent]), orgCtrl.enforceSameOrganization, orgCtrl.updateLogo)
+    .post(authCtrl.authorize([OrganizationPermissions.EditContent]), orgCtrl.enforceRequesterInOrganization, orgCtrl.updateLogo)
     .get(authCtrl.authorize([], false), orgCtrl.getLogo);
 
 router.route('/api/ent/organizations/:organizationId/employees')
     .post(authCtrl.authorize([OrganizationPermissions.AddEmployee]), orgCtrl.addEmployee)
-    .delete(authCtrl.authorize([OrganizationPermissions.DeleteEmployee]), orgCtrl.enforceSameOrganization, orgCtrl.removeEmployee);
+    .delete(authCtrl.authorize([OrganizationPermissions.DeleteEmployee]), orgCtrl.enforceRequesterInOrganization, orgCtrl.removeEmployee);
 
 export default router;

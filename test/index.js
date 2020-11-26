@@ -17,4 +17,4 @@ import EmployeeTest from './EmployeeTests/index';
 // describe('Comment Test', CommentTest);
 // describe('Media Test', MediaTest);
 describe('Organization Test', OrganizationTest);
-// describe('Employee Test', EmployeeTest);
+describe('Employee Test', EmployeeTest);

@@ -43,7 +43,7 @@ const EmployeeData = [
     email: 'gym@mail.com',
     password: 'Admin125$',
     role_type: 'supervisor',
-    organization: 'Locker Company',
+    organization: 'Gymshark',
     profile: process.cwd() + '/test/resources/profile1.png',
   },
 ];

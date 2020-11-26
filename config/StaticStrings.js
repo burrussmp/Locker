@@ -96,7 +96,9 @@ const StaticStrings = {
     NotPartOfOrganization: 'Cannot add a user to an organization that you are not a part of',
     OnlyOneAdminAllowed: 'Only 1 admin is allowed to be created',
     ChangeRoleCannotUpdateSuperior: 'Cannot change the role of a higher authorized employee',
-    RequireAdminOrSameOrg: 'Requester and requestee must be a part of the same organization or requester must be admin',
+    RequireAdminOrRequesteeandRequesterInSameOrg: 'Requester and requestee must be a part of the same organization or requester must be admin',
+    RequireAdminOrRequesterInOrg: 'Requester must be in the organization or an admin to perform this request',
+    InvalidEmployeeID: 'The provided employee ID is not valid',
   },
   RBACModelErrors: {
     RoleRequired: 'Server Error: Must assign role attribute when creating new RBAC',
@@ -116,7 +118,6 @@ const StaticStrings = {
   },
   OrganizationControllerErrors: {
     NotFoundError: 'Organization not found',
-    MissingEmployeeID: 'Missing parameter "employeeId" in request body',
     EmployeeAlreadyInOrganization: 'This employee is already added to an organization. Please contact support if this is wrong',
     UpdateLogoSuccess: 'Successfully updated the logo',
   },

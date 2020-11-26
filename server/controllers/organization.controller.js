@@ -58,9 +58,9 @@ const organizationByID = async (req, res, next, id) => {
  * to next middleware. A 403 is sent if requester not in the same organization and does
  * not have admin privilege
  */
-const enforceSameOrganization = async (req, res, next) => {
+const enforceRequesterInOrganization = async (req, res, next) => {
   if (req.auth.level != 0 && req.organization._id.toString() != req.auth.organization.toString()) {
-    return res.status(401).json({error: StaticStrings.EmployeeControllerErrors.RequireAdminOrSameOrg});
+    return res.status(401).json({error: StaticStrings.EmployeeControllerErrors.RequireAdminOrRequesterInOrg});
   } else {
     next();
   }
@@ -236,12 +236,17 @@ const remove = async (req, res) => {
 };
 
 /**
- * @desc Add an employee to an organization
+ * @desc Add an employee to an organization with a provided role. The following checks are performed.
+ *  Note: If the requester is an 'admin' then some of these checks may be skipped
+ *  1. The requester is at least a supervisor of organization :organizationId
+ *  2. The requested employee exists and is not already assigned to an organization
+ *  3. The requested employee's role is lower auth than or equal to the requester
  * @param {Request} req HTTP request object
  * @param {Response} res HTTP response object
  * @return {Promise<Response>}
  */
 const addEmployee = async (req, res) => {
+  // validate input
   const fieldsRequired = ['employee_id', 'role'];
   const updateFields = Object.keys(req.body);
   const missingFields = _.difference(fieldsRequired, updateFields);
@@ -249,22 +254,35 @@ const addEmployee = async (req, res) => {
     return res.status(422).json({error: `Missing required fields in body: ${missingFields}`});
   }
   const employeeId = req.body.employee_id;
-  const employee = await Employee.findById(employeeId);
-  if (!employee) {
-    return res.status(404).json({error: StaticStrings.EmployeeControllerErrors.EmployeeNotFound});
+  // validate employee_id
+  let employee;
+  try {
+    employee = await Employee.findById(employeeId);
+    if (!employee) {
+      return res.status(404).json({error: StaticStrings.EmployeeControllerErrors.EmployeeNotFound});
+    }
+    if (employee.organization) {
+      return res.status(400).json({error: StaticStrings.OrganizationControllerErrors.EmployeeAlreadyInOrganization});
+    }
+  } catch (err) {
+    return res.status(400).json({error: StaticStrings.EmployeeControllerErrors.InvalidEmployeeID});
   }
-  if (employee.organization) {
-    return res.status(400).json({error: StaticStrings.OrganizationControllerErrors.EmployeeAlreadyInOrganization});
+  // validate role
+  let rbacRole;
+  try {
+    rbacRole = await RBAC.findOne({'role': req.body.role});
+    if (!rbacRole) {
+      return res.status(400).json({error: StaticStrings.RBACModelErrors.RoleNotFound});
+    }
+  } catch (err) {
+    return res.status(400).json({error: err.message});
   }
-  const role = req.body.role;
-  const rbacRole = await RBAC.findOne({'role': role});
-  if (!rbacRole) {
-    return res.status(400).json({error: StaticStrings.RBACModelErrors.RoleNotFound});
-  }
+  // validate auth
   if (req.auth.level > rbacRole.level) {
     const errMessage = `Requester authorization insufficient: Requester level ${req.auth.level} & level of role to create ${rbacRole.level}`;
     return res.status(401).json({error: errMessage});
   }
+  // success
   try {
     const organizationId = req.organization._id;
     await Employee.findOneAndUpdate({'_id': employeeId}, {organization: organizationId, permissions: rbacRole._id}); // update their account
@@ -275,27 +293,44 @@ const addEmployee = async (req, res) => {
 };
 
 /**
- * @desc Remove an employee from an organization
+ * @desc Remove an employee from an organization. In order to remove an employee from an organization the
+ * following checks are performed. Note: If admin the following are skipped.
+ *  1. The requester is a supervisor of organization :organizationId
+ *  2. The requested employee exists and is also in :organizationId
+ *  3. The requested employee has lower or equal auth to the requester
  * @param {Request} req HTTP request object
  * @param {Response} res HTTP response object
  * @return {Promise<Response>}
  */
 const removeEmployee = async (req, res) => {
-  const employeeId = req.body.employeeId;
+  // validate input
+  const employeeId = req.body.employee_id;
   if (!employeeId) {
-    return res.status(400).json({error: OrganizationControllerErrors.MissingEmployeeID});
+    return res.status(422).json({error: `Missing required fields: employee_id`});
   }
-  const employee = await Employee.findById(employeeId).populate('permissions').exec();
-  if (!employee) {
-    return res.status(404).json({error: StaticStrings.EmployeeControllerErrors.EmployeeNotFound});
+  // validate employee_id
+  let employee;
+  try {
+    employee = await Employee.findById(employeeId).populate('permissions').exec();
+    if (!employee) {
+      return res.status(404).json({error: StaticStrings.EmployeeControllerErrors.EmployeeNotFound});
+    }
+    if (req.auth.level != 0 && employee.organization._id.toString() != req.auth.organization.toString()) {
+      return res.status(401).json({error: StaticStrings.EmployeeControllerErrors.RequireAdminOrRequesteeandRequesterInSameOrg});
+    }
+  } catch (err) {
+    return res.status(400).json({error: StaticStrings.EmployeeControllerErrors.InvalidEmployeeID});
   }
+  // validate auth
   if (req.auth.level > employee.permissions.level) {
     const errMessage = `Requester authorization insufficient: Requester level ${req.auth.level} & level of employee ${employee.permissions.level}`;
     return res.status(401).json({error: errMessage});
   }
+  // success
   try {
-    await Employee.findOneAndUpdate({'_id': employeeId}, {organization: undefined, permissions: undefined});
-    return res.status(200).json({'employee_id': employeeId, 'org_id': organizationId});
+    const NARole = await RBAC.findOne({'role': 'none'});
+    await Employee.findOneAndUpdate({'_id': employeeId}, {organization: undefined, permissions: NARole._id});
+    return res.status(200).json({'employee_id': employeeId, 'org_id': req.organization._id});
   } catch (err) {
     return res.status(500).json({error: StaticStrings.UnknownServerError+err.message}); // no accounts were changed
   }
@@ -308,7 +343,7 @@ export default {
   update,
   remove,
   organizationByID,
-  enforceSameOrganization,
+  enforceRequesterInOrganization,
   addEmployee,
   removeEmployee,
   updateLogo,

@@ -9,11 +9,11 @@ import EmployeeRole from './employee.role.test';
 
 
 const employeeTests = () => {
-  describe('PATH: \'/api/ent/employees\'', BasicTest);
-  // describe('PATH: \'/api/ent/employees/:employeeId\'', EmployeeSpecific);
-  // describe('PATH: \'/api/ent/employees/:employeeId/avatar\'', EmployeeAvatar);
-  // describe('PATH: \'/api/ent/employees/:employeeId/password\'', EmployeePassword);
-  // describe('PATH: \'/api/ent/employees/:employeeId/role\'', EmployeeRole);
+  // describe('PATH: \'/api/ent/employees\'', BasicTest);
+  describe('PATH: \'/api/ent/employees/:employeeId\'', EmployeeSpecific);
+  describe('PATH: \'/api/ent/employees/:employeeId/avatar\'', EmployeeAvatar);
+  describe('PATH: \'/api/ent/employees/:employeeId/password\'', EmployeePassword);
+  describe('PATH: \'/api/ent/employees/:employeeId/role\'', EmployeeRole);
 };
 
 export default employeeTests;

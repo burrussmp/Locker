@@ -112,7 +112,7 @@ const employeeRoleTest = () => {
             .send({'new_role': 'supervisor'})
             .then(async (res)=>{
               res.status.should.eql(401);
-              res.body.error.should.eql(StaticStrings.EmployeeControllerErrors.RequireAdminOrSameOrg);
+              res.body.error.should.eql(StaticStrings.EmployeeControllerErrors.RequireAdminOrRequesteeandRequesterInSameOrg);
             });
       });
       it('Requester and requestee not part of the same organization, but admin (should succeed)', async ()=>{
