@@ -209,7 +209,7 @@ const organizationEmployeeTest = () => {
             .send({employee_id: employee.id})
             .then(async (res)=>{
               res.status.should.eql(401);
-              res.body.error.should.eql(StaticStrings.EmployeeControllerErrors.RequireAdminOrRequesteeandRequesterInSameOrg);
+              res.body.error.should.eql(StaticStrings.EmployeeControllerErrors.RequireRequesteeInOrg);
             });
       });
       it('Delete Employee from Organization: Supervisor deletes employee to organization with correct role (should succeed)', async ()=>{

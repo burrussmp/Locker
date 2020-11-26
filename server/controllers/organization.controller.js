@@ -237,10 +237,9 @@ const remove = async (req, res) => {
 
 /**
  * @desc Add an employee to an organization with a provided role. The following checks are performed.
- *  Note: If the requester is an 'admin' then some of these checks may be skipped
- *  1. The requester is at least a supervisor of organization :organizationId
+ *  1. The requester is at least a supervisor of organization :organizationId or an admin
  *  2. The requested employee exists and is not already assigned to an organization
- *  3. The requested employee's role is lower auth than or equal to the requester
+ *  3. The requested employee's role level is lower auth than or equal to the requester role level
  * @param {Request} req HTTP request object
  * @param {Response} res HTTP response object
  * @return {Promise<Response>}
@@ -294,10 +293,10 @@ const addEmployee = async (req, res) => {
 
 /**
  * @desc Remove an employee from an organization. In order to remove an employee from an organization the
- * following checks are performed. Note: If admin the following are skipped.
- *  1. The requester is a supervisor of organization :organizationId
+ * following checks are performed.
+ *  1. The requester is a supervisor of organization :organizationId or an admin
  *  2. The requested employee exists and is also in :organizationId
- *  3. The requested employee has lower or equal auth to the requester
+ *  3. The requested employee's role level is lower auth than or equal to the requester role level
  * @param {Request} req HTTP request object
  * @param {Response} res HTTP response object
  * @return {Promise<Response>}
@@ -315,8 +314,8 @@ const removeEmployee = async (req, res) => {
     if (!employee) {
       return res.status(404).json({error: StaticStrings.EmployeeControllerErrors.EmployeeNotFound});
     }
-    if (req.auth.level != 0 && employee.organization._id.toString() != req.auth.organization.toString()) {
-      return res.status(401).json({error: StaticStrings.EmployeeControllerErrors.RequireAdminOrRequesteeandRequesterInSameOrg});
+    if (employee.organization._id.toString() != req.organization._id.toString()) {
+      return res.status(401).json({error: StaticStrings.EmployeeControllerErrors.RequireRequesteeInOrg});
     }
   } catch (err) {
     return res.status(400).json({error: StaticStrings.EmployeeControllerErrors.InvalidEmployeeID});

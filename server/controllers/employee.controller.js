@@ -324,14 +324,13 @@ const removeProfilePhoto = async (req, res) => {
 };
 
 /**
- * @desc Change the role of an employee
+ * @desc Change the role of an employee. The following checks are performed for this request to succeed
+ *  1. The requester has a lower role level (higher auth) than the requested role and the requestee's current role
+ *  2. The requester and the requestee are part of the same organization or the requestee is an admin
  * @param {Request} req HTTP request object
  * @param {Response} res HTTP response object
  * @return {Promise<Response>} An HTTP response indicating if the role
- * has changed. Requirements for role change: 1) Requester has
- * higher authorization than new role, 2) The requester and requestee
- * are part of the same organization, 3) the requester and requestee exist
- * 4) The requester has permission to perform the action
+ * has changed successfully
  */
 const changeRole = async (req, res) => {
   const newRoleName = req.body.new_role;

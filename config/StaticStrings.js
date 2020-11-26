@@ -97,6 +97,7 @@ const StaticStrings = {
     OnlyOneAdminAllowed: 'Only 1 admin is allowed to be created',
     ChangeRoleCannotUpdateSuperior: 'Cannot change the role of a higher authorized employee',
     RequireAdminOrRequesteeandRequesterInSameOrg: 'Requester and requestee must be a part of the same organization or requester must be admin',
+    RequireRequesteeInOrg: 'The requestee not part of this organization',
     RequireAdminOrRequesterInOrg: 'Requester must be in the organization or an admin to perform this request',
     InvalidEmployeeID: 'The provided employee ID is not valid',
   },
