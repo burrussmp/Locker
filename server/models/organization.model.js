@@ -20,9 +20,6 @@ const OrgSchema = new mongoose.Schema(
         required: OrganizationModelErrors.LogoRequired,
 
       },
-      last_scraped: {
-        type: Date,
-      },
       url: {
         type: String,
         trim: true,
@@ -32,11 +29,6 @@ const OrgSchema = new mongoose.Schema(
       description: {
         type: String,
         default: '',
-      },
-      products: {
-        type: [
-          {type: mongoose.Schema.ObjectId, ref: 'Product'},
-        ],
       },
     },
     {

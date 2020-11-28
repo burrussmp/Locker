@@ -25,7 +25,7 @@ const video = process.cwd() + '/test/resources/sample_vid.mp4';
 
 
 const onFailureToCreate = async (res, statusCode, errorMessage) => {
-  res.body.error.should.eql(errorMessage);
+  res.body.error.should.include(errorMessage);
   res.status.should.eql(statusCode);
   const numMedia = await Media.countDocuments();
   numMedia.should.eql(0);

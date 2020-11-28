@@ -2,6 +2,8 @@
 /* eslint-disable max-len */
 import mongoose from 'mongoose';
 import StaticStrings from '../../config/StaticStrings';
+import validators from '../services/validators';
+
 const ProductModelErrors = StaticStrings.ProductModelErrors;
 
 const ProductSchema = new mongoose.Schema(
@@ -10,6 +12,11 @@ const ProductSchema = new mongoose.Schema(
         type: String,
         required: ProductModelErrors.NameRequired,
         trim: true,
+      },
+      url: {
+        type: String,
+        trim: true,
+        required: ProductModelErrors.UrlRequired,
       },
       organization: {
         type: mongoose.Schema.ObjectId,
@@ -30,11 +37,6 @@ const ProductSchema = new mongoose.Schema(
         type: String,
         trim: true,
         required: ProductModelErrors.DescriptionRequired,
-      },
-      url: {
-        type: String,
-        trim: true,
-        required: ProductModelErrors.UrlRequired,
       },
       exists: {
         type: Boolean,
@@ -70,6 +72,34 @@ const ProductSchema = new mongoose.Schema(
  * TODO
  * On a get, check if the url is still valid. If not valid, set to false
 */
+ProductSchema.path('url').validate(async function(value) {
+  const count = await mongoose.models.Product.countDocuments({url: value});
+  const isUnique = this ? count == 0 || !this.isModified('url') : count == 0;
+  if (!isUnique) {
+    throw validators.createValidationError(ProductModelErrors.URLAlreadyExists);
+  }
+}, null);
+
+ProductSchema.path('organization').validate(async function(value) {
+  const org = await mongoose.models.Organization.findById(value);
+  if (!org) {
+    throw validators.createValidationError(StaticStrings.OrganizationControllerErrors.NotFoundError);
+  }
+}, null);
+
+ProductSchema.pre('findOneAndUpdate', async function() {
+  // sanitize
+  const update = await this.getUpdate();
+  if (!update) return; // no updates
+  const doc = await this.model.findOne(this.getFilter());
+  if (!doc) return; // nothing to update
+  for (const key of Object.keys(update)) {
+    if (update[key] == doc[key]) {
+      delete update[key];
+    }
+  }
+  this.setUpdate(update);
+});
 
 ProductSchema.pre('deleteOne', {document: true, query: false}, async function() {
   // clean up all images
@@ -79,11 +109,6 @@ ProductSchema.pre('deleteOne', {document: true, query: false}, async function() 
     media = await mongoose.models.Media.findById(additionalMedia); // delegate cleanup to media
     await media.deleteOne();
   }
-  // pull product from organization
-  await mongoose.models.Organization.findOneAndUpdate(
-      {_id: this.organization},
-      {$pull: {products: this._id}},
-  );
 });
 
 export default mongoose.model('Product', ProductSchema);

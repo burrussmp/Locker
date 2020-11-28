@@ -244,14 +244,18 @@ const getProfilePhoto = (req, res) => {
  * @param {Response} res HTTP response object
  */
 const uploadProfilePhoto = (req, res) => {
-  const meta = {
+  const mediaMeta = {
     'type': 'Avatar',
     'uploadedBy': req.params.userId,
     'uploadedByType': 'user',
+    'fields': [
+      {name: 'media', maxCount: 1, mimetypesAllowed: ['image/png', 'image/jpeg'], required: true},
+    ],
   };
-  s3Services.uploadSingleMediaS3(req, res, meta, async (req, res, image)=>{ // upload to s3
+  s3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages)=>{ // upload to s3
+    const media = allImages['media'][0];
     const query = {'_id': req.params.userId}; // at this point we have uploaded to S3 and just need to clean up
-    const update = {$set: {'profile_photo': image._id}};
+    const update = {$set: {'profile_photo': media._id}};
     try {
       const user = await User.findOneAndUpdate(query, update, {runValidators: true}); // update
       if (user.profile_photo) {
@@ -262,11 +266,12 @@ const uploadProfilePhoto = (req, res) => {
         res.status(200).json({message: StaticStrings.UploadProfilePhotoSuccess}); // first upload, nothing to delete... Success!
       }
     } catch (err) {
-      if (req.file) {
+      try {
+        const image = await Media.findById(media._id);
         await image.deleteOne(); // delete the new one
-        res.status(500).json({error: StaticStrings.UnknownServerError + ' and ' + err.message});
-      } else {
-        res.status(500).json({error: StaticStrings.UnknownServerError + ' and ' + err.message}); // should never see this... if we have req.file we parsed correctly
+        res.status(500).json({error: StaticStrings.UnknownServerError + `\nS3 Cleaned.\nOriginal error ${err.message}.`});
+      } catch (err2) {
+        res.status(500).json({error: StaticStrings.UnknownServerError + `.\nUnable to clean S3 because ${err2.message}.\nOriginal error ${err.message}.`});
       }
     }
   });

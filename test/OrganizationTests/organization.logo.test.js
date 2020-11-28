@@ -39,6 +39,7 @@ const organizationLogoTests = () => {
       });
       it('Get Logo: Not logged in (should succeed)', async ()=>{
         return agent.get(`/api/ent/organizations/${org._id}/logo`).then((res)=>{
+          console.log(res.body);
           res.status.should.eql(200);
         });
       });

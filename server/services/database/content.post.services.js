@@ -35,13 +35,17 @@ const createContentPost = async (req, res) => {
     'type': type,
     'uploadedBy': req.auth._id,
     'uploadedByType': 'employee',
+    'fields': [
+      {name: 'media', maxCount: 1, mimetypesAllowed: ['image/png', 'image/jpeg'], required: true},
+    ],
   };
-  s3Services.uploadSingleMediaS3(req, res, mediaMeta, async (req, res, image)=>{
+  s3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages)=>{
     let contentPost;
+    const media = allImages['media'][0];
     try {
       contentPost = new ContentPost({
         price: req.body.price,
-        media: image._id,
+        media: media._id,
       });
       contentPost = await contentPost.save();
     } catch (err) {

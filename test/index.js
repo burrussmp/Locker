@@ -12,9 +12,9 @@ import EmployeeTest from './EmployeeTests/index';
 
 // dropDatabase();
 // describe('Auth Tests', AuthTest);
-// describe('User Tests', UserTest);
+describe('User Tests', UserTest);
 // describe('Post Test', PostTest);
 // describe('Comment Test', CommentTest);
 // describe('Media Test', MediaTest);
-describe('Organization Test', OrganizationTest);
+// describe('Organization Test', OrganizationTest);
 // describe('Employee Test', EmployeeTest);

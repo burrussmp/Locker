@@ -8,9 +8,11 @@ import userRoutes from './routes/user.routes';
 import authRoutes from './routes/auth.routes';
 import postRoutes from './routes/post.routes';
 import mediaRoutes from './routes/media.routes';
-import SearchRoutes from './routes/search.routes';
-import OrganizationRoutes from './routes/organization.routes';
-import EmployeeRoutes from './routes/employee.routes';
+import searchRoutes from './routes/search.routes';
+import organizationRoutes from './routes/organization.routes';
+import employeeRoutes from './routes/employee.routes';
+import productRoutes from './routes/product.routes';
+
 // modules for server side rendering
 
 // comment out before building for production
@@ -35,8 +37,9 @@ app.use('/', userRoutes);
 app.use('/', authRoutes);
 app.use('/', postRoutes);
 app.use('/', mediaRoutes);
-app.use('/', SearchRoutes);
-app.use('/', OrganizationRoutes);
-app.use('/', EmployeeRoutes);
+app.use('/', searchRoutes);
+app.use('/', organizationRoutes);
+app.use('/', employeeRoutes);
+app.use('/', productRoutes);
 
 export default app;

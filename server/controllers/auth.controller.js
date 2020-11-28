@@ -154,7 +154,6 @@ const checkPermissions = async (req, res, next) => {
         person = await User.findOne({cognito_username: req.auth.cognito_username}).select('permissions _id');
       } else if (req.auth.type == 'employee') {
         person = await Employee.findOne({cognito_username: req.auth.cognito_username}).select('permissions organization _id');
-        req.auth.organization = person.organization;
       } else {
         return res.status(500).json({error: 'Server Error: Requester type is not an employee or a user'});
       }
@@ -165,6 +164,7 @@ const checkPermissions = async (req, res, next) => {
       if (!roleBasedAccessControl.hasPermission(res.locals.permissions)) {
         return res.status(403).json({error: StaticStrings.InsufficientPermissionsError});
       }
+      req.auth.organization = person.organization;
       req.auth._id = person._id.toString();
       req.auth.level = roleBasedAccessControl.level;
     } else {

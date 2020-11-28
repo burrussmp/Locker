@@ -66,6 +66,8 @@ const createEmployee = async (admin, data) => {
             id: data._id,
             access_token: data.access_token,
           });
+        }).catch((err)=>{
+          console.log(err);
         });
   });
 };

@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 'use strict';
 // imports
+const {v4: uuid4} = require('uuid');
 import aws from 'aws-sdk';
 import multer from 'multer';
 import multerS3 from 'multer-s3';
@@ -10,6 +11,7 @@ import Media from '../models/media.model';
 import StaticStrings from '../../config/StaticStrings';
 import config from '../../config/config';
 import BlurHashEncoder from '../services/BlurHashEncoder';
+import _ from 'lodash';
 
 // Configure AWS
 aws.config.update({
@@ -35,45 +37,6 @@ const getMediaS3 = (key) => {
 const s3 = new aws.S3();
 
 /**
- * @desc Middleware to check if valid file type
- * @param {Request} req HTTP request object
- * @param {File} file A multer file object
- * @param {Function} next The next function to call
- */
-const mediaFilter = (req, file, next) => {
-  const path = req.route.path;
-  if (path == '/api/users/:userId/avatar' || path == '/api/ent/organizations' ||
-    path == '/api/ent/employees/:employeeId/avatar' || path == '/api/ent/organizations/:organizationId/logo') {
-    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
-      next(null, true);
-    } else {
-      next(
-          new Error(StaticStrings.S3ServiceErrors.InvalidImageMimeType),
-          false,
-      );
-    }
-  } else if (path == '/api/posts') {
-    if (
-      file.mimetype === 'image/jpeg' ||
-      file.mimetype === 'image/png' ||
-      file.mimetype === 'video/mp4'
-    ) {
-      next(null, true);
-    } else {
-      next(
-          new Error(StaticStrings.S3ServiceErrors.InvalidMediaMimeType),
-          false,
-      );
-    }
-  } else {
-    next(
-        new Error('ServerError: You should not be able to upload from this path'),
-        false,
-    );
-  }
-};
-
-/**
  * @desc Deletes an object from S3 bucket
  * @param {String} key The key of the object to delete
  * @return {Promise<Error, object>} Throws an error if unsuccessful or returns the deleted
@@ -90,76 +53,6 @@ const deleteMediaS3 = async (key) => {
   } catch (err) {
     throw err;
   }
-};
-
-/**
- * @desc (Middleware) Upload a single image or video to S3 and update MongoDB Media reference
- * @param {Request} req HTTP Request object
- * @param {Request} res HTTP response object
- * @param {object} meta Meta information to store alongside image
- * @param {Function} next The next middleware function to call
- */
-const uploadSingleMediaS3 = (req, res, meta, next) => {
-  const imageUpload = multer({
-    fileFilter: mediaFilter,
-    storage: multerS3({
-      s3,
-      bucket: config.bucket_name,
-      contentType: multerS3.AUTO_CONTENT_TYPE,
-      metadata: function(req, file, next) {
-        next(null, {
-          type: meta.type,
-          uploader: meta.uploadedBy,
-        });
-      },
-      key: function(req, file, next) {
-        next(null, crypto.randomBytes(16).toString('hex') + `_${meta.type}`);
-      },
-    }),
-  });
-  const upload = imageUpload.single('media'); // Parse req and upload image to S3
-  upload(req, res, async function(err) {
-    if (err instanceof multer.MulterError) {
-      return res
-          .status(400)
-          .send({error: StaticStrings.S3ServiceErrors.BadRequestWrongKey});
-    } else if (err) {
-      return res.status(422).send({error: err.message});
-    }
-    if (!req.file) {
-      return res
-          .status(400)
-          .json({error: StaticStrings.S3ServiceErrors.BadRequestMissingFile});
-    }
-    meta.key = req.file.key; // save image to MongoDB
-    meta.mimetype = req.file.mimetype;
-    meta.originalName = req.file.originalname;
-
-    const image = await getMediaS3(req.file.key);
-    const mimetype = image.ContentType;
-    if (mimetype === 'image/jpeg' || mimetype === 'image/png') {
-      meta.blurhash = await BlurHashEncoder.encodeBlurHash(image.Body, mimetype);
-    }
-    try {
-      const image = new Media(meta);
-      await image.save();
-      next(req, res, image);
-    } catch (err) {
-      deleteMediaS3(meta.key)
-          .then(() => {
-            res.status(400).json({
-              error:
-              StaticStrings.S3ServiceErrors.BadMediaUploadSuccessfulDelete +
-              err.message,
-            });
-          })
-          .catch((err) => {
-            res.status(500).json({
-              error: err.message + ' and ' + errorHandler.getErrorMessage(err2),
-            });
-          });
-    }
-  });
 };
 
 /**
@@ -188,24 +81,131 @@ const fileExistsS3 = async (key) => {
 };
 
 /**
- * @desc Check if a file exists in S3 bucket
+ * @desc Place or update a file in S3
  * @param {String} key The key of the object in S3 bucket
  * @param {Buffer} buffer The buffer array to store in S3
  * @param {String} contentType The type of content to write ex. image/png text/plain etc
+ * @param {Object} metaData Optional meta data
  * @return {Promise<Error, object>} A promise that resolves if file exists in S3 Bucket
  */
-const putObjectS3 = async (key, buffer, contentType) => {
+const putObjectS3 = async (key, buffer, contentType, metaData = undefined) => {
   const params = {
     Bucket: config.bucket_name,
     Key: key,
     ContentType: contentType,
     Body: buffer,
+    Metadata: metaData,
   };
   return s3.putObject(params).promise();
 };
 
+/**
+ * @desc Generate a filter to process a multer request to see if valid or whether
+ * or not to reject the request.
+ * @param {Object} mediaMeta HTTP request object
+ * @return {function} Returns a function that accepts 3 parameters
+ *  :req:Request: The HTTP request
+ *  :file:File: The file from the multer parse
+ *  :next:Function: A middleware function to call next
+ *    The function throws an error if there is not metaData in regards to the field,
+ *    If it is missing a 'mimestypesAllowed' attribute that tells whether or not
+ *    the support mimetype is allowed or if the actual mimetype of the file is not
+ *    supported.
+ */
+const mediaFieldFilter = (mediaMeta) => {
+  return (req, file, next) => {
+    const fieldMeta = _.find(mediaMeta.fields, {'name': file.fieldname});
+    if (!fieldMeta) {
+      return next(new Error(`Server Error: Missing media meta for field ${file.fieldname}`), false);
+    }
+    if (!fieldMeta.mimetypesAllowed) {
+      return next(new Error(`Server Error: Missing array of allowed mime types in media meta for field ${file.fieldname}`), false);
+    }
+    const validMimeType = fieldMeta.mimetypesAllowed.includes(file.mimetype);
+    if (!validMimeType) {
+      return next(new Error(`${StaticStrings.S3ServiceErrors.InvalidImageMimeType} ${fieldMeta.mimetypesAllowed}`), false);
+    } else {
+      return next(null, true);
+    }
+  };
+};
+
+/**
+ * @desc (Middleware) Upload multiple images to S3
+ * @param {Request} req HTTP Request object
+ * @param {Request} res HTTP response object
+ * @param {object} mediaMeta Meta information to store alongside image
+ * @param {Function} next The next middleware function to call
+ */
+const uploadFilesToS3 = (req, res, mediaMeta, next) => {
+  const storage = multer.memoryStorage();
+  const multerUpload = multer({fileFilter: mediaFieldFilter(mediaMeta), storage: storage});
+  const upload = multerUpload.fields(mediaMeta.fields);
+  upload(req, res, async function(err) {
+    if (err instanceof multer.MulterError) {
+      return res.status(400).send({error: StaticStrings.S3ServiceErrors.BadRequestWrongKey});
+    } else if (err) {
+      return res.status(422).send({error: err.message});
+    }
+    const allMedia = {};
+    for (const fieldMeta of mediaMeta.fields) {
+      if (fieldMeta.required && (!req.files || !req.files[fieldMeta.name])) {
+        return res.status(400).json({error: StaticStrings.S3ServiceErrors.BadRequestMissingFile + `. Missing expected field in request ${fieldMeta.name}`});
+      }
+    }
+    for (const fieldMeta of mediaMeta.fields) {
+      if (req.files[fieldMeta.name]) {
+        allMedia[fieldMeta.name] = [];
+        for (const file of req.files[fieldMeta.name]) {
+          let blurhash = undefined;
+          try {
+            blurhash = (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') ? await BlurHashEncoder.encodeBlurHash(file.buffer, file.mimetype) : undefined;
+          } catch (err) {
+            console.log(`Unable to create a blur hash from file. Error: ${err}`);
+          }
+          const key = uuid4();
+          const newMedia = {
+            key: key,
+            mimetype: file.mimetype,
+            originalName: file.originalname,
+            blurhash: blurhash,
+            type: mediaMeta.type,
+            uploadedBy: mediaMeta.uploadedBy,
+            uploadedByType: mediaMeta.uploadedByType,
+          };
+          try {
+            await putObjectS3(key, file.buffer, file.mimetype, {
+              type: mediaMeta.type,
+              uploader: mediaMeta.uploadedBy,
+              uploadedByType: mediaMeta.uploadedByType,
+            });
+          } catch (err) {
+            return res.status(500).json({error: `Server Error: Unable to upload image to S3. Reason: ${err.message}`});
+          }
+          try {
+            const media = new Media(newMedia);
+            await media.save();
+            allMedia[fieldMeta.name].push({
+              '_id': media._id,
+              'key': media.key,
+            });
+          } catch (err) {
+            try {
+              await deleteMediaS3(newMedia.key);
+              res.status(400).json({error: StaticStrings.S3ServiceErrors.BadMediaUploadSuccessfulDelete + err.message});
+            } catch (err2) {
+              res.status(500).json({error: err.message + ' and ' + errorHandler.getErrorMessage(err2)});
+            }
+          }
+        }
+      }
+    }
+    next(req, res, allMedia);
+  });
+};
+
 export default {
-  uploadSingleMediaS3,
+  uploadFilesToS3,
   deleteMediaS3,
   getMediaS3,
   listObjectsS3,

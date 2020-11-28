@@ -28,7 +28,7 @@ const StaticStrings = {
     ServerError: 'Sorry, we could not log you in',
   },
   S3ServiceErrors: {
-    InvalidImageMimeType: 'Invalid Mime Type, only JPEG and PNG',
+    InvalidImageMimeType: 'Invalid Mime Type: Allowed ',
     BadRequestWrongKey: 'Bad request: Form-day incorrect field name invalid for media.',
     UploadServerError: 'ServerError: Unable to upload file',
     DeleteServerError: 'ServerError: Unable to delete file',
@@ -131,6 +131,10 @@ const StaticStrings = {
     MediaRequired: 'Must provide a main media',
     NegativePrice: 'Cannot have negative price',
     OrganizationRequired: 'Must link the product to an organization',
+    URLAlreadyExists: 'The provided URL already exists for a product',
+  },
+  ProductControllerErrors: {
+    NotFoundError: 'Product not found',
   },
   ReplyControllerErrors: {
     MissingTextField: 'Missing text field in request body',

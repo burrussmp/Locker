@@ -65,6 +65,14 @@ const OrganizationPermissions = {
   DeleteEmployee: 'organization:delete_employee',
 };
 
+// all permissions associated with a Product
+const ProductPermissions = {
+  Create: 'product:create',
+  Delete: 'product:delete',
+  Read: 'product:read',
+  EditContent: 'product:edit',
+};
+
 const getPermissionArray = (type) => {
   let assignedPermissions = [];
   if (type == 'user' || type == 'supervisor' || type == 'admin' || type == 'employee') {
@@ -90,6 +98,10 @@ const getPermissionArray = (type) => {
       EmployeePermissions.EditContent,
       EmployeePermissions.Delete,
       EmployeePermissions.Read,
+      ProductPermissions.Create,
+      ProductPermissions.Delete,
+      ProductPermissions.Read,
+      ProductPermissions.EditContent,
     ]);
   }
   if (type == 'supervisor' || type == 'admin') {
@@ -104,6 +116,10 @@ const getPermissionArray = (type) => {
       EmployeePermissions.Delete,
       EmployeePermissions.Read,
       EmployeePermissions.ChangeRole,
+      ProductPermissions.Create,
+      ProductPermissions.Delete,
+      ProductPermissions.Read,
+      ProductPermissions.EditContent,
     ]);
   }
   if (type == 'admin') {
@@ -221,6 +237,7 @@ export default {
   OrganizationPermissions,
   CommentPermissions,
   EmployeePermissions,
+  ProductPermissions,
   setUpRBAC,
   getPermissionArray,
 };

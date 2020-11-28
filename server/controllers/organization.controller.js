@@ -77,33 +77,33 @@ const create = async (req, res) => {
     'type': 'Logo',
     'uploadedBy': req.auth._id,
     'uploadedByType': 'employee',
+    'fields': [
+      {name: 'media', maxCount: 1, mimetypesAllowed: ['image/png', 'image/jpeg'], required: true},
+    ],
   };
-  s3Services.uploadSingleMediaS3(req, res, mediaMeta,
-      async (req, res, image) => {
-        const {name, url, description} = req.body;
-        let organization;
-        try {
-          organization = new Organization({
-            name: name,
-            url: url,
-            description: description,
-            logo: image._id,
-          });
-          organization = await organization.save();
-        } catch (err) {
-          return res.status(400).json({error: errorHandler.getErrorMessage(err)});
-        }
-        try {
-          return res.status(200).json({'_id': organization._id});
-        } catch (err) {
-          return s3Services.deleteMediaS3(req.file.key).then(() => {
-            return res.status(400).json({error: errorHandler.getErrorMessage(err)});
-          }).catch((err2) => {
-            const errMessage = `Server Error: Unable to save logo to S3 because ${err.message} and ${err2.message}`;
-            return res.status(500).json({error: errMessage});
-          });
-        }
+  return s3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages) => {
+    const {name, url, description} = req.body;
+    let organization;
+    const media = allImages['media'][0];
+    try {
+      organization = new Organization({
+        name: name,
+        url: url,
+        description: description,
+        logo: media._id,
       });
+      organization = await organization.save();
+      return res.status(200).json({'_id': organization._id});
+    } catch (err) {
+      console.log(err);
+      return s3Services.deleteMediaS3(media.key).then(() => {
+        return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+      }).catch((err2) => {
+        const errMessage = `Server Error: Unable to save logo to S3 because ${err.message} and ${err2.message}`;
+        return res.status(500).json({error: errMessage});
+      });
+    }
+  });
 };
 
 /**
@@ -178,10 +178,14 @@ const updateLogo = async (req, res) => {
     'type': 'Logo',
     'uploadedBy': req.auth._id,
     'uploadedByType': 'employee',
+    'fields': [
+      {name: 'media', maxCount: 1, mimetypesAllowed: ['image/png', 'image/jpeg'], required: true},
+    ],
   };
-  s3Services.uploadSingleMediaS3(req, res, mediaMeta, async (req, res, image)=>{ // upload to s3
+  s3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages)=>{ // upload to s3
+    const media = allImages['media'][0];
     const query = {'_id': req.params.organizationId}; // at this point we have uploaded to S3 and just need to clean up
-    const update = {$set: {'logo': image._id}};
+    const update = {$set: {'logo': media._id}};
     try {
       const organization = await Organization.findOneAndUpdate(query, update, {runValidators: true}); // update
       if (organization.logo) {
@@ -192,11 +196,12 @@ const updateLogo = async (req, res) => {
       }
       res.status(200).json({logo_key: req.organization.logo.key});
     } catch (err) {
-      if (req.file) {
+      try {
+        const image = await findById(media._id);
         await image.deleteOne(); // delete the new one
-        res.status(500).json({error: StaticStrings.UnknownServerError + ': (S3 cleaned) ' + err.message});
-      } else {
-        res.status(500).json({error: StaticStrings.UnknownServerError + ': (unable to clean S3) ' + err.message}); // should never see this... if we have req.file we parsed correctly
+        res.status(500).json({error: StaticStrings.UnknownServerError + `\nS3 Cleaned.\nOriginal error ${err.message}.`});
+      } catch (err2) {
+        res.status(500).json({error: StaticStrings.UnknownServerError + `.\nUnable to clean S3 because ${err2.message}.\nOriginal error ${err.message}.`}); // should never see this... if we have req.file we parsed correctly
       }
     }
   });

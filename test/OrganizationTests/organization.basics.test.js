@@ -71,7 +71,7 @@ const organizationBasicsTest = () => {
             .field(organizationData)
             .then((res)=>{
               res.status.should.eql(400);
-              res.body.error.should.eql(StaticStrings.S3ServiceErrors.BadRequestMissingFile);
+              res.body.error.should.include(StaticStrings.S3ServiceErrors.BadRequestMissingFile);
             });
       });
       it('Duplicate name (should fail)', async ()=>{

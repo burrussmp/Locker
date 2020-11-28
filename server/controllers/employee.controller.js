@@ -266,34 +266,35 @@ const getProfilePhoto = (req, res) => {
  * @param {Response} res HTTP response object
  */
 const uploadProfilePhoto = (req, res) => {
-  const meta = {
-    type: 'Avatar',
-    uploadedBy: req.params.employeeId,
-    uploadedByType: 'employee',
+  const mediaMeta = {
+    'type': 'Avatar',
+    'uploadedBy': req.params.employeeId,
+    'uploadedByType': 'employee',
+    'fields': [
+      {name: 'media', maxCount: 1, mimetypesAllowed: ['image/png', 'image/jpeg'], required: true},
+    ],
   };
-  s3Services.uploadSingleMediaS3(req, res, meta, async (req, res, image) => {
+  s3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages) => {
     // upload to s3
+    const media = allImages['media'][0];
     const query = {_id: req.params.employeeId};
-    const update = {$set: {profile_photo: image._id}};
+    const update = {$set: {profile_photo: media._id}};
     try {
-      const employee = await Employee.findOneAndUpdate(query, update, {
-        runValidators: true,
-      }); // update
+      const employee = await Employee.findOneAndUpdate(query, update, {runValidators: true}); // update
       if (employee.profile_photo) {
-        const media = await Media.findOne({
-          key: req.profile.profile_photo.key,
-        });
+        const media = await Media.findOne({key: req.profile.profile_photo.key});
         await media.deleteOne();
         res.status(200).json({message: StaticStrings.UploadProfilePhotoSuccess});
       } else {
         res.status(200).json({message: StaticStrings.UploadProfilePhotoSuccess});
       }
     } catch (err) {
-      if (req.file) {
+      try {
+        const image = await Media.findById(media._id);
         await image.deleteOne(); // delete the new one
-        res.status(500).json({error: StaticStrings.UnknownServerError + ' and ' + err.message});
-      } else {
-        res.status(500).json({error: StaticStrings.UnknownServerError + ' and ' + err.message});
+        res.status(500).json({error: StaticStrings.UnknownServerError + `\nS3 Cleaned.\nOriginal error ${err.message}.`});
+      } catch (err2) {
+        res.status(500).json({error: StaticStrings.UnknownServerError + `.\nUnable to clean S3 because ${err2.message}.\nOriginal error ${err.message}.`});
       }
     }
   });

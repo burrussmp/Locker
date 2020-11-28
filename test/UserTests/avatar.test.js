@@ -129,7 +129,7 @@ const avatarTest = () => {
             .attach('media', null, 'profile_photo')
             .then((res)=>{
               res.status.should.eql(400);
-              res.body.error.should.eql(StaticStrings.S3ServiceErrors.BadRequestMissingFile);
+              res.body.error.should.include(StaticStrings.S3ServiceErrors.BadRequestMissingFile);
             });
       });
       it('Not owner (should fail)', async ()=>{
@@ -169,7 +169,7 @@ const avatarTest = () => {
             .attach('media', process.cwd()+'/test/resources/profile3.txt', 'profile_photo')
             .then((res)=>{
               res.status.should.eql(422);
-              res.body.error.should.eql(StaticStrings.S3ServiceErrors.InvalidImageMimeType);
+              res.body.error.should.include(StaticStrings.S3ServiceErrors.InvalidImageMimeType);
             });
       });
       it('Not logged in (should fail)', async ()=>{
