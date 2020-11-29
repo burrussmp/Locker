@@ -25,7 +25,7 @@ const ProductSchema = new mongoose.Schema(
       },
       price: {
         type: Number,
-        required: ProductModelErrors.NameRequired,
+        required: ProductModelErrors.PriceRequired,
         min: [0, ProductModelErrors.NegativePrice],
       },
       media: {
@@ -38,9 +38,15 @@ const ProductSchema = new mongoose.Schema(
         trim: true,
         required: ProductModelErrors.DescriptionRequired,
       },
-      exists: {
+      available: {
         type: Boolean,
         required: ProductModelErrors.ExistsRequired,
+      },
+      product_collection: {
+        type: String,
+      },
+      last_scraped: {
+        type: Date,
       },
       tags: {
         type: [String],

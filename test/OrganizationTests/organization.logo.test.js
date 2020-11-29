@@ -11,7 +11,7 @@ import {EmployeeData, getEmployeeConstructor} from '../../development/employee.d
 import {OrganizationData} from '../../development/organization.data';
 import {bufferEquality, dropDatabase, createEmployee, loginAdminEmployee, createOrg} from '../helper';
 import StaticStrings from '../../config/StaticStrings';
-import s3Services from '../../server/services/S3.services';
+import S3Services from '../../server/services/S3.services';
 
 chai.use(chaiHttp);
 chai.should();
@@ -71,7 +71,7 @@ const organizationLogoTests = () => {
           const orgWithLogo = await Organization.findById(org._id).populate('logo', 'resized_keys').exec();
           orgWithLogo.logo.resized_keys.length.should.eql(1);
           for (const key of orgWithLogo.logo.resized_keys) {
-            await s3Services.fileExistsS3(key);
+            await S3Services.fileExistsS3(key);
           }
         });
       });

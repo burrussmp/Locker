@@ -54,7 +54,7 @@ const searchUserTests = () => {
             });
       });
       it('Bad Permissions (should fail)', async () => {
-        const role = await RBAC.findOne({'role': 'na'});
+        const role = await RBAC.findOne({'role': 'none'});
         await User.findOneAndUpdate(
             {username: UserData[0].username},
             {permissions: role._id},

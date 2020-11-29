@@ -28,8 +28,8 @@ const StaticStrings = {
     ServerError: 'Sorry, we could not log you in',
   },
   S3ServiceErrors: {
-    InvalidImageMimeType: 'Invalid Mime Type: Allowed ',
-    BadRequestWrongKey: 'Bad request: Form-day incorrect field name invalid for media.',
+    InvalidImageMimeType: 'Invalid Mimetype: The following are allowed:',
+    BadRequestWrongKey: 'Bad request: Form has unexpected field.',
     UploadServerError: 'ServerError: Unable to upload file',
     DeleteServerError: 'ServerError: Unable to delete file',
     RetrieveServerError: 'ServerError: Unable to send file, but it exists in S3',
@@ -130,7 +130,7 @@ const StaticStrings = {
     ExistsRequired: 'Must check if url exists and appropriately set flag',
     MediaRequired: 'Must provide a main media',
     NegativePrice: 'Cannot have negative price',
-    OrganizationRequired: 'Must link the product to an organization',
+    OrganizationRequired: 'Must provide a validation organization ID',
     URLAlreadyExists: 'The provided URL already exists for a product',
   },
   ProductControllerErrors: {

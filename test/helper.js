@@ -5,6 +5,7 @@
 import User from '../server/models/user.model';
 import Employee from '../server/models/employee.model';
 import Organization from '../server/models/organization.model';
+import Product from '../server/models/product.model';
 import Post from '../server/models/post.model';
 import RBAC from '../server/models/rbac.model';
 import permissions from '../server/permissions';
@@ -109,7 +110,7 @@ const getAccessToken = async (data) => {
 };
 
 const dropDatabase = async () => {
-  for (const model of [User, Post, Employee, Organization, RBAC]) {
+  for (const model of [User, Post, Employee, Organization, RBAC, Product]) {
     const cursor = model.find().cursor();
     for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
       await doc.deleteOne();

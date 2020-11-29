@@ -6,7 +6,7 @@ import RBAC from '../models/rbac.model';
 import Media from '../models/media.model';
 import errorHandler from '../services/dbErrorHandler';
 import StaticStrings from '../../config/StaticStrings';
-import s3Services from '../services/S3.services';
+import S3Services from '../services/S3.services';
 import _ from 'lodash';
 import fs from 'fs';
 import mediaController from './media.controller';
@@ -274,7 +274,7 @@ const uploadProfilePhoto = (req, res) => {
       {name: 'media', maxCount: 1, mimetypesAllowed: ['image/png', 'image/jpeg'], required: true},
     ],
   };
-  s3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages) => {
+  S3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages) => {
     // upload to s3
     const media = allImages['media'][0];
     const query = {_id: req.params.employeeId};

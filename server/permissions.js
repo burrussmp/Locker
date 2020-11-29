@@ -91,6 +91,7 @@ const getPermissionArray = (type) => {
       CommentPermissions.Read,
       CommentPermissions.Delete,
       CommentPermissions.Interact,
+      ProductPermissions.Read,
     ]);
   }
   if (type == 'employee') {

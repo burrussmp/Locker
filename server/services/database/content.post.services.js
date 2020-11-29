@@ -2,7 +2,7 @@
 'use strict';
 
 // imports
-import s3Services from '../S3.services';
+import S3Services from '../S3.services';
 import ContentPost from '../../models/posts/content.post.model';
 import Post from '../../models/post.model';
 import errorHandler from '../dbErrorHandler';
@@ -39,7 +39,7 @@ const createContentPost = async (req, res) => {
       {name: 'media', maxCount: 1, mimetypesAllowed: ['image/png', 'image/jpeg'], required: true},
     ],
   };
-  s3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages)=>{
+  S3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages)=>{
     let contentPost;
     const media = allImages['media'][0];
     try {
@@ -49,12 +49,14 @@ const createContentPost = async (req, res) => {
       });
       contentPost = await contentPost.save();
     } catch (err) {
-      return s3Services.deleteMediaS3(req.file.key).then(()=>{
-        return res.status(400).json({error: errorHandler.getErrorMessage(err)});
-      }).catch((err2)=>{
-        return res.status(500).json({error: 'Posting Server Error: Unable to create content for post and failed to clean s3 ' +
-                ' because ' + err.message + ' and '+ err2.message});
-      });
+      try {
+        const mediaDoc = await Media.findById(media._id);
+        await mediaDoc.deleteOne();
+        return res.status(400).json({error: dbErrorHandler.getErrorMessage(err)});
+      } catch (err2) {
+        const errMessage = `Server Error: Unable to create content post because ${err.message} and failed to clean s3 because ${err2.message}`;
+        return res.status(500).json({error: errMessage});
+      }
     }
     try {
       const postData = {
@@ -68,13 +70,12 @@ const createContentPost = async (req, res) => {
       newPost = await newPost.save();
       return res.status(200).json({'_id': newPost._id});
     } catch (err) {
-      await contentPost.deleteOne();
-      return s3Services.deleteMediaS3(req.file.key).then(()=>{
-        return res.status(400).json({error: errorHandler.getErrorMessage(err)});
-      }).catch((err2)=>{
-        return res.status(500).json({error: 'Posting Server Error: Unable to clean post, cleaned created content, but failed to clean s3' +
-                ' because ' + err.message + ' and '+ err2.message});
-      });
+      try {
+        await contentPost.deleteOne();
+        res.status(500).json({error: StaticStrings.UnknownServerError + `\nS3 Cleaned and content post deleted.\nOriginal error ${err.message}.`});
+      } catch (err2) {
+        res.status(500).json({error: StaticStrings.UnknownServerError + `.\nUnable to clean content post because ${err2.message}.\nOriginal error ${err.message}.`});
+      }
     }
   });
 };

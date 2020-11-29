@@ -4,8 +4,6 @@
 const {v4: uuid4} = require('uuid');
 import aws from 'aws-sdk';
 import multer from 'multer';
-import multerS3 from 'multer-s3';
-import crypto from 'crypto';
 import errorHandler from './dbErrorHandler';
 import Media from '../models/media.model';
 import StaticStrings from '../../config/StaticStrings';
@@ -132,6 +130,9 @@ const mediaFieldFilter = (mediaMeta) => {
 
 /**
  * @desc (Middleware) Upload multiple images to S3
+ *  1. Upload images to S3
+ *  2. Throw error if mediaMeta says field is required and no images are supplied
+ *  3. Create blurhash from image if image/png or image/jpeg
  * @param {Request} req HTTP Request object
  * @param {Request} res HTTP response object
  * @param {object} mediaMeta Meta information to store alongside image
@@ -150,12 +151,12 @@ const uploadFilesToS3 = (req, res, mediaMeta, next) => {
     const allMedia = {};
     for (const fieldMeta of mediaMeta.fields) {
       if (fieldMeta.required && (!req.files || !req.files[fieldMeta.name])) {
-        return res.status(400).json({error: StaticStrings.S3ServiceErrors.BadRequestMissingFile + `. Missing expected field in request ${fieldMeta.name}`});
+        return res.status(400).json({error: StaticStrings.S3ServiceErrors.BadRequestMissingFile + `. Missing request field '${fieldMeta.name}'`});
       }
     }
     for (const fieldMeta of mediaMeta.fields) {
+      allMedia[fieldMeta.name] = [];
       if (req.files[fieldMeta.name]) {
-        allMedia[fieldMeta.name] = [];
         for (const file of req.files[fieldMeta.name]) {
           let blurhash = undefined;
           try {

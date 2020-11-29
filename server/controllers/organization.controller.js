@@ -8,7 +8,7 @@ import RBAC from '../models/rbac.model';
 import mediaCtrl from '../controllers/media.controller';
 import errorHandler from '../services/dbErrorHandler';
 import StaticStrings from '../../config/StaticStrings';
-import s3Services from '../services/S3.services';
+import S3Services from '../services/S3.services';
 import _ from 'lodash';
 
 const OrganizationControllerErrors = StaticStrings.OrganizationControllerErrors;
@@ -55,10 +55,10 @@ const organizationByID = async (req, res, next, id) => {
  * @param {Response} res HTTP response object
  * @param {Function} next Next express middleware function
  * @return {Promise<Response>} Sends the HTTP response or continues
- * to next middleware. A 403 is sent if requester not in the same organization and does
+ * to next middleware. A 401 is sent if requester not in the same organization and does
  * not have admin privilege
  */
-const enforceRequesterInOrganization = async (req, res, next) => {
+const enforceSameOrganization = async (req, res, next) => {
   if (req.auth.level != 0 && req.organization._id.toString() != req.auth.organization.toString()) {
     return res.status(401).json({error: StaticStrings.EmployeeControllerErrors.RequireAdminOrRequesterInOrg});
   } else {
@@ -81,7 +81,7 @@ const create = async (req, res) => {
       {name: 'media', maxCount: 1, mimetypesAllowed: ['image/png', 'image/jpeg'], required: true},
     ],
   };
-  return s3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages) => {
+  return S3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages) => {
     const {name, url, description} = req.body;
     let organization;
     const media = allImages['media'][0];
@@ -95,13 +95,14 @@ const create = async (req, res) => {
       organization = await organization.save();
       return res.status(200).json({'_id': organization._id});
     } catch (err) {
-      console.log(err);
-      return s3Services.deleteMediaS3(media.key).then(() => {
-        return res.status(400).json({error: errorHandler.getErrorMessage(err)});
-      }).catch((err2) => {
-        const errMessage = `Server Error: Unable to save logo to S3 because ${err.message} and ${err2.message}`;
+      try {
+        const mediaDoc = await Media.findById(media._id);
+        await mediaDoc.deleteOne();
+        return res.status(400).json({error: dbErrorHandler.getErrorMessage(err)});
+      } catch (err2) {
+        const errMessage = `Server Error: Unable to create organization because ${err.message} and failed to clean s3 because ${err2.message}`;
         return res.status(500).json({error: errMessage});
-      });
+      }
     }
   });
 };
@@ -182,7 +183,7 @@ const updateLogo = async (req, res) => {
       {name: 'media', maxCount: 1, mimetypesAllowed: ['image/png', 'image/jpeg'], required: true},
     ],
   };
-  s3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages)=>{ // upload to s3
+  S3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages)=>{ // upload to s3
     const media = allImages['media'][0];
     const query = {'_id': req.params.organizationId}; // at this point we have uploaded to S3 and just need to clean up
     const update = {$set: {'logo': media._id}};
@@ -347,7 +348,7 @@ export default {
   update,
   remove,
   organizationByID,
-  enforceRequesterInOrganization,
+  enforceSameOrganization,
   addEmployee,
   removeEmployee,
   updateLogo,

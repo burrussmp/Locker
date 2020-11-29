@@ -10,7 +10,7 @@ import Media from '../../server/models/media.model';
 import Post from '../../server/models/post.model';
 import StaticStrings from '../../config/StaticStrings';
 const fs = require('fs').promises;
-import s3Services from '../../server/services/S3.services';
+import S3Services from '../../server/services/S3.services';
 import fetch from 'node-fetch';
 import {dropDatabase, bufferEquality, createUser} from '../helper';
 import _ from 'lodash';
@@ -41,7 +41,7 @@ const onSuccessToCreate = async (res, userId) => {
   const numPosts = await Post.countDocuments({'postedBy': userId});
   numPosts.should.eql(1);
   const media = await Media.find({'uploadedBy': userId});
-  return s3Services.fileExistsS3(media[0].key);
+  return S3Services.fileExistsS3(media[0].key);
 };
 
 const onSuccessToCleanup = async (key) => {
@@ -49,7 +49,7 @@ const onSuccessToCleanup = async (key) => {
   numMedia.should.eql(0);
   const numPosts = await Post.countDocuments();
   numPosts.should.eql(0);
-  return s3Services.fileExistsS3(key).catch((err)=>{
+  return S3Services.fileExistsS3(key).catch((err)=>{
     err.statusCode.should.eql(404);
   });
 };

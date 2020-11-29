@@ -3,7 +3,7 @@
 
 // imports
 import StaticStrings from '../../config/StaticStrings';
-import s3Services from '../services/S3.services';
+import S3Services from '../services/S3.services';
 import Sharp from 'sharp';
 import Media from '../models/media.model';
 
@@ -77,7 +77,7 @@ const AllDimensions = {
  */
 const mediaExists = (req, res, next, key) => {
   // assert that it exists in S3
-  return s3Services.fileExistsS3(key)
+  return S3Services.fileExistsS3(key)
       .then(() => {
         return next();
       })
@@ -94,7 +94,7 @@ const mediaExists = (req, res, next, key) => {
  * @return {Promise<Response>} Returns the media from the S3 bucket
  */
 const getMediaByKey = (req, res, key) => {
-  return s3Services.getMediaS3(key)
+  return S3Services.getMediaS3(key)
       .then((data) => {
         try {
           res.setHeader('Content-Length', data.ContentLength);
@@ -133,21 +133,21 @@ const getMediaByKeyResize = async (req, res, key) => {
   const {width, height} = dimensions;
   const resizedDimensionsKey = key + '_' + 'width_' + width + '_height_' + height;
   try {
-    const resizedMedia = await s3Services.getMediaS3(resizedDimensionsKey);
+    const resizedMedia = await S3Services.getMediaS3(resizedDimensionsKey);
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Content-Length', resizedMedia.ContentLength);
     res.write(resizedMedia.Body);
     return res.end(null);
   } catch (err) {
     try {
-      const originalMedia = await s3Services.getMediaS3(key);
+      const originalMedia = await S3Services.getMediaS3(key);
       // eslint-disable-next-line new-cap
       const buffer = await Sharp(originalMedia.Body)
           .resize(width, height)
           .toFormat('png')
           .toBuffer();
-      await s3Services.putObjectS3(resizedDimensionsKey, buffer, 'image/png');
-      const resizedMedia = await s3Services.getMediaS3(resizedDimensionsKey);
+      await S3Services.putObjectS3(resizedDimensionsKey, buffer, 'image/png');
+      const resizedMedia = await S3Services.getMediaS3(resizedDimensionsKey);
       await Media.findOneAndUpdate(
           {key: key},
           {$push: {'resized_keys': resizedDimensionsKey}},
