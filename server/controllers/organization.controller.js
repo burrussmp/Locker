@@ -98,7 +98,7 @@ const create = async (req, res) => {
       try {
         const mediaDoc = await Media.findById(media._id);
         await mediaDoc.deleteOne();
-        return res.status(400).json({error: dbErrorHandler.getErrorMessage(err)});
+        return res.status(400).json({error: errorHandler.getErrorMessage(err)});
       } catch (err2) {
         const errMessage = `Server Error: Unable to create organization because ${err.message} and failed to clean s3 because ${err2.message}`;
         return res.status(500).json({error: errMessage});

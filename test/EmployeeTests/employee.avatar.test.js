@@ -55,14 +55,14 @@ const employeeAvatarTest = () => {
               });
             });
       });
-      it('delete a user and then see if cleaned up in S3', async ()=>{
+      it('Delete an employee and then see if cleaned up in S3', async ()=>{
         return agent.post(`/api/ent/employees/${employee.id}/avatar?access_token=${employee.access_token}`)
             .attach('media', EmployeeData[1].profile)
             .then(async (res)=>{
               res.body.message.should.eql(StaticStrings.UploadProfilePhotoSuccess);
               const image = await Media.findOne({'uploadedBy': employee.id});
               const key = image.key;
-              return agent.delete(`/api/users/${employee.id}?access_token=${employee.access_token}`).then((res)=>{
+              return agent.delete(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`).then((res)=>{
                 return S3Services.fileExistsS3(key).catch((err)=>{
                   (err==null || err==undefined).should.be.false;
                   err.statusCode.should.eql(404);
@@ -140,7 +140,7 @@ const employeeAvatarTest = () => {
             });
       });
     });
-    describe('GET /api/users/:userId/avatar', ()=>{
+    describe('GET /api/ent/employees/:employeeId/avatar', ()=>{
       const agent = chai.request.agent(app);
       let admin; let employee;
       beforeEach( async () =>{
@@ -178,7 +178,7 @@ const employeeAvatarTest = () => {
             });
       });
     });
-    describe('/DELETE /api/users/:userId/avatar (A user has a non-default photo to begin each test)', ()=>{
+    describe('/DELETE /api/ent/employees/:employeeId/avatar (An employee has a non-default photo to begin each test)', ()=>{
       const agent = chai.request.agent(app);
       let admin; let employee;
       beforeEach( async () =>{
@@ -200,7 +200,7 @@ const employeeAvatarTest = () => {
                   });
             });
       });
-      it('Delete user and see if S3 gets cleaned up correctly', async ()=>{
+      it('Delete employee and see if S3 gets cleaned up correctly', async ()=>{
         const image = await Media.findOne({'uploadedBy': employee.id});
         const key = image.key;
         return agent.delete(`/api/ent/employees/${employee.id}?access_token=${employee.access_token}`)

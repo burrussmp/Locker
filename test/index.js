@@ -17,6 +17,6 @@ import ProductTest from './ProductTests/index';
 // describe('Post Test', PostTest);
 // describe('Comment Test', CommentTest);
 // describe('Media Test', MediaTest);
-// describe('Organization Test', OrganizationTest);
+describe('Organization Test', OrganizationTest);
 // describe('Employee Test', EmployeeTest);
-describe('Product Tests', ProductTest);
+// describe('Product Tests', ProductTest);
