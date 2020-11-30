@@ -16,10 +16,5 @@ const ProductPostSchema = new mongoose.Schema({
   },
 });
 
-ProductPostSchema.pre('deleteOne', {document: true, query: false}, async function() {
-  const product = await mongoose.models.Product.findById(this.product); // delegate cleanup to media
-  await product.deleteOne();
-});
-
 export default mongoose.model('ProductPost', ProductPostSchema);
 

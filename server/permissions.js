@@ -73,66 +73,51 @@ const ProductPermissions = {
   EditContent: 'product:edit',
 };
 
+const extend = (permissionArray, newPermissions) => {
+  return permissionArray.concat(newPermissions);
+};
+
 const getPermissionArray = (type) => {
-  let assignedPermissions = [];
-  if (type == 'user' || type == 'supervisor' || type == 'admin' || type == 'employee') {
-    assignedPermissions = assignedPermissions.concat([
-      PostPermissions.Read,
-      PostPermissions.Interact,
-      UserPermissions.EditContent,
-      UserPermissions.Delete,
-      UserPermissions.Read,
-      UserPermissions.ChangePassword,
-      CommentPermissions.Create,
-      CommentPermissions.EditContent,
-      CommentPermissions.Read,
-      CommentPermissions.Delete,
-      CommentPermissions.Interact,
-      ProductPermissions.Read,
-    ]);
-  }
-  if (type == 'employee') {
-    assignedPermissions = assignedPermissions.concat([
-      PostPermissions.Create,
-      PostPermissions.EditContent,
-      PostPermissions.Delete,
-      EmployeePermissions.EditContent,
-      EmployeePermissions.Delete,
-      EmployeePermissions.Read,
-      ProductPermissions.Create,
-      ProductPermissions.Delete,
-      ProductPermissions.Read,
-      ProductPermissions.EditContent,
-    ]);
-  }
-  if (type == 'supervisor' || type == 'admin') {
-    assignedPermissions = assignedPermissions.concat([
-      PostPermissions.Create,
-      PostPermissions.EditContent,
-      PostPermissions.Delete,
-      OrganizationPermissions.EditAccessList,
-      OrganizationPermissions.Read,
-      OrganizationPermissions.EditContent,
-      OrganizationPermissions.AddEmployee,
-      OrganizationPermissions.DeleteEmployee,
-      EmployeePermissions.Create,
-      EmployeePermissions.EditContent,
-      EmployeePermissions.Delete,
-      EmployeePermissions.Read,
-      EmployeePermissions.ChangeRole,
-      ProductPermissions.Create,
-      ProductPermissions.Delete,
-      ProductPermissions.Read,
-      ProductPermissions.EditContent,
-    ]);
-  }
-  if (type == 'admin') {
-    assignedPermissions = assignedPermissions.concat([
-      OrganizationPermissions.Create,
-      OrganizationPermissions.Delete,
-    ]);
-  }
-  return assignedPermissions;
+  const permissions = {};
+  permissions['user'] = [
+    UserPermissions.EditContent,
+    UserPermissions.Delete,
+    UserPermissions.Read,
+    UserPermissions.ChangePassword,
+    CommentPermissions.Create,
+    CommentPermissions.EditContent,
+    CommentPermissions.Read,
+    CommentPermissions.Delete,
+    CommentPermissions.Interact,
+    PostPermissions.Read,
+    PostPermissions.Interact,
+    ProductPermissions.Read,
+  ];
+  permissions['employee'] = extend(permissions['user'], [
+    PostPermissions.Create,
+    PostPermissions.EditContent,
+    PostPermissions.Delete,
+    ProductPermissions.Create,
+    ProductPermissions.Delete,
+    ProductPermissions.EditContent,
+    EmployeePermissions.EditContent,
+    EmployeePermissions.Read,
+  ]);
+  permissions['supervisor'] = extend(permissions['employee'], [
+    EmployeePermissions.Create,
+    EmployeePermissions.Delete,
+    EmployeePermissions.ChangeRole,
+    OrganizationPermissions.EditAccessList,
+    OrganizationPermissions.Read,
+    OrganizationPermissions.EditContent,
+    OrganizationPermissions.AddEmployee,
+    OrganizationPermissions.DeleteEmployee,
+  ]);
+  permissions['admin'] = extend(permissions['supervisor'], [
+    OrganizationPermissions.Create,
+    OrganizationPermissions.Delete,
+  ]);
+  return permissions[type];
 };
 
 const setUpRBAC = async () => {

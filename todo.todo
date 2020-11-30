@@ -1,22 +1,13 @@
-Immediate
------------------------------------------------------------------
-1. Finish the employee changePermission role
-2. Add code to only allow 1 admin
-3. Add code to allow subadmin permissions. Same as admin just not admin (avoid loophole)
 
 Short term
 -----------------------------------------------------------------
-1. Complete employee.controller
-2. Test employee.controller
-3. Complete organization.controller
-4. Test organization.controller
-5. Create product routes
-6. Complete product.controller
-7. Test product.controller
-Add tests for RBAC
-8. Setup CI/CD for repository to automatically launch into AWS
-9. Setup lambda to scrape websites
+1.
 
+Medium term
+-----------------------------------------------------------------
+- Figure out clean up process. When a user and employee is deleted, we probably
+want to have an account recovery process where the data isn't actually deleted. We
+definitely don't want to have an employees posts deleted.
 
 Long term
 -----------------------------------------------------------------

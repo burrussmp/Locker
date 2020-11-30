@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable no-invalid-this */
 'use strict';
 

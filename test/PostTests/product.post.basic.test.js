@@ -8,17 +8,21 @@ const fs = require('fs').promises;
 
 
 import User from '../../server/models/user.model';
+import Employee from '../../server/models/employee.model';
 import RBAC from '../../server/models/rbac.model';
 import Organization from '../../server/models/organization.model';
 import Media from '../../server/models/media.model';
 import Post from '../../server/models/post.model';
+import ProductPost from '../../server/models/posts/product.post.model';
+
 
 import {UserData} from '../../development/user.data';
 import {PostData} from '../../development/post.data';
 import {OrganizationData} from '../../development/organization.data';
 import {ProductData, getProductConstructor} from '../../development/product.data';
+import {EmployeeData, getEmployeeConstructor} from '../../development/employee.data';
 
-import {dropDatabase, createEmployee, loginAdminEmployee, createOrg, createProductPostAgent} from '../helper';
+import {dropDatabase, createUser, createEmployee, loginAdminEmployee, createOrg, createProductPostAgent} from '../helper';
 import S3Services from '../../server/services/S3.services';
 import StaticStrings from '../../config/StaticStrings';
 
@@ -29,17 +33,6 @@ const image1 = process.cwd() + '/test/resources/profile1.png';
 const image2 = process.cwd() + '/test/resources/profile2.jpg';
 const textfile = process.cwd() + '/test/resources/profile3.txt';
 const video = process.cwd() + '/test/resources/sample_vid.mp4';
-
-
-const onFailureToCreate = async (res, statusCode, errorMessage) => {
-  res.body.error.should.include(errorMessage);
-  res.status.should.eql(statusCode);
-  const numMedia = await Media.countDocuments();
-  numMedia.should.eql(0);
-  const numPosts = await Post.countDocuments();
-  numPosts.should.eql(0);
-};
-
 
 const onSuccessToCreate = async (res, userId) => {
   res.status.should.eql(200);
@@ -75,9 +68,10 @@ const onSuccessToGetSinglePost = async (res, userID) => {
 
 const productPostTestBasics = () => {
   describe('Product Post Test Basics', ()=>{
-    describe('POST/GET \'/api/posts\'', ()=>{
+    describe('POST \'/api/posts\'', ()=>{
       let admin; let anyOrg; let product;
       const agent = chai.request.agent(app);
+      let reqBody;
       beforeEach(async ()=>{
         await dropDatabase();
         admin = await loginAdminEmployee();
@@ -85,9 +79,14 @@ const productPostTestBasics = () => {
         const newProductData = JSON.parse(JSON.stringify(ProductData[0]));
         newProductData.organization = anyOrg._id.toString();
         product = await createProductPostAgent(agent, newProductData, admin.access_token).then((res)=>res.body);
+        reqBody = {
+          product: product._id,
+          caption: newProductData.caption,
+          tags: newProductData.tags,
+        };
       });
-      it('Create a product post and see if media matches in S3! (should succeed)', async ()=>{
-        return agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send({'product': product._id}).then(async (res)=>{
+      it('Create Product Post: Successfully create a product post and see if media matches in S3! (should succeed)', async ()=>{
+        return agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then(async (res)=>{
           res.status.should.eql(200);
           const postID = res.body._id;
           return agent.get(`/api/posts/${postID}?access_token=${admin.access_token}`).then(async (res)=>{
@@ -95,204 +94,113 @@ const productPostTestBasics = () => {
           });
         });
       });
-      // it('Permissions: Insufficient (should fail)', async ()=>{
-      //   const postData = JSON.parse(JSON.stringify(PostData[0]));
-      //   let role = await RBAC.findOne({'role': 'na'});
-      //   await User.findOneAndUpdate({'username': UserData[0].username}, {'permissions': role._id}, {new: true});
-      //   return agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
-      //       .attach('media', image1)
-      //       .field(postData)
-      //       .then(async (res)=>{
-      //         await onFailureToCreate(res, 403, StaticStrings.InsufficientPermissionsError);
-      //         role = await RBAC.findOne({'role': 'user'});
-      //         await User.findOneAndUpdate({'username': UserData[0].username}, {'permissions': role._id}, {new: true});
-      //       });
-      // });
-      // it('Not logged in: (should fail)', async ()=>{
-      //   const postData = JSON.parse(JSON.stringify(PostData[0]));
-      //   return agent.post(`/api/posts?type=ProductPost`)
-      //       .attach('media', image1)
-      //       .field(postData)
-      //       .then(async (res)=>{
-      //         await onFailureToCreate(res, 401, StaticStrings.UnauthorizedMissingTokenError);
-      //       });
-      // });
-      // it('Query: Incorrect type (not implemented) (should fail)', async ()=>{
-      //   const postData = JSON.parse(JSON.stringify(PostData[0]));
-      //   return agent.post(`/api/posts?access_token=${userToken0}&type=NotImplememted`)
-      //       .attach('media', image1)
-      //       .field(postData)
-      //       .then(async (res)=>{
-      //         await onFailureToCreate(res, 501, StaticStrings.NotImplementedError);
-      //       });
-      // });
-      // it('Price field: Less than zero (should fail)', async ()=>{
-      //   const postData = JSON.parse(JSON.stringify(PostData[0]));
-      //   postData.price = -0.1;
-      //   return agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
-      //       .attach('media', image1)
-      //       .field(postData)
-      //       .then(async (res)=>{
-      //         await onFailureToCreate(res, 400, StaticStrings.PostModelErrors.PriceNotNonnegative);
-      //       });
-      // });
-      // it('Price field (Missing): (should fail)', async ()=>{
-      //   const postData = JSON.parse(JSON.stringify(PostData[0]));
-      //   delete postData['price'];
-      //   return agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
-      //       .attach('media', image1)
-      //       .field(postData)
-      //       .then(async (res)=>{
-      //         await onFailureToCreate(res, 400, StaticStrings.PostModelErrors.ProductPostErrors.PriceRequired);
-      //       });
-      // });
-      // it('Price field: zero (should be fine)', async ()=>{
-      //   const postData = JSON.parse(JSON.stringify(PostData[0]));
-      //   postData.price = 0.0;
-      //   return agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
-      //       .attach('media', image1)
-      //       .field(postData)
-      //       .then(async (res)=>{
-      //         await onSuccessToCreate(res, userId0);
-      //       });
-      // });
-      // it('Caption field: Too long (should fail)', async ()=>{
-      //   const postData = JSON.parse(JSON.stringify(PostData[0]));
-      //   postData.caption = new Array(302).join('a');
-      //   return agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
-      //       .attach('media', image1)
-      //       .field(postData)
-      //       .then(async (res)=>{
-      //         await onFailureToCreate(res, 400, StaticStrings.PostModelErrors.MaxCaptionSizeError);
-      //       });
-      // });
-      // it('Caption field: Too long (should fail)', async ()=>{
-      //   const postData = JSON.parse(JSON.stringify(PostData[0]));
-      //   postData.caption = new Array(302).join('a');
-      //   return agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
-      //       .attach('media', image1)
-      //       .field(postData)
-      //       .then(async (res)=>{
-      //         await onFailureToCreate(res, 400, StaticStrings.PostModelErrors.MaxCaptionSizeError);
-      //       });
-      // });
-      // it('Media field: Incorrect field name (not \'media\') (should fail)', async ()=>{
-      //   const postData = JSON.parse(JSON.stringify(PostData[0]));
-      //   return agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
-      //       .attach('Something', image1)
-      //       .field(postData)
-      //       .then(async (res)=>{
-      //         await onFailureToCreate(res, 400, StaticStrings.S3ServiceErrors.BadRequestWrongKey);
-      //       });
-      // });
-      // it('Media field: Wrong type of file (should fail)', async ()=>{
-      //   const postData = JSON.parse(JSON.stringify(PostData[0]));
-      //   return agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
-      //       .attach('media', textfile)
-      //       .field(postData)
-      //       .then(async (res)=>{
-      //         await onFailureToCreate(res, 422, StaticStrings.S3ServiceErrors.InvalidMediaMimeType);
-      //       });
-      // });
-      // it('Media field: No file (should fail)', async ()=>{
-      //   const postData = JSON.parse(JSON.stringify(PostData[0]));
-      //   return agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
-      //       .attach('media')
-      //       .field(postData)
-      //       .then(async (res)=>{
-      //         await onFailureToCreate(res, 400, StaticStrings.S3ServiceErrors.BadRequestMissingFile);
-      //       });
-      // });
-      // it('Tag field: Too many tags (should fail)', async ()=>{
-      //   const postData = JSON.parse(JSON.stringify(PostData[0]));
-      //   postData.tags = 'tag,tag,tag,tag,tag,tag,tag,tag';
-      //   return agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
-      //       .attach('media', image1)
-      //       .field(postData)
-      //       .then(async (res)=>{
-      //         await onFailureToCreate(res, 400, StaticStrings.PostModelErrors.MaximumNumberOfTags);
-      //       });
-      // });
-      // it('Tag field: A tag is too long (should fail)', async ()=>{
-      //   const postData = JSON.parse(JSON.stringify(PostData[0]));
-      //   postData.tags = 'taggggggggggggggggggggggggggggggggggg';
-      //   return agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
-      //       .attach('media', image1)
-      //       .field(postData)
-      //       .then(async (res)=>{
-      //         await onFailureToCreate(res, 400, StaticStrings.PostModelErrors.MaxLengthTag);
-      //       });
-      // });
-      // it('Tag field: Cannot have anything besides letters (should fail)', async ()=>{
-      //   const postData = JSON.parse(JSON.stringify(PostData[0]));
-      //   postData.tags = 'tag1,tag2';
-      //   return agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
-      //       .attach('media', image1)
-      //       .field(postData)
-      //       .then(async (res)=>{
-      //         await onFailureToCreate(res, 400, StaticStrings.PostModelErrors.TagMustBeAlphabetical);
-      //       });
-      // });
-      // it('Create a product post with a video (should succeed)', async ()=>{
-      //   return agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
-      //       .attach('media', video)
-      //       .field(PostData[0])
-      //       .then(async (res)=>{
-      //         await onSuccessToCreate(res, userId0);
-      //         const postID = res.body._id;
-      //         return agent.get(`/api/posts?access_token=${userToken0}`)
-      //             .then((res)=>{
-      //               res.status.should.eql(200);
-      //               res.body.length.should.eql(1);
-      //               res.body[0]._id.should.eql(postID);
-      //             });
-      //       });
-      // });
-      // it('Create two posts with different users (should succeed)', async ()=>{
-      //   return agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
-      //       .attach('media', image1)
-      //       .field(PostData[0])
-      //       .then(async (res)=>{
-      //         return agent.post(`/api/posts?access_token=${userToken1}&type=ProductPost`)
-      //             .attach('media', image2)
-      //             .field(PostData[0])
-      //             .then(async (res)=>{
-      //               return agent.get(`/api/posts?access_token=${userToken0}`)
-      //                   .then((res)=>{
-      //                     res.status.should.eql(200);
-      //                     res.body.length.should.eql(2);
-      //                   });
-      //             });
-      //       });
-      // });
-      // it('Clean up: User is deleted and so is media', async ()=>{
-      //   return agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
-      //       .attach('media', video)
-      //       .field(PostData[0])
-      //       .then(async (res)=>{
-      //         const media = await Media.findOne({'uploadedBy': userId0});
-      //         const key = media.key;
-      //         return agent.delete(`/api/users/${userId0}?access_token=${userToken0}`)
-      //             .then((res)=>{
-      //               res.status.should.eql(200);
-      //               return onSuccessToCleanup(key);
-      //             });
-      //       });
-      // });
-      // it('Clean up: Post is deleted and media is cleaned up', async ()=>{
-      //   return agent.post(`/api/posts?access_token=${userToken1}&type=ProductPost`)
-      //       .attach('media', video)
-      //       .field(PostData[0])
-      //       .then(async (res)=>{
-      //         const media = await Media.findOne({'uploadedBy': userId1});
-      //         const key = media.key;
-      //         return agent.delete(`/api/users/${userId1}?access_token=${userToken1}`)
-      //             .then((res)=>{
-      //               res.status.should.eql(200);
-      //               return onSuccessToCleanup(key);
-      //             });
-      //       });
-      // });
+      it('Create Product Post: Insufficient permissions (should fail)', async ()=>{
+        const role = await RBAC.findOne({'role': 'none'});
+        await Employee.findByIdAndUpdate(admin.id, {'permissions': role._id});
+        return agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then(async (res)=>{
+          res.status.should.eql(403);
+          res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
+        });
+      });
+      it('Create Product Post: Not logged in: (should fail)', async ()=>{
+        return agent.post(`/api/posts?type=ProductPost`).send({'product': product._id}).then(async (res)=>{
+          res.status.should.eql(401);
+          res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError);
+        });
+      });
+      it('Create Product Post: Incorrect query parameter \'type\' (not implemented) (should fail)', async ()=>{
+        return agent.post(`/api/posts?access_token=${admin.access_token}&type=NotImplememted`).send(reqBody).then(async (res)=>{
+          res.status.should.eql(501);
+          res.body.error.should.eql(StaticStrings.NotImplementedError);
+        });
+      });
+      it('Create Product Post: Caption too long (should fail)', async ()=>{
+        reqBody.caption = new Array(302).join('a');
+        return agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then(async (res)=>{
+          res.status.should.eql(400);
+          res.body.error.should.eql(StaticStrings.PostModelErrors.MaxCaptionSizeError);
+        });
+      });
+      it('Create Product Post: Missing caption (should succceed)', async ()=>{
+        delete reqBody.caption;
+        return agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then(async (res)=>{
+          res.status.should.eql(200);
+        });
+      });
+      it('Create Product Post: Too many tags (should fail)', async ()=>{
+        reqBody.tags = ['tag', 'tag', 'tag', 'tag', 'tag', 'tag', 'tag', 'tag'];
+        return agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then(async (res)=>{
+          res.status.should.eql(400);
+          res.body.error.should.eql(StaticStrings.PostModelErrors.MaximumNumberOfTags);
+        });
+      });
+      it('Create Product Post: Tag field is too long (should fail)', async ()=>{
+        reqBody.tags = ['taggggggggggggggggggggggggggggggggggg'];
+        return agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then(async (res)=>{
+          res.status.should.eql(400);
+          res.body.error.should.eql(StaticStrings.PostModelErrors.MaxLengthTag);
+        });
+      });
+      it('Create Product Post: Tag field cannot have anything besides letters (should fail)', async ()=>{
+        reqBody.tags = ['tag1'];
+        return agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then(async (res)=>{
+          res.status.should.eql(400);
+          res.body.error.should.eql(StaticStrings.PostModelErrors.TagMustBeAlphabetical);
+        });
+      });
+      it('Create Product Post: Missing tags (should succceed)', async ()=>{
+        delete reqBody.tags;
+        return agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then(async (res)=>{
+          res.status.should.eql(200);
+        });
+      });
+      it('Create Product Post: \'product\' field missing (should fail)', async ()=>{
+        delete reqBody.product;
+        return agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then(async (res)=>{
+          res.status.should.eql(400);
+          res.body.error.should.include(StaticStrings.MissingRequiredField);
+        });
+      });
+      it('Create Product Post: \'product\' not found (should fail)', async ()=>{
+        reqBody.product = admin.id.toString();
+        return agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then(async (res)=>{
+          res.status.should.eql(404);
+          res.body.error.should.eql(StaticStrings.ProductControllerErrors.NotFoundError);
+        });
+      });
+      it('Create Product Post: \'product\' not a valid ID (should fail)', async ()=>{
+        reqBody.product = 'an invalid ID';
+        return agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then(async (res)=>{
+          res.status.should.eql(400);
+        });
+      });
+      it('Create Product Post: Product model cleaned up when error in creating basic post model (should fail)', async ()=>{
+        reqBody.tags = ['tags1'];
+        return agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then(async (res)=>{
+          res.status.should.eql(400);
+          const numProductPosts = await ProductPost.countDocuments();
+          numProductPosts.should.eql(0);
+        });
+      });
+      it('Create Product Post: Check if a user can create a product (should fail)', async ()=>{
+        const user = await createUser(UserData[0]);
+        return agent.post(`/api/posts?access_token=${user.access_token}&type=ProductPost`).send(reqBody).then(async (res)=>{
+          res.status.should.eql(403);
+          res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
+        });
+      });
+      it('Create Product Post: Check if a supervisor can create a product (should succeed)', async ()=>{
+        const supervisor = await createEmployee(admin, getEmployeeConstructor(EmployeeData[0]));
+        return agent.post(`/api/posts?access_token=${supervisor.access_token}&type=ProductPost`).send(reqBody).then(async (res)=>{
+          res.status.should.eql(200);
+        });
+      });
+      it('Create Product Post: Check if a employee can create a product (should succeed)', async ()=>{
+        const employee = await createEmployee(admin, getEmployeeConstructor(EmployeeData[1]));
+        return agent.post(`/api/posts?access_token=${employee.access_token}&type=ProductPost`).send(reqBody).then(async (res)=>{
+          res.status.should.eql(200);
+        });
+      });
     });
     // describe('GET/DELETE \'/api/posts/:postId\'', ()=>{
     //   let userId0; let userId1; let userId2;

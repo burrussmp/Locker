@@ -81,42 +81,38 @@ UserSchema.path('username').validate(async function(value) {
   }
 }, null);
 
-UserSchema.pre(
-    'deleteOne',
-    {document: true, query: false},
-    async function() {
-    // clean up profile photo
-      const media = await mongoose.models.Media.findById(this.profile_photo);
-      if (media) {
-        await media.deleteOne();
-      }
-      // clean up posts
-      const posts = await mongoose.models.Post.find({postedBy: this._id});
-      for (const post of posts) {
-        await post.deleteOne();
-      }
-      // clean up followers/following
-      for (const followingID of this.following) {
-      // remove from list of who they follow
-        await mongoose.models.User.findOneAndUpdate(
-            {_id: followingID},
-            {$pull: {followers: this._id}},
-        );
-      }
+UserSchema.pre('deleteOne', {document: true, query: false}, async function() {
+  // clean up profile photo
+  const media = await mongoose.models.Media.findById(this.profile_photo);
+  if (media) {
+    await media.deleteOne();
+  }
+  // clean up posts
+  const posts = await mongoose.models.Post.find({postedBy: this._id, postedByType: 'User'});
+  for (const post of posts) {
+    await post.deleteOne();
+  }
+  // clean up followers/following
+  for (const followingID of this.following) {
+    // remove from list of who they follow
+    await mongoose.models.User.findOneAndUpdate(
+        {_id: followingID},
+        {$pull: {followers: this._id}},
+    );
+  }
+  // clean up user pool
+  try {
+    await CognitoServices.deleteCognitoUser(this.cognito_username);
+  } catch (err) {
+    console.log(err);
+  }
 
-      // clean up user pool
-      try {
-        await CognitoServices.deleteCognitoUser(this.cognito_username);
-      } catch (err) {
-        console.log(err);
-      }
-
-    // clean up comments I DONT THINK WE SHOULD DO THIS TBH
-    // let comments = await mongoose.models.Comment.find({'postedBy':this._id});
-    // for (let comment of comments){
-    //   await comment.deleteOne();
-    // }
-    },
+  // clean up comments I DONT THINK WE SHOULD DO THIS TBH
+  // let comments = await mongoose.models.Comment.find({'postedBy':this._id});
+  // for (let comment of comments){
+  //   await comment.deleteOne();
+  // }
+},
 );
 
 UserSchema.pre('findOneAndUpdate', async function() {
