@@ -7,17 +7,21 @@ import StaticStrings from '../../config/StaticStrings';
 import config from '../../config/config';
 import CognitoAPI from '../services/Cognito.services';
 import dbErrorHandler from '../services/dbErrorHandler';
+import jwt from 'jsonwebtoken';
 
+const ALLOWED_COGNITO_POOL_TYPES = ['Employee', 'User'];
 /**
  * @desc Retrieves the appropriate Cognito Service
- * @param {Request} req HTTP request object
+ * @param {String} cognitoPoolType The cognito pool type
  * @return {Object} Returns the cognito service interface
  */
-const getCognitoService = (req) => {
-  if (req.route.path.includes('ent')) {
+const getCognitoService = (cognitoPoolType) => {
+  if (cognitoPoolType === 'Employee') {
     return CognitoAPI.EmployeeCognitoPool;
-  } else {
+  } else if (cognitoPoolType === 'User') {
     return CognitoAPI.UserCognitoPool;
+  } else {
+    return res.status(500).json({error: `Server Error: res.locals.cognitoPoolType equal to ${cognitoPoolType}. Must be equal to one of ${ALLOWED_COGNITO_POOL_TYPES}`});
   }
 };
 
@@ -47,7 +51,7 @@ const retrieveAccessToken = (req) => {
  */
 const verifyToken = (req, res) => {
   const token = req.query.token;
-  const CognitoServices = getCognitoService(req);
+  const CognitoServices = getCognitoService(res.locals.cognitoPoolType);
   return CognitoServices.verifyToken(token, 'access').then(() => {
     return res.status(200).send();
   }).catch((err) => {
@@ -69,12 +73,12 @@ const login = async (req, res) => {
     if (!req.body.password) {
       return res.status('400').json({error: StaticStrings.LoginErrors.MissingPassword});
     }
-    const CognitoServices = getCognitoService(req);
+    const CognitoServices = getCognitoService(res.locals.cognitoPoolType);
     return CognitoServices.login(req.body.login, req.body.password).then(async (session) => {
       res.cookie('t', session, {expire: new Date() + 9999});
       const cognitoUsername = CognitoServices.getCognitoUsername(session);
       let person;
-      if (req.route.path.includes('ent')) {
+      if (res.locals.cognitoPoolType === 'Employee') {
         person = await Employee.findOne({cognito_username: cognitoUsername});
       } else {
         person = await User.findOne({cognito_username: cognitoUsername});
@@ -150,12 +154,12 @@ const checkPermissions = async (req, res, next) => {
   if (!isAdmin(req) && res.locals.permissions.length != 0) {
     if (req.auth && req.auth.cognito_username) {
       let person;
-      if (req.auth.type == 'user') {
+      if (res.locals.cognitoPoolType === 'User') {
         person = await User.findOne({cognito_username: req.auth.cognito_username}).select('permissions _id');
-      } else if (req.auth.type == 'employee') {
+      } else if (res.locals.cognitoPoolType === 'Employee') {
         person = await Employee.findOne({cognito_username: req.auth.cognito_username}).select('permissions organization _id');
       } else {
-        return res.status(500).json({error: 'Server Error: Requester type is not an employee or a user'});
+        return res.status(500).json({error: `Server Error: res.locals.congitoType is not ${ALLOWED_AUTHORIZATION_PERSONS}`});
       }
       if (!person) {
         return res.status(400).json({error: StaticStrings.TokenIsNotValid});
@@ -186,21 +190,21 @@ const checkAccessToken = (req, res, next) => {
   if (!accessToken) {
     return res.status(401).json({error: StaticStrings.UnauthorizedMissingTokenError});
   }
-  const CognitoServices = getCognitoService(req);
+  const decodedToken = jwt.decode(accessToken, {complete: true});
+  if (!decodedToken) {
+    return res.status(401).json({error: `Not a valid JWT access token. Unable to decode`});
+  }
+  if (decodedToken.payload.client_id == config.aws_config.aws_user_pool_client_id) {
+    res.locals.cognitoPoolType = 'User';
+  } else if (decodedToken.payload.client_id == config.aws_config.aws_employee_pool_client_id) {
+    res.locals.cognitoPoolType = 'Employee';
+  } else {
+    return res.status(500).json({error: 'Server Error: Unknown user pool client ID in access token'});
+  }
+  const CognitoServices = getCognitoService(res.locals.cognitoPoolType);
   CognitoServices.verifyToken(accessToken, 'access')
       .then((decodedToken) => {
-        let type;
-        if (decodedToken.payload.client_id == config.aws_config.aws_user_pool_client_id) {
-          type = 'user';
-        } else if (decodedToken.payload.client_id == config.aws_config.aws_employee_pool_client_id) {
-          type = 'employee';
-        } else {
-          return res.status(500).json({error: 'Server Error: Unknown user pool client ID in access token'});
-        }
-        req.auth = {
-          cognito_username: decodedToken.payload.username,
-          type: type,
-        };
+        req.auth = {cognito_username: decodedToken.payload.username};
         checkPermissions(req, res, next);
       })
       .catch((err) => {
@@ -227,7 +231,7 @@ const checkLogin = (req, res, next) => {
     if (!isAdmin(req) && res.locals.require_login) {
       checkAccessToken(req, res, next);
     } else {
-      checkPermissions(req, res, next);
+      next();
     }
   }
 };
@@ -243,7 +247,7 @@ const forgotPassword = async (req, res) => {
   if (!email) {
     return res.status(400).json({error: StaticStrings.AuthErrors.ForgotPasswordMissingEmail});
   } else {
-    const CognitoServices = getCognitoService(req);
+    const CognitoServices = getCognitoService(res.locals.cognitoPoolType);
     try {
       const person = await CognitoServices.getUserByEmail(email);
       if (!person) {
@@ -271,7 +275,7 @@ const confirmForgotPassword = async (req, res) => {
   if (!newPassword || !cognitoUsername || !confirmationCode) {
     return res.status(400).json({error: StaticStrings.AuthErrors.ConfirmPasswordMissingFields});
   } else {
-    const CognitoServices = getCognitoService(req);
+    const CognitoServices = getCognitoService(res.locals.cognitoPoolType);
     try {
       await CognitoServices.confirmForgotPassword(cognitoUsername, newPassword, confirmationCode);
       return res.status(200).json({message: 'Password updated'});
@@ -291,6 +295,7 @@ const authorize = (permissions, requireLogin = true) => {
   return (req, res, next) => {
     res.locals.require_login = requireLogin;
     res.locals.permissions = permissions;
+    res.locals.cognitoPoolType = req.route.path.includes('ent') ? 'Employee' : 'User'; // default can be overridden
     checkLogin(req, res, next);
   };
 };
@@ -305,4 +310,5 @@ export default {
   verifyToken,
   forgotPassword,
   confirmForgotPassword,
+  ALLOWED_COGNITO_POOL_TYPES,
 };

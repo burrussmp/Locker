@@ -1,7 +1,9 @@
+/* eslint-disable max-len */
 /* eslint-disable no-invalid-this */
 import mongoose from 'mongoose';
 import StaticStrings from '../../config/StaticStrings';
-import S3Services from '../../server/services/S3.services';
+import authCtrl from '../controllers/auth.controller';
+import s3Services from '../../server/services/S3.services';
 
 const MediaSchema = new mongoose.Schema({
   key: {
@@ -38,13 +40,13 @@ const MediaSchema = new mongoose.Schema({
     trim: true,
     required: StaticStrings.MediaModelErrors.UploadedByTypeRequired,
     enum: {
-      values: ['user', 'employee'],
-      message: StaticStrings.PostModelErrors.IncorrectType,
+      values: authCtrl.ALLOWED_COGNITO_POOL_TYPES,
+      message: `${StaticStrings.PostModelErrors.IncorrectType}\nAllowed types: ${authCtrl.ALLOWED_COGNITO_POOL_TYPES}`,
     },
   },
   uploadedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    refPath: 'type',
+    refPath: 'uploadedByType',
     required: StaticStrings.MediaModelErrors.UploadedByRequired,
   },
   resized_keys: {
@@ -59,14 +61,14 @@ const MediaSchema = new mongoose.Schema({
 });
 
 MediaSchema.pre('deleteOne', {document: true, query: false}, async function() {
-  await S3Services.deleteMediaS3(this.key)
+  await s3Services.deleteMediaS3(this.key)
       .catch((err) => {
         console.log(err);
       });
   if (this.resized_keys && this.resized_keys.length != 0) {
     for (let i = 0; i < this.resized_keys.length; ++i) {
       const resizedKey = this.resized_keys[i];
-      S3Services.deleteMediaS3(resizedKey)
+      s3Services.deleteMediaS3(resizedKey)
           .catch((err) => {
             console.log(err);
           });

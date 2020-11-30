@@ -4,6 +4,7 @@
 
 import mongoose from 'mongoose';
 import StaticStrings from '../../config/StaticStrings';
+import authCtrl from '../controllers/auth.controller';
 
 const ReactionTypes = ['like', 'love', 'laugh', 'surprise', 'mad', 'sad'];
 const ReactionSchema = new mongoose.Schema({
@@ -47,10 +48,19 @@ const PostSchema = new mongoose.Schema({
     refPath: 'type',
     required: StaticStrings.PostModelErrors.MissingContent,
   },
+  postedByType: {
+    type: String,
+    trim: true,
+    required: StaticStrings.PostModelErrors.PostedByTypeRequired,
+    enum: {
+      values: authCtrl.ALLOWED_COGNITO_POOL_TYPES,
+      message: `${StaticStrings.PostModelErrors.IncorrectPostedByType}\nThe following are allowed ${authCtrl.IncorrectPostedByType}`,
+    },
+  },
   postedBy: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'User',
-    required: StaticStrings.PostModelErrors.MissingPoster,
+    type: mongoose.Schema.Types.ObjectId,
+    refPath: 'postedByType',
+    required: StaticStrings.PostModelErrors.PostedByRequired,
   },
   caption: {
     type: String,

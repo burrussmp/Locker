@@ -13,6 +13,8 @@ import FormData from 'form-data';
 import fetch from 'node-fetch';
 import fs from 'fs';
 
+import {getProductConstructor} from '../development/product.data';
+
 
 const createUser = async (data) => {
   return fetch('http://localhost:3000/api/users', {
@@ -30,14 +32,14 @@ const createOrg = async (adminAccessToken, orgData) => {
   form.append('name', orgData.name);
   form.append('url', orgData.url);
   form.append('description', orgData.description);
-  return fetch(`http://localhost:3000/api/ent/organizations?access_token=${adminAccessToken}`, {
+  return fetch(`http://localhost:3000/api/organizations?access_token=${adminAccessToken}`, {
     method: 'POST',
     body: form,
   }).then((res) => res.json());
 };
 
 const addEmployeeToOrg = async (adminAccessToken, organizationId, employeeId) => {
-  await fetch(`http://localhost:3000/api/ent/organizations/${organizationId}/employees/?access_token=${adminAccessToken}`, {
+  await fetch(`http://localhost:3000/api/organizations/${organizationId}/employees/?access_token=${adminAccessToken}`, {
     'method': 'POST',
     'headers': {
       'Content-Type': 'application/json',
@@ -55,7 +57,7 @@ const createEmployee = async (admin, data) => {
       reject(Error(`Did not find organization with name ${data.organization}`));
     }
     data.organizationId = organization._id;
-    fetch(`http://localhost:3000/api/ent/employees?access_token=${admin.access_token}`, {
+    fetch(`http://localhost:3000/api/employees?access_token=${admin.access_token}`, {
       'method': 'POST',
       'headers': {
         'Content-Type': 'application/json',
@@ -129,6 +131,15 @@ const bufferEquality = (buf1, buf2) => {
   return true;
 };
 
+const createProductPostAgent = (agent, data, accessToken=undefined) => {
+  const path = accessToken ? `/api/products?access_token=${accessToken}` : '/api/products';
+  let postAgent = agent.post(path).field(getProductConstructor(data)).attach('media', data.media);
+  for (let i = 0; i < data.all_media.length; ++i) {
+    postAgent = postAgent.attach(`all_media`, data.all_media[i]);
+  }
+  return postAgent;
+};
+
 export {
   dropDatabase,
   bufferEquality,
@@ -138,4 +149,5 @@ export {
   loginAdminEmployee,
   createOrg,
   addEmployeeToOrg,
+  createProductPostAgent,
 };

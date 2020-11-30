@@ -75,7 +75,7 @@ const create = async (req, res) => {
   const mediaMeta = {
     'type': 'Product',
     'uploadedBy': req.auth._id,
-    'uploadedByType': 'employee',
+    'uploadedByType': 'Employee',
     'fields': [
       {name: 'media', maxCount: 1, mimetypesAllowed: ['image/png', 'image/jpeg'], required: true},
       {name: 'all_media', maxCount: 20, mimetypesAllowed: ['image/png', 'image/jpeg', 'video/mp4'], required: false},

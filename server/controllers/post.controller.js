@@ -8,23 +8,10 @@ import Post from '../models/post.model';
 import Comment from '../models/comment.model';
 import StaticStrings from '../../config/StaticStrings';
 import errorHandler from '../services/dbErrorHandler';
-import ContentPostServices from '../services/database/content.post.services';
+import ContentPostController from './posts/content.post.controller';
 import mongoose from 'mongoose';
 
 const ReactionTypes = mongoose.models.Post.schema.tree.reactions[0].tree.type.enum.values;
-
-// The way privacy will work
-//  1. Want to retrieve a post or comment or reply
-//  2. When retrieving the key, check who it is posted by
-//  3. If their account is public or if you are a follower of this person
-//  then you can retrieve the resource
-// How does it work for an image?
-//  1. Let's say you want to look at a post and you need the media
-//  2. You say get post and then get the media key. You then call
-//  3. /api/media/:key and the server checks if the account associated with
-//  4. that media post is public or private or if you are a follower
-//  5. the server then retrieves the media source.
-
 
 /**
  * @desc Retrieve the post by ID and sets ownership field of req to the id
@@ -78,7 +65,7 @@ const listPosts = async (req, res) => {
 const createPost = async (req, res) => {
   const type = req.query.type;
   if (type == 'ContentPost') {
-    return ContentPostServices.createContentPost(req, res);
+    return ContentPostController.createContentPost(req, res);
   } else {
     return res.status(501).json({error: StaticStrings.NotImplementedError});
   }
@@ -93,7 +80,7 @@ const createPost = async (req, res) => {
 const getPost = async (req, res) => {
   try {
     if (req.post.type == 'ContentPost') {
-      return ContentPostServices.getContentPost(req, res);
+      return ContentPostController.getContentPost(req, res);
     } else {
       return res.status(501).json({error: StaticStrings.NotImplementedError});
     }
@@ -111,7 +98,7 @@ const getPost = async (req, res) => {
 const editPost = async (req, res) => {
   try {
     if (req.post.type == 'ContentPost') {
-      return ContentPostServices.editContentPost(req, res);
+      return ContentPostController.editContentPost(req, res);
     } else {
       return res.status(501).json({error: StaticStrings.NotImplementedError});
     }

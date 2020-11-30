@@ -17,7 +17,7 @@ chai.should();
 
 const organizationSpecificTests = () => {
   describe('Organization Specific Test', ()=>{
-    describe('GET /api/ent/organizations/:organizationId`', ()=>{
+    describe('GET /api/organizations/:organizationId`', ()=>{
       const agent = chai.request.agent(app);
       let admin; let org;
       beforeEach(async ()=>{
@@ -26,20 +26,20 @@ const organizationSpecificTests = () => {
         org = await createOrg(admin.access_token, OrganizationData[0]);
       });
       it('Cannot find an organization (should fail)', async ()=>{
-        return agent.get(`/api/ent/organizations/${1234567}?access_token=${admin.access_token}`)
+        return agent.get(`/api/organizations/${1234567}?access_token=${admin.access_token}`)
             .then(async (res)=>{
               res.status.should.eql(404);
               res.body.error.should.eql(StaticStrings.OrganizationControllerErrors.NotFoundError);
             });
       });
       it('Get an organization, not logged in (should succeed)', async ()=>{
-        return agent.get(`/api/ent/organizations/${org._id}`).then((res)=>{
+        return agent.get(`/api/organizations/${org._id}`).then((res)=>{
           res.status.should.eql(200);
           res.body._id.toString().should.eql(org._id);
         });
       });
       it('Get an organization, logged in (should succeed)', async ()=>{
-        return agent.get(`/api/ent/organizations/${org._id}?access_token=${admin.access_token}`).then((res)=>{
+        return agent.get(`/api/organizations/${org._id}?access_token=${admin.access_token}`).then((res)=>{
           res.status.should.eql(200);
           res.body._id.toString().should.eql(org._id);
         });
@@ -47,13 +47,13 @@ const organizationSpecificTests = () => {
       it('Get an organization, no permissions (should succeed)', async ()=>{
         const NARole = await RBAC.findOne({'role': 'none'});
         await Employee.findByIdAndUpdate(admin.id, {'permissions': NARole._id}, {new: true});
-        return agent.get(`/api/ent/organizations/${org._id}?access_token=${admin.access_token}`).then((res)=>{
+        return agent.get(`/api/organizations/${org._id}?access_token=${admin.access_token}`).then((res)=>{
           res.status.should.eql(200);
           res.body._id.toString().should.eql(org._id);
         });
       });
     });
-    describe('PUT /api/ent/organizations/:organizationId`', ()=>{
+    describe('PUT /api/organizations/:organizationId`', ()=>{
       const agent = chai.request.agent(app);
       let admin; let org;
       beforeEach(async ()=>{
@@ -64,7 +64,7 @@ const organizationSpecificTests = () => {
       it('Update Organization: Requester not in :organizationId (should fail)', async ()=>{
         const otherCompanySupervisor = await createEmployee(admin, getEmployeeConstructor(EmployeeData[0]));
         const update = {'name': 'new name'};
-        return agent.put(`/api/ent/organizations/${org._id}?access_token=${otherCompanySupervisor.access_token}`)
+        return agent.put(`/api/organizations/${org._id}?access_token=${otherCompanySupervisor.access_token}`)
             .send(update)
             .then(async (res)=>{
               res.status.should.eql(401);
@@ -73,7 +73,7 @@ const organizationSpecificTests = () => {
       });
       it('Update an organization, not logged in (should fail)', async ()=>{
         const update = {'name': 'new name'};
-        return agent.put(`/api/ent/organizations/${org._id}`)
+        return agent.put(`/api/organizations/${org._id}`)
             .send(update)
             .then((res)=>{
               res.status.should.eql(401);
@@ -84,7 +84,7 @@ const organizationSpecificTests = () => {
         const update = {'name': 'new name'};
         const NARole = await RBAC.findOne({'role': 'none'});
         await Employee.findByIdAndUpdate(admin.id, {'permissions': NARole._id}, {new: true});
-        return agent.put(`/api/ent/organizations/${org._id}?access_token=${admin.access_token}`)
+        return agent.put(`/api/organizations/${org._id}?access_token=${admin.access_token}`)
             .send(update)
             .then((res)=>{
               res.status.should.eql(403);
@@ -93,7 +93,7 @@ const organizationSpecificTests = () => {
       });
       it('Update an organization with invalid fields in update object (should fail)', async ()=>{
         const update = {'products': 'EVIL'};
-        return agent.put(`/api/ent/organizations/${org._id}?access_token=${admin.access_token}`)
+        return agent.put(`/api/organizations/${org._id}?access_token=${admin.access_token}`)
             .send(update)
             .then((res)=>{
               res.status.should.eql(422);
@@ -102,7 +102,7 @@ const organizationSpecificTests = () => {
       });
       it('Update an organization with one valid field (should succeed)', async ()=>{
         const update = {'name': 'new name'};
-        return agent.put(`/api/ent/organizations/${org._id}?access_token=${admin.access_token}`)
+        return agent.put(`/api/organizations/${org._id}?access_token=${admin.access_token}`)
             .send(update)
             .then(async (res)=>{
               res.status.should.eql(200);
@@ -118,7 +118,7 @@ const organizationSpecificTests = () => {
           'url': 'https://google.com',
           'description': 'a new description',
         };
-        return agent.put(`/api/ent/organizations/${org._id}?access_token=${admin.access_token}`)
+        return agent.put(`/api/organizations/${org._id}?access_token=${admin.access_token}`)
             .send(update)
             .then(async (res)=>{
               res.status.should.eql(200);
@@ -135,7 +135,7 @@ const organizationSpecificTests = () => {
           'description': 'a new description',
           'invalid': 'test',
         };
-        return agent.put(`/api/ent/organizations/${org._id}?access_token=${admin.access_token}`)
+        return agent.put(`/api/organizations/${org._id}?access_token=${admin.access_token}`)
             .send(update)
             .then(async (res)=>{
               res.status.should.eql(422);
@@ -143,7 +143,7 @@ const organizationSpecificTests = () => {
       });
       it('Cannot find an organization (should fail)', async ()=>{
         const update = {'name': 'new name'};
-        return agent.put(`/api/ent/organizations/${1234567}?access_token=${admin.access_token}`)
+        return agent.put(`/api/organizations/${1234567}?access_token=${admin.access_token}`)
             .send(update)
             .then(async (res)=>{
               res.status.should.eql(404);
@@ -157,7 +157,7 @@ const organizationSpecificTests = () => {
           'description': 'a new description',
         };
         const employee = await createEmployee(admin, getEmployeeConstructor(EmployeeData[1]));
-        return agent.put(`/api/ent/organizations/${org._id}?access_token=${employee.access_token}`)
+        return agent.put(`/api/organizations/${org._id}?access_token=${employee.access_token}`)
             .send(update)
             .then(async (res)=>{
               res.status.should.eql(403);
@@ -171,7 +171,7 @@ const organizationSpecificTests = () => {
           'description': 'a new description',
         };
         const prevOrg = await Organization.findById(org._id).lean();
-        return agent.put(`/api/ent/organizations/${org._id}?access_token=${admin.access_token}`)
+        return agent.put(`/api/organizations/${org._id}?access_token=${admin.access_token}`)
             .send(update)
             .then(async (res)=>{
               res.status.should.eql(400);
@@ -190,7 +190,7 @@ const organizationSpecificTests = () => {
           'description': 'a new description',
         };
         const prevOrg = await Organization.findById(org._id).lean();
-        return agent.put(`/api/ent/organizations/${org._id}?access_token=${admin.access_token}`)
+        return agent.put(`/api/organizations/${org._id}?access_token=${admin.access_token}`)
             .send(update)
             .then(async (res)=>{
               res.status.should.eql(400);
@@ -208,7 +208,7 @@ const organizationSpecificTests = () => {
           'url': prevOrg.url,
           'description': 'a new description',
         };
-        return agent.put(`/api/ent/organizations/${org._id}?access_token=${admin.access_token}`)
+        return agent.put(`/api/organizations/${org._id}?access_token=${admin.access_token}`)
             .send(update)
             .then(async (res)=>{
               res.status.should.eql(200);
@@ -219,7 +219,7 @@ const organizationSpecificTests = () => {
             });
       });
     });
-    describe('DELETE /api/ent/organizations/:organizationId`', ()=>{
+    describe('DELETE /api/organizations/:organizationId`', ()=>{
       const agent = chai.request.agent(app);
       let admin; let org;
       beforeEach(async ()=>{
@@ -229,14 +229,14 @@ const organizationSpecificTests = () => {
       });
       it('Delete Organization: Not employee of organization (should fail because of permissions)', async ()=>{
         const otherCompanySupervisor = await createEmployee(admin, getEmployeeConstructor(EmployeeData[4]));
-        return agent.delete(`/api/ent/organizations/${org._id}?access_token=${otherCompanySupervisor.access_token}`)
+        return agent.delete(`/api/organizations/${org._id}?access_token=${otherCompanySupervisor.access_token}`)
             .then(async (res)=>{
               res.status.should.eql(403);
               res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
             });
       });
       it('Delete an organization, not logged in (should fail)', async ()=>{
-        return agent.delete(`/api/ent/organizations/${org._id}`)
+        return agent.delete(`/api/organizations/${org._id}`)
             .then((res)=>{
               res.status.should.eql(401);
               res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError);
@@ -245,7 +245,7 @@ const organizationSpecificTests = () => {
       it('Delete an organization, missing permissions (should fail)', async ()=>{
         const NARole = await RBAC.findOne({'role': 'none'});
         await Employee.findByIdAndUpdate(admin.id, {'permissions': NARole._id}, {new: true});
-        return agent.delete(`/api/ent/organizations/${org._id}?access_token=${admin.access_token}`)
+        return agent.delete(`/api/organizations/${org._id}?access_token=${admin.access_token}`)
             .then((res)=>{
               res.status.should.eql(403);
               res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
@@ -253,20 +253,20 @@ const organizationSpecificTests = () => {
       });
       it('Check that employee cannot delete an organization', async ()=>{
         const employee = await createEmployee(admin, getEmployeeConstructor(EmployeeData[1]));
-        return agent.delete(`/api/ent/organizations/${org._id}?access_token=${employee.access_token}`)
+        return agent.delete(`/api/organizations/${org._id}?access_token=${employee.access_token}`)
             .then(async (res)=>{
               res.status.should.eql(403);
             });
       });
       it('Cannot find an organization (should fail)', async ()=>{
-        return agent.delete(`/api/ent/organizations/${1234567}?access_token=${admin.access_token}`)
+        return agent.delete(`/api/organizations/${1234567}?access_token=${admin.access_token}`)
             .then(async (res)=>{
               res.status.should.eql(404);
               res.body.error.should.eql(StaticStrings.OrganizationControllerErrors.NotFoundError);
             });
       });
       it('Check that admin can delete an organization', async ()=>{
-        return agent.delete(`/api/ent/organizations/${org._id}?access_token=${admin.access_token}`)
+        return agent.delete(`/api/organizations/${org._id}?access_token=${admin.access_token}`)
             .then(async (res)=>{
               res.status.should.eql(200);
               const deletedOrg = await Organization.findById(res.body._id);
@@ -274,10 +274,10 @@ const organizationSpecificTests = () => {
             });
       });
       it('Check if you can delete twice (should fail)', async ()=>{
-        return agent.delete(`/api/ent/organizations/${org._id}?access_token=${admin.access_token}`)
+        return agent.delete(`/api/organizations/${org._id}?access_token=${admin.access_token}`)
             .then(async (res)=>{
               res.status.should.eql(200);
-              return agent.delete(`/api/ent/organizations/${org._id}?access_token=${admin.access_token}`)
+              return agent.delete(`/api/organizations/${org._id}?access_token=${admin.access_token}`)
                   .then(async (res)=>{
                     res.status.should.eql(404);
                   });
@@ -285,7 +285,7 @@ const organizationSpecificTests = () => {
       });
       it('Check if media is cleaned up after delete (should fail)', async ()=>{
         const numMedia = await Media.countDocuments();
-        return agent.delete(`/api/ent/organizations/${org._id}?access_token=${admin.access_token}`)
+        return agent.delete(`/api/organizations/${org._id}?access_token=${admin.access_token}`)
             .then(async (res)=>{
               res.status.should.eql(200);
               const newNumMedia = await Media.countDocuments();

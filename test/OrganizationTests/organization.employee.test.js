@@ -16,7 +16,7 @@ chai.should();
 
 const organizationEmployeeTest = () => {
   describe('Organization Employee Test', ()=>{
-    describe('POST /api/ent/organizations/:organizationId/employee`', ()=>{
+    describe('POST /api/organizations/:organizationId/employee`', ()=>{
       const agent = chai.request.agent(app);
       let admin; let org; let employee;
       beforeEach(async ()=>{
@@ -28,7 +28,7 @@ const organizationEmployeeTest = () => {
       });
       it('Add Employee to Organization: Already part of organization (should fail)', async ()=>{
         await Employee.findByIdAndUpdate(employee.id, {'organization': org._id});
-        return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
+        return agent.post(`/api/organizations/${org._id}/employees?access_token=${admin.access_token}`)
             .send({employee_id: employee.id, role: 'supervisor'})
             .then(async (res)=>{
               res.status.should.eql(400);
@@ -36,7 +36,7 @@ const organizationEmployeeTest = () => {
             });
       });
       it('Add Employee to Organization: Not logged in (should fail)', async ()=>{
-        return agent.post(`/api/ent/organizations/${org._id}/employees`)
+        return agent.post(`/api/organizations/${org._id}/employees`)
             .send({employeeId: employee.id})
             .then(async (res)=>{
               res.status.should.eql(401);
@@ -46,7 +46,7 @@ const organizationEmployeeTest = () => {
       it('Add Employee to Organization: Missing permissions (should fail)', async ()=>{
         const NARole = await RBAC.findOne({'role': 'none'});
         await Employee.findByIdAndUpdate(admin.id, {'permissions': NARole._id}, {new: true});
-        return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
+        return agent.post(`/api/organizations/${org._id}/employees?access_token=${admin.access_token}`)
             .send({employeeId: employee.id})
             .then(async (res)=>{
               res.status.should.eql(403);
@@ -54,7 +54,7 @@ const organizationEmployeeTest = () => {
             });
       });
       it('Add Employee to Organization: Not supervisor or higher (should fail)', async ()=>{
-        return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${employee.access_token}`)
+        return agent.post(`/api/organizations/${org._id}/employees?access_token=${employee.access_token}`)
             .send({employee_id: employee.id, role: 'supervisor'})
             .then(async (res)=>{
               res.status.should.eql(403);
@@ -62,7 +62,7 @@ const organizationEmployeeTest = () => {
             });
       });
       it('Add Employee to Organization: Missing \'employee_id\' field (should fail)', async ()=>{
-        return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
+        return agent.post(`/api/organizations/${org._id}/employees?access_token=${admin.access_token}`)
             .send({role: 'supervisor'})
             .then(async (res)=>{
               res.status.should.eql(422);
@@ -70,7 +70,7 @@ const organizationEmployeeTest = () => {
             });
       });
       it('Add Employee to Organization: Missing \'role\' field (should fail)', async ()=>{
-        return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
+        return agent.post(`/api/organizations/${org._id}/employees?access_token=${admin.access_token}`)
             .send({employee_id: employee.id})
             .then(async (res)=>{
               res.status.should.eql(422);
@@ -78,7 +78,7 @@ const organizationEmployeeTest = () => {
             });
       });
       it('Add Employee to Organization: Employee not found (should fail)', async ()=>{
-        return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
+        return agent.post(`/api/organizations/${org._id}/employees?access_token=${admin.access_token}`)
             .send({employee_id: org._id, role: 'supervisor'})
             .then(async (res)=>{
               res.status.should.eql(404);
@@ -86,7 +86,7 @@ const organizationEmployeeTest = () => {
             });
       });
       it('Add Employee to Organization: \'employee_id\' is invalid (should fail)', async ()=>{
-        return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
+        return agent.post(`/api/organizations/${org._id}/employees?access_token=${admin.access_token}`)
             .send({employee_id: 123456, role: 'supervisor'})
             .then(async (res)=>{
               res.status.should.eql(400);
@@ -94,7 +94,7 @@ const organizationEmployeeTest = () => {
             });
       });
       it('Add Employee to Organization: Role not found (should fail)', async ()=>{
-        return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
+        return agent.post(`/api/organizations/${org._id}/employees?access_token=${admin.access_token}`)
             .send({employee_id: employee.id, role: '404'})
             .then(async (res)=>{
               res.status.should.eql(400);
@@ -103,7 +103,7 @@ const organizationEmployeeTest = () => {
       });
       it('Add Employee to Organization: Role higher than requester role (should fail)', async ()=>{
         const supervisor = await createEmployee(admin, getEmployeeConstructor(EmployeeData[0]));
-        return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${supervisor.access_token}`)
+        return agent.post(`/api/organizations/${org._id}/employees?access_token=${supervisor.access_token}`)
             .send({employee_id: employee.id, role: 'admin'})
             .then(async (res)=>{
               res.status.should.eql(401);
@@ -112,7 +112,7 @@ const organizationEmployeeTest = () => {
       });
       it('Add Employee to Organization: Supervisor adds employee to organization with correct role (should succeed)', async ()=>{
         const supervisor = await createEmployee(admin, getEmployeeConstructor(EmployeeData[0]));
-        return agent.post(`/api/ent/organizations/${org._id}/employees?access_token=${supervisor.access_token}`)
+        return agent.post(`/api/organizations/${org._id}/employees?access_token=${supervisor.access_token}`)
             .send({employee_id: employee.id, role: 'supervisor'})
             .then(async (res)=>{
               res.status.should.eql(200);
@@ -122,7 +122,7 @@ const organizationEmployeeTest = () => {
             });
       });
     });
-    describe('DELETE /api/ent/organizations/:organizationId/employee`', ()=>{
+    describe('DELETE /api/organizations/:organizationId/employee`', ()=>{
       const agent = chai.request.agent(app);
       let admin; let org; let employee;
       beforeEach(async ()=>{
@@ -134,7 +134,7 @@ const organizationEmployeeTest = () => {
       it('Delete Employee from Organization: Requester not in :organizationId (should fail)', async ()=>{
         await createOrg(admin.access_token, OrganizationData[0]);
         const otherCompanySupervisor = await createEmployee(admin, getEmployeeConstructor(EmployeeData[4]));
-        return agent.delete(`/api/ent/organizations/${org._id}/employees?access_token=${otherCompanySupervisor.access_token}`)
+        return agent.delete(`/api/organizations/${org._id}/employees?access_token=${otherCompanySupervisor.access_token}`)
             .send({employee_id: employee.id})
             .then(async (res)=>{
               res.status.should.eql(401);
@@ -142,7 +142,7 @@ const organizationEmployeeTest = () => {
             });
       });
       it('Delete Employee from Organization: Not logged in (should fail)', async ()=>{
-        return agent.delete(`/api/ent/organizations/${org._id}/employees`)
+        return agent.delete(`/api/organizations/${org._id}/employees`)
             .send({employeeId: employee.id})
             .then(async (res)=>{
               res.status.should.eql(401);
@@ -152,7 +152,7 @@ const organizationEmployeeTest = () => {
       it('Delete Employee from Organization: Missing permissions (should fail)', async ()=>{
         const NARole = await RBAC.findOne({'role': 'none'});
         await Employee.findByIdAndUpdate(admin.id, {'permissions': NARole._id}, {new: true});
-        return agent.delete(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
+        return agent.delete(`/api/organizations/${org._id}/employees?access_token=${admin.access_token}`)
             .send({employeeId: employee.id})
             .then(async (res)=>{
               res.status.should.eql(403);
@@ -160,7 +160,7 @@ const organizationEmployeeTest = () => {
             });
       });
       it('Delete Employee from Organization: Not supervisor or higher (should fail)', async ()=>{
-        return agent.delete(`/api/ent/organizations/${org._id}/employees?access_token=${employee.access_token}`)
+        return agent.delete(`/api/organizations/${org._id}/employees?access_token=${employee.access_token}`)
             .send({employee_id: employee.id})
             .then(async (res)=>{
               res.status.should.eql(403);
@@ -168,7 +168,7 @@ const organizationEmployeeTest = () => {
             });
       });
       it('Delete Employee from Organization: Missing \'employee_id\' field (should fail)', async ()=>{
-        return agent.delete(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
+        return agent.delete(`/api/organizations/${org._id}/employees?access_token=${admin.access_token}`)
             .send({role: 'supervisor'})
             .then(async (res)=>{
               res.status.should.eql(422);
@@ -176,7 +176,7 @@ const organizationEmployeeTest = () => {
             });
       });
       it('Delete Employee from Organization: Employee not found (should fail)', async ()=>{
-        return agent.delete(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
+        return agent.delete(`/api/organizations/${org._id}/employees?access_token=${admin.access_token}`)
             .send({employee_id: org._id})
             .then(async (res)=>{
               res.status.should.eql(404);
@@ -184,7 +184,7 @@ const organizationEmployeeTest = () => {
             });
       });
       it('Delete Employee from Organization: \'employee_id\' is invalid (should fail)', async ()=>{
-        return agent.delete(`/api/ent/organizations/${org._id}/employees?access_token=${admin.access_token}`)
+        return agent.delete(`/api/organizations/${org._id}/employees?access_token=${admin.access_token}`)
             .send({employee_id: 123456})
             .then(async (res)=>{
               res.status.should.eql(400);
@@ -195,7 +195,7 @@ const organizationEmployeeTest = () => {
         const supervisor = await createEmployee(admin, getEmployeeConstructor(EmployeeData[0]));
         const supervisorDoc = await Employee.findById(supervisor.id);
         await Employee.findByIdAndUpdate(admin.id, {'organization': supervisorDoc.organization});
-        return agent.delete(`/api/ent/organizations/${org._id}/employees?access_token=${supervisor.access_token}`)
+        return agent.delete(`/api/organizations/${org._id}/employees?access_token=${supervisor.access_token}`)
             .send({employee_id: admin.id})
             .then(async (res)=>{
               res.status.should.eql(401);
@@ -205,7 +205,7 @@ const organizationEmployeeTest = () => {
       it('Delete Employee from Organization: Requester and requestee not in same organization (should fail)', async ()=>{
         const supervisorOrg = await createOrg(admin.access_token, OrganizationData[0]);
         const supervisor = await createEmployee(admin, getEmployeeConstructor(EmployeeData[4]));
-        return agent.delete(`/api/ent/organizations/${supervisorOrg._id}/employees?access_token=${supervisor.access_token}`)
+        return agent.delete(`/api/organizations/${supervisorOrg._id}/employees?access_token=${supervisor.access_token}`)
             .send({employee_id: employee.id})
             .then(async (res)=>{
               res.status.should.eql(401);
@@ -214,7 +214,7 @@ const organizationEmployeeTest = () => {
       });
       it('Delete Employee from Organization: Supervisor deletes employee to organization with correct role (should succeed)', async ()=>{
         const supervisor = await createEmployee(admin, getEmployeeConstructor(EmployeeData[0]));
-        return agent.delete(`/api/ent/organizations/${org._id}/employees?access_token=${supervisor.access_token}`)
+        return agent.delete(`/api/organizations/${org._id}/employees?access_token=${supervisor.access_token}`)
             .send({employee_id: employee.id})
             .then(async (res)=>{
               res.status.should.eql(200);

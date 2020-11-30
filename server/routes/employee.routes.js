@@ -14,24 +14,24 @@ const router = express.Router();
 // handle path parameters
 router.param('employeeId', employeeCtrl.employeeByID);
 
-router.route('/api/ent/employees')
+router.route('/api/employees')
     .get(authCtrl.authorize([EmployeePermissions.Read]), employeeCtrl.list)
     .post(authCtrl.authorize([EmployeePermissions.Create]), employeeCtrl.create);
 
-router.route('/api/ent/employees/:employeeId')
+router.route('/api/employees/:employeeId')
     .get(authCtrl.authorize([EmployeePermissions.Read]), employeeCtrl.read)
     .put(authCtrl.authorize([EmployeePermissions.EditContent]), authCtrl.requireOwnership, employeeCtrl.update)
     .delete(authCtrl.authorize([EmployeePermissions.Delete]), authCtrl.requireOwnership, employeeCtrl.remove);
 
-router.route('/api/ent/employees/:employeeId/avatar')
+router.route('/api/employees/:employeeId/avatar')
     .get(authCtrl.authorize([EmployeePermissions.Read]), employeeCtrl.getProfilePhoto)
     .post(authCtrl.authorize([EmployeePermissions.EditContent]), authCtrl.requireOwnership, employeeCtrl.uploadProfilePhoto)
     .delete(authCtrl.authorize([EmployeePermissions.Delete]), authCtrl.requireOwnership, employeeCtrl.removeProfilePhoto);
 
-router.route('/api/ent/employees/:employeeId/password')
+router.route('/api/employees/:employeeId/password')
     .put(authCtrl.authorize([EmployeePermissions.EditContent]), authCtrl.requireOwnership, employeeCtrl.changePassword);
 
-router.route('/api/ent/employees/:employeeId/role')
+router.route('/api/employees/:employeeId/role')
     .put(authCtrl.authorize([EmployeePermissions.ChangeRole]), employeeCtrl.changeRole);
 
 

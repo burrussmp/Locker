@@ -247,7 +247,7 @@ const uploadProfilePhoto = (req, res) => {
   const mediaMeta = {
     'type': 'Avatar',
     'uploadedBy': req.params.userId,
-    'uploadedByType': 'user',
+    'uploadedByType': 'User',
     'fields': [
       {name: 'media', maxCount: 1, mimetypesAllowed: ['image/png', 'image/jpeg'], required: true},
     ],

@@ -22,7 +22,7 @@ aws.config.update({
 /**
  * @desc Generate an object that can be used to interact with a Congito User Pool
  * @param {String} type The type of Cognito User Pool to connect to and return API interface
- *  Must be either 'user' or 'employee'
+ *  Must be either 'User' or 'Employee'
  * @return {object} An API interface for a specific Cognito User Pool
  */
 const generateCognitoAPI = (type) => {
@@ -30,7 +30,7 @@ const generateCognitoAPI = (type) => {
   const CognitoServiceProvider = new aws.CognitoIdentityServiceProvider();
   let UserPoolConfig; let UserPoolRegion; let UserPool;
   let cognitoCanUpdate;
-  if (type == 'user') {
+  if (type == 'User') {
     UserPoolConfig = {
       UserPoolId: config.aws_config.aws_user_pool_id,
       ClientId: config.aws_config.aws_user_pool_client_id,
@@ -38,7 +38,7 @@ const generateCognitoAPI = (type) => {
     UserPoolRegion = config.aws_config.aws_user_pool_region;
     UserPool = new AmazonCognitoIdentity.CognitoUserPool(UserPoolConfig);
     cognitoCanUpdate = ['username', 'email', 'phone_number'];
-  } else if (type == 'employee') {
+  } else if (type == 'Employee') {
     UserPoolConfig = {
       UserPoolId: config.aws_config.aws_employee_pool_id,
       ClientId: config.aws_config.aws_employee_pool_client_id,
@@ -348,9 +348,9 @@ const generateCognitoAPI = (type) => {
   };
 
   const getSignup = (type) => {
-    if (type == 'user') {
+    if (type == 'User') {
       return signupUser;
-    } else if (type == 'employee') {
+    } else if (type == 'Employee') {
       return signUpEmployee;
     } else {
       throw new Error(`Cognito pool type ${type} does not exist`);
@@ -568,8 +568,8 @@ const generateCognitoAPI = (type) => {
   };
 };
 
-const UserCognitoPool = generateCognitoAPI('user');
-const EmployeeCognitoPool = generateCognitoAPI('employee');
+const UserCognitoPool = generateCognitoAPI('User');
+const EmployeeCognitoPool = generateCognitoAPI('Employee');
 
 export default {
   UserCognitoPool,

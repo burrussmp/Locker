@@ -8,26 +8,17 @@ import Organization from '../../server/models/organization.model';
 import Media from '../../server/models/media.model';
 import {EmployeeData} from '../../development/employee.data';
 import {OrganizationData} from '../../development/organization.data';
-import {ProductData, getProductConstructor} from '../../development/product.data';
-import {dropDatabase, createEmployee, loginAdminEmployee, createOrg} from '../helper';
+import {ProductData} from '../../development/product.data';
+import {dropDatabase, createEmployee, loginAdminEmployee, createOrg, createProductPostAgent} from '../helper';
 import StaticStrings from '../../config/StaticStrings';
 import S3Services from '../../server/services/S3.services';
 
 chai.use(chaiHttp);
 chai.should();
 
-const createProductPostAgent = (agent, data, accessToken=undefined) => {
-  const path = accessToken ? `/api/ent/products?access_token=${accessToken}` : '/api/ent/products';
-  let postAgent = agent.post(path).field(getProductConstructor(data)).attach('media', data.media);
-  for (let i = 0; i < data.all_media.length; ++i) {
-    postAgent = postAgent.attach(`all_media`, data.all_media[i]);
-  }
-  return postAgent;
-};
-
 const productBasicTests = () => {
   describe('Basics Test', ()=>{
-    describe('POST /api/ent/products`', ()=>{
+    describe('POST /api/products`', ()=>{
       const agent = chai.request.agent(app);
       let admin; let anyOrg; let newProductData;
       beforeEach(async ()=>{
@@ -61,7 +52,7 @@ const productBasicTests = () => {
       it('Create Product: Media field is just some text (should fail)', async ()=>{
         const fieldData = getProductConstructor(newProductData);
         fieldData['media'] = 'some text';
-        let postAgent = agent.post(`/api/ent/products?access_token=${admin.access_token}`)
+        let postAgent = agent.post(`/api/products?access_token=${admin.access_token}`)
             .field(fieldData);
         for (let i = 0; i < newProductData.all_media.length; ++i) {
           postAgent = postAgent.attach(`all_media`, newProductData.all_media[i]);
@@ -200,7 +191,7 @@ const productBasicTests = () => {
         });
       });
     });
-    describe('GET /api/ent/products`', ()=>{
+    describe('GET /api/products`', ()=>{
       const agent = chai.request.agent(app);
       let admin; let anyOrg; let newProductData;
       beforeEach(async ()=>{
@@ -212,13 +203,13 @@ const productBasicTests = () => {
         await createProductPostAgent(agent, newProductData, admin.access_token).then();
       });
       it('List Products: Not logged in (should succeed)', async ()=>{
-        return agent.get(`/api/ent/products`).then(async (res) => {
+        return agent.get(`/api/products`).then(async (res) => {
           res.status.should.eql(200);
           res.body.length.should.eql(1);
         });
       });
       it('List Products: Logged in (should succeed)', async ()=>{
-        return agent.get(`/api/ent/products?access_token=${admin.access_token}`).then(async (res) => {
+        return agent.get(`/api/products?access_token=${admin.access_token}`).then(async (res) => {
           res.status.should.eql(200);
           res.body.length.should.eql(1);
         });
@@ -226,21 +217,21 @@ const productBasicTests = () => {
       it('List Products: Query an organization (should succeed)', async ()=>{
         const otherOrg = await createOrg(admin.access_token, OrganizationData[0]);
         const query = `organization=${otherOrg._id.toString()}`;
-        return agent.get(`/api/ent/products?access_token=${admin.access_token}&${query}`).then(async (res) => {
+        return agent.get(`/api/products?access_token=${admin.access_token}&${query}`).then(async (res) => {
           res.status.should.eql(200);
           res.body.length.should.eql(0);
         });
       });
       it('List Products: Query available false (should succeed)', async ()=>{
         const query = `available=false`;
-        return agent.get(`/api/ent/products?access_token=${admin.access_token}&${query}`).then(async (res) => {
+        return agent.get(`/api/products?access_token=${admin.access_token}&${query}`).then(async (res) => {
           res.status.should.eql(200);
           res.body.length.should.eql(0);
         });
       });
       it('List Products: Query available true (should succeed)', async ()=>{
         const query = `available=true`;
-        return agent.get(`/api/ent/products?access_token=${admin.access_token}&${query}`).then(async (res) => {
+        return agent.get(`/api/products?access_token=${admin.access_token}&${query}`).then(async (res) => {
           res.status.should.eql(200);
           res.body.length.should.eql(1);
         });

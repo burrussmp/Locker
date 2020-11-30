@@ -14,7 +14,7 @@ chai.should();
 
 const employeeChangePasswordTest = () => {
   describe('Password Update Tests', ()=>{
-    describe('PUT /api/ent/employees/:employee/password', ()=>{
+    describe('PUT /api/employees/:employee/password', ()=>{
       const agent = chai.request.agent(app);
       let admin; let employee;
       const validPassword = 'myNewPassword12$';
@@ -25,7 +25,7 @@ const employeeChangePasswordTest = () => {
         employee = await createEmployee(admin, getEmployeeConstructor(EmployeeData[1]));
       });
       it('Not owner (should fail)', async ()=>{
-        return agent.put(`/api/ent/employees/${employee.id}/password?access_token=${admin.access_token}`)
+        return agent.put(`/api/employees/${employee.id}/password?access_token=${admin.access_token}`)
             .send({
               'old_password': EmployeeData[1].password,
               'password': validPassword,
@@ -36,7 +36,7 @@ const employeeChangePasswordTest = () => {
             });
       });
       it('Not logged in (should fail)', async ()=>{
-        return agent.put(`/api/ent/employees/${employee.id}/password`)
+        return agent.put(`/api/employees/${employee.id}/password`)
             .send({
               'old_password': EmployeeData[1].password,
               'password': validPassword,
@@ -47,7 +47,7 @@ const employeeChangePasswordTest = () => {
             });
       });
       it('User does not exists (should fail)', async ()=>{
-        return agent.put(`/api/ent/employees/${1234}/password?access_token=${employee.access_token}`)
+        return agent.put(`/api/employees/${1234}/password?access_token=${employee.access_token}`)
             .send({
               'old_password': EmployeeData[1].password,
               'password': validPassword,
@@ -60,7 +60,7 @@ const employeeChangePasswordTest = () => {
       it('Invalid permissions (should fail)', async ()=>{
         const NARole = await RBAC.findOne({'role': 'none'});
         await Employee.findOneAndUpdate({'_id': employee.id}, {'permissions': NARole._id}, {new: true});
-        return agent.put(`/api/ent/employees/${employee.id}/password?access_token=${employee.access_token}`)
+        return agent.put(`/api/employees/${employee.id}/password?access_token=${employee.access_token}`)
             .send({
               'old_password': EmployeeData[1].password,
               'password': validPassword,
@@ -71,7 +71,7 @@ const employeeChangePasswordTest = () => {
             });
       });
       it('/PUT w/ old password doesn\'t match current password (should fail)', async ()=>{
-        return agent.put(`/api/ent/employees/${employee.id}/password?access_token=${employee.access_token}`)
+        return agent.put(`/api/employees/${employee.id}/password?access_token=${employee.access_token}`)
             .send({
               'old_password': 'wrong password',
               'password': validPassword,
@@ -82,7 +82,7 @@ const employeeChangePasswordTest = () => {
             });
       });
       it('/PUT missing old password (should fail)', async ()=>{
-        return agent.put(`/api/ent/employees/${employee.id}/password?access_token=${employee.access_token}`)
+        return agent.put(`/api/employees/${employee.id}/password?access_token=${employee.access_token}`)
             .send({
               'password': validPassword,
             })
@@ -92,7 +92,7 @@ const employeeChangePasswordTest = () => {
             });
       });
       it('/PUT missing password field (should fail)', async ()=>{
-        return agent.put(`/api/ent/employees/${employee.id}/password?access_token=${employee.access_token}`)
+        return agent.put(`/api/employees/${employee.id}/password?access_token=${employee.access_token}`)
             .send({
               'old_password': validPassword,
             })
@@ -102,7 +102,7 @@ const employeeChangePasswordTest = () => {
             });
       });
       it('/PUT try to update with same, old password (should be fine)', async ()=>{
-        return agent.put(`/api/ent/employees/${employee.id}/password?access_token=${employee.access_token}`)
+        return agent.put(`/api/employees/${employee.id}/password?access_token=${employee.access_token}`)
             .send({
               'old_password': EmployeeData[1].password,
               'password': EmployeeData[1].password,
@@ -113,7 +113,7 @@ const employeeChangePasswordTest = () => {
             });
       });
       it('/PUT invalid new password (should fail)', async ()=>{
-        return agent.put(`/api/ent/employees/${employee.id}/password?access_token=${employee.access_token}`)
+        return agent.put(`/api/employees/${employee.id}/password?access_token=${employee.access_token}`)
             .send({
               'old_password': EmployeeData[1].password,
               'password': invalidPassword,
@@ -124,7 +124,7 @@ const employeeChangePasswordTest = () => {
             });
       });
       it('/PUT tries to update different field other than password', async ()=>{
-        return agent.put(`/api/ent/employees/${employee.id}/password?access_token=${employee.access_token}`)
+        return agent.put(`/api/employees/${employee.id}/password?access_token=${employee.access_token}`)
             .send({
               'old_password': EmployeeData[1].password,
               'password': validPassword,

@@ -269,7 +269,7 @@ const uploadProfilePhoto = (req, res) => {
   const mediaMeta = {
     'type': 'Avatar',
     'uploadedBy': req.params.employeeId,
-    'uploadedByType': 'employee',
+    'uploadedByType': 'Employee',
     'fields': [
       {name: 'media', maxCount: 1, mimetypesAllowed: ['image/png', 'image/jpeg'], required: true},
     ],

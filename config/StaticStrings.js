@@ -147,6 +147,9 @@ const StaticStrings = {
     CommentTextRequired: 'A comment cannot be empty',
   },
   PostModelErrors: {
+    PostedByRequired: 'postedBy ID attribute required for model "Post"',
+    PostedByTypeRequired: 'Server Error: Must specify a "postedByType" attribute when creating a post',
+    IncorrectPostedByType: 'The posted by type is invalid.',
     TypeRequired: 'Must specify the type',
     MaxCaptionSizeError: 'Descriptions must be less than 300 characters',
     InvalidReaction: 'Unsupported reaction',
@@ -177,6 +180,7 @@ const StaticStrings = {
     UnknownPostType: 'Unknown post type',
     MissingOrInvalidReaction: 'Missing or invalid reaction in request body',
   },
+  MissingRequiredField: 'Request missing required field:',
   SignedUpSuccess: 'Successfully signed up!',
   LoggedOutSuccess: 'Logged out',
   UploadProfilePhotoSuccess: 'Successfully uploaded user profile photo',

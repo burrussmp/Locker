@@ -30,11 +30,10 @@ const fetchPosts = async (postId=undefined) => {
  * @return {Promise<Response>} Returns the created post
 */
 const createContentPost = async (req, res) => {
-  const type = 'ContentPost';
   const mediaMeta = {
-    'type': type,
+    'type': 'ContentPost',
     'uploadedBy': req.auth._id,
-    'uploadedByType': 'employee',
+    'uploadedByType': 'Employee',
     'fields': [
       {name: 'media', maxCount: 1, mimetypesAllowed: ['image/png', 'image/jpeg'], required: true},
     ],
@@ -43,10 +42,7 @@ const createContentPost = async (req, res) => {
     let contentPost;
     const media = allImages['media'][0];
     try {
-      contentPost = new ContentPost({
-        price: req.body.price,
-        media: media._id,
-      });
+      contentPost = new ContentPost({product: req.body.product});
       contentPost = await contentPost.save();
     } catch (err) {
       try {
@@ -60,7 +56,7 @@ const createContentPost = async (req, res) => {
     }
     try {
       const postData = {
-        type: type,
+        type: mediaMeta.type,
         content: contentPost._id,
         postedBy: req.auth._id,
         caption: 'caption' in req.body ? req.body.caption : '',

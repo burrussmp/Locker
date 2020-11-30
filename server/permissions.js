@@ -79,9 +79,6 @@ const getPermissionArray = (type) => {
     assignedPermissions = assignedPermissions.concat([
       PostPermissions.Read,
       PostPermissions.Interact,
-      PostPermissions.Create,
-      PostPermissions.EditContent,
-      PostPermissions.Delete,
       UserPermissions.EditContent,
       UserPermissions.Delete,
       UserPermissions.Read,
@@ -96,6 +93,9 @@ const getPermissionArray = (type) => {
   }
   if (type == 'employee') {
     assignedPermissions = assignedPermissions.concat([
+      PostPermissions.Create,
+      PostPermissions.EditContent,
+      PostPermissions.Delete,
       EmployeePermissions.EditContent,
       EmployeePermissions.Delete,
       EmployeePermissions.Read,
@@ -107,6 +107,9 @@ const getPermissionArray = (type) => {
   }
   if (type == 'supervisor' || type == 'admin') {
     assignedPermissions = assignedPermissions.concat([
+      PostPermissions.Create,
+      PostPermissions.EditContent,
+      PostPermissions.Delete,
       OrganizationPermissions.EditAccessList,
       OrganizationPermissions.Read,
       OrganizationPermissions.EditContent,
@@ -197,7 +200,7 @@ const setUpRBAC = async () => {
     role_type: 'admin',
   };
   try {
-    await fetch(`http://${config.address}:${config.port}/api/ent/employees?access_token=${process.env.ADMIN_SECRET}`, {
+    await fetch(`http://${config.address}:${config.port}/api/employees?access_token=${process.env.ADMIN_SECRET}`, {
       'method': 'POST',
       'headers': {
         'Content-Type': 'application/json',
@@ -211,12 +214,12 @@ const setUpRBAC = async () => {
       form.append('name', 'Locker Company');
       form.append('url', 'https://locker.com');
       form.append('description', 'Locker Company');
-      await fetch(`http://${config.address}:${config.port}/api/ent/organizations?access_token=${accessToken}`, {
+      await fetch(`http://${config.address}:${config.port}/api/organizations?access_token=${accessToken}`, {
         method: 'POST',
         body: form,
       }).then((res) => res.json()).then(async (org) => {
         const organizationId = org._id;
-        await fetch(`http://${config.address}:${config.port}/api/ent/organizations/${organizationId}/employees/?access_token=${accessToken}`, {
+        await fetch(`http://${config.address}:${config.port}/api/organizations/${organizationId}/employees/?access_token=${accessToken}`, {
           'method': 'POST',
           'headers': {
             'Content-Type': 'application/json',

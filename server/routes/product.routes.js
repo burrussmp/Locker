@@ -11,13 +11,13 @@ const router = express.Router();
 
 router.param('productId', productCtrl.productById);
 
-router.route('/api/ent/products')
+router.route('/api/products')
     .get(authCtrl.authorize([], false), productCtrl.list)
     .post(authCtrl.authorize([ProductPermissions.Create]), productCtrl.create);
 
-router.route('/api/ent/products/:productId')
+router.route('/api/products/:productId')
     .get(authCtrl.authorize([], false), productCtrl.read)
-    .put(authCtrl.authorize([ProductPermissions.EditContent]), productCtrl.enforceSameOrganization, productCtrl.update)
-    .delete(authCtrl.authorize([ProductPermissions.Delete]), productCtrl.enforceSameOrganization, productCtrl.remove);
+    .put(authCtrl.authorize([ProductPermissions.EditContent]), productCtrl.update)
+    .delete(authCtrl.authorize([ProductPermissions.Delete]), productCtrl.remove);
 
 export default router;

@@ -16,7 +16,7 @@ chai.should();
 
 const employeeRoleTest = () => {
   describe('Role update test', ()=>{
-    describe('PUT /api/ent/employees/:employee/role', ()=>{
+    describe('PUT /api/employees/:employee/role', ()=>{
       const agent = chai.request.agent(app);
       let admin; let supervisor; let employee;
       beforeEach( async () =>{
@@ -26,7 +26,7 @@ const employeeRoleTest = () => {
         employee = await createEmployee(admin, getEmployeeConstructor(EmployeeData[1]));
       });
       it('Elevate permissions (should succeed)', async ()=>{
-        return agent.put(`/api/ent/employees/${employee.id}/role?access_token=${supervisor.access_token}`)
+        return agent.put(`/api/employees/${employee.id}/role?access_token=${supervisor.access_token}`)
             .send({'new_role': 'supervisor'})
             .then(async (res)=>{
               res.status.should.eql(200);
@@ -37,7 +37,7 @@ const employeeRoleTest = () => {
             });
       });
       it('Requester level is same (supervisor trying to promote self to supervisor) (should succeed)', async ()=>{
-        return agent.put(`/api/ent/employees/${supervisor.id}/role?access_token=${supervisor.access_token}`)
+        return agent.put(`/api/employees/${supervisor.id}/role?access_token=${supervisor.access_token}`)
             .send({'new_role': 'supervisor'})
             .then(async (res)=>{
               res.status.should.eql(200);
@@ -48,7 +48,7 @@ const employeeRoleTest = () => {
             });
       });
       it('Requester level is same (supervisor trying to promote self to supervisor) (should succeed)', async ()=>{
-        return agent.put(`/api/ent/employees/${supervisor.id}/role?access_token=${supervisor.access_token}`)
+        return agent.put(`/api/employees/${supervisor.id}/role?access_token=${supervisor.access_token}`)
             .send({'new_role': 'supervisor'})
             .then(async (res)=>{
               res.status.should.eql(200);
@@ -59,7 +59,7 @@ const employeeRoleTest = () => {
             });
       });
       it('Not logged in (should fail)', async ()=>{
-        return agent.put(`/api/ent/employees/${employee.id}/role`)
+        return agent.put(`/api/employees/${employee.id}/role`)
             .send({'new_role': 'supervisor'})
             .then((res)=>{
               res.status.should.eql(401);
@@ -67,7 +67,7 @@ const employeeRoleTest = () => {
             });
       });
       it('Employee not found (should fail)', async ()=>{
-        return agent.put(`/api/ent/employees/${12345678}/role`)
+        return agent.put(`/api/employees/${12345678}/role`)
             .send({'new_role': 'supervisor'})
             .then((res)=>{
               res.status.should.eql(404);
@@ -75,7 +75,7 @@ const employeeRoleTest = () => {
             });
       });
       it('Missing permissions (should fail)', async ()=>{
-        return agent.put(`/api/ent/employees/${employee.id}/role?access_token=${employee.access_token}`)
+        return agent.put(`/api/employees/${employee.id}/role?access_token=${employee.access_token}`)
             .send({'new_role': 'supervisor'})
             .then((res)=>{
               res.status.should.eql(403);
@@ -83,14 +83,14 @@ const employeeRoleTest = () => {
             });
       });
       it('Requester level is less than the role (supervisor trying to promote self to admin) (should fail)', async ()=>{
-        return agent.put(`/api/ent/employees/${supervisor.id}/role?access_token=${supervisor.access_token}`)
+        return agent.put(`/api/employees/${supervisor.id}/role?access_token=${supervisor.access_token}`)
             .send({'new_role': 'admin'})
             .then((res)=>{
               res.status.should.eql(401);
             });
       });
       it('Requester level is less than requestee level (should fail)', async ()=>{
-        return agent.put(`/api/ent/employees/${admin.id}/role?access_token=${supervisor.access_token}`)
+        return agent.put(`/api/employees/${admin.id}/role?access_token=${supervisor.access_token}`)
             .send({'new_role': 'employee'})
             .then(async (res)=>{
               res.status.should.eql(401);
@@ -98,7 +98,7 @@ const employeeRoleTest = () => {
             });
       });
       it('Role doesnt exist (should fail)', async ()=>{
-        return agent.put(`/api/ent/employees/${employee.id}/role?access_token=${supervisor.access_token}`)
+        return agent.put(`/api/employees/${employee.id}/role?access_token=${supervisor.access_token}`)
             .send({'new_role': 'unknown'})
             .then(async (res)=>{
               res.status.should.eql(400);
@@ -108,7 +108,7 @@ const employeeRoleTest = () => {
       it('Requester and requestee not part of the same organization (should fail)', async ()=>{
         await createOrg(admin.access_token, OrganizationData[0]);
         const otherOrgEmployee = await createEmployee(admin, getEmployeeConstructor(EmployeeData[3]));
-        return agent.put(`/api/ent/employees/${otherOrgEmployee.id}/role?access_token=${supervisor.access_token}`)
+        return agent.put(`/api/employees/${otherOrgEmployee.id}/role?access_token=${supervisor.access_token}`)
             .send({'new_role': 'supervisor'})
             .then(async (res)=>{
               res.status.should.eql(401);
@@ -118,7 +118,7 @@ const employeeRoleTest = () => {
       it('Requester and requestee not part of the same organization, but admin (should succeed)', async ()=>{
         await createOrg(admin.access_token, OrganizationData[0]);
         const otherOrgEmployee = await createEmployee(admin, getEmployeeConstructor(EmployeeData[3]));
-        return agent.put(`/api/ent/employees/${otherOrgEmployee.id}/role?access_token=${admin.access_token}`)
+        return agent.put(`/api/employees/${otherOrgEmployee.id}/role?access_token=${admin.access_token}`)
             .send({'new_role': 'supervisor'})
             .then(async (res)=>{
               res.status.should.eql(200);

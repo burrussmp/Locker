@@ -15,10 +15,9 @@ router.param('postId', postCtrl.postByID);
 router.param('commentId', commentCtrl.commentByID);
 router.param('replyId', commentCtrl.replyByID);
 
-
 router.route('/api/posts')
     .get(authCtrl.authorize([PostPermissions.Read]), postCtrl.listPosts)
-    .post(authCtrl.authorize([PostPermissions.Create]), postCtrl.createPost);
+    .post(authCtrl.authorize([PostPermissions.Create]), postCtrl.createPost); // can only post from enterprise login right now
 
 router.route('/api/posts/:postId')
     .get(authCtrl.authorize([PostPermissions.Create]), postCtrl.getPost)

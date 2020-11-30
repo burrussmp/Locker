@@ -13,7 +13,7 @@ chai.should();
 
 const organizationBasicsTest = () => {
   describe('Basics Test', ()=>{
-    describe('POST /api/ent/organizations`', ()=>{
+    describe('POST /api/organizations`', ()=>{
       const agent = chai.request.agent(app);
       let admin;
       beforeEach(async ()=>{
@@ -22,7 +22,7 @@ const organizationBasicsTest = () => {
       });
       it('Create a new organization, not logged in (should fail)', async ()=>{
         const organizationData = OrganizationData[0];
-        return agent.post(`/api/ent/organizations`)
+        return agent.post(`/api/organizations`)
             .attach('media', organizationData.logo)
             .field(getConstructorData(organizationData))
             .then((res)=>{
@@ -33,7 +33,7 @@ const organizationBasicsTest = () => {
       it('Create a new organization with supervisor, bad permissions (should fail)', async ()=>{
         const organizationData = OrganizationData[0];
         const supervisor = await createEmployee(admin, getEmployeeConstructor(EmployeeData[0]));
-        return agent.post(`/api/ent/organizations?access_token=${supervisor.access_token}`)
+        return agent.post(`/api/organizations?access_token=${supervisor.access_token}`)
             .attach('media', organizationData.logo)
             .field(getConstructorData(organizationData))
             .then((res)=>{
@@ -45,7 +45,7 @@ const organizationBasicsTest = () => {
         const organizationData = OrganizationData[0];
         const constructorData = JSON.parse(JSON.stringify(getConstructorData(organizationData)));
         delete constructorData.url;
-        return agent.post(`/api/ent/organizations?access_token=${admin.access_token}`)
+        return agent.post(`/api/organizations?access_token=${admin.access_token}`)
             .attach('media', organizationData.logo)
             .field(constructorData)
             .then((res)=>{
@@ -57,7 +57,7 @@ const organizationBasicsTest = () => {
         const organizationData = OrganizationData[0];
         const constructorData = JSON.parse(JSON.stringify(getConstructorData(organizationData)));
         delete constructorData.name;
-        return agent.post(`/api/ent/organizations?access_token=${admin.access_token}`)
+        return agent.post(`/api/organizations?access_token=${admin.access_token}`)
             .attach('media', organizationData.logo)
             .field(constructorData)
             .then((res)=>{
@@ -67,7 +67,7 @@ const organizationBasicsTest = () => {
       });
       it('Missing media (should fail)', async ()=>{
         const organizationData = getConstructorData(OrganizationData[0]);
-        return agent.post(`/api/ent/organizations?access_token=${admin.access_token}`)
+        return agent.post(`/api/organizations?access_token=${admin.access_token}`)
             .field(organizationData)
             .then((res)=>{
               res.status.should.eql(400);
@@ -76,14 +76,14 @@ const organizationBasicsTest = () => {
       });
       it('Duplicate name (should fail)', async ()=>{
         const organizationData = OrganizationData[0];
-        return agent.post(`/api/ent/organizations?access_token=${admin.access_token}`)
+        return agent.post(`/api/organizations?access_token=${admin.access_token}`)
             .attach('media', organizationData.logo)
             .field(getConstructorData(organizationData))
             .then((res)=>{
               res.status.should.eql(200);
               const organizationDataDuplicateName = OrganizationData[1];
               organizationDataDuplicateName.name = organizationData.name;
-              return agent.post(`/api/ent/organizations?access_token=${admin.access_token}`)
+              return agent.post(`/api/organizations?access_token=${admin.access_token}`)
                   .attach('media', organizationDataDuplicateName.logo)
                   .field(getConstructorData(organizationDataDuplicateName))
                   .then((res)=>{
@@ -94,14 +94,14 @@ const organizationBasicsTest = () => {
       });
       it('Duplicate URL (should fail)', async ()=>{
         const organizationData = OrganizationData[0];
-        return agent.post(`/api/ent/organizations?access_token=${admin.access_token}`)
+        return agent.post(`/api/organizations?access_token=${admin.access_token}`)
             .attach('media', organizationData.logo)
             .field(getConstructorData(organizationData))
             .then((res)=>{
               res.status.should.eql(200);
               const organizationDataDuplicateUrl = OrganizationData[1];
               organizationDataDuplicateUrl.url = organizationData.url;
-              return agent.post(`/api/ent/organizations?access_token=${admin.access_token}`)
+              return agent.post(`/api/organizations?access_token=${admin.access_token}`)
                   .attach('media', organizationDataDuplicateUrl.logo)
                   .field(getConstructorData(organizationDataDuplicateUrl))
                   .then((res)=>{
@@ -111,7 +111,7 @@ const organizationBasicsTest = () => {
             });
       });
     });
-    describe('GET /api/ent/organizations`', ()=>{
+    describe('GET /api/organizations`', ()=>{
       const agent = chai.request.agent(app);
       let admin;
       beforeEach(async ()=>{
@@ -120,13 +120,13 @@ const organizationBasicsTest = () => {
         await createOrg(admin.access_token, OrganizationData[0]);
       });
       it('Not logged in (should succeed)', async ()=>{
-        return agent.get(`/api/ent/organizations`).then((res)=>{
+        return agent.get(`/api/organizations`).then((res)=>{
           res.status.should.eql(200);
           res.body.length.should.eql(2);
         });
       });
       it('Logged in (should succeed)', async ()=>{
-        return agent.get(`/api/ent/organizations?access_token=${admin.access_token}`).then((res)=>{
+        return agent.get(`/api/organizations?access_token=${admin.access_token}`).then((res)=>{
           res.status.should.eql(200);
           res.body.length.should.eql(2);
         });

@@ -76,7 +76,7 @@ const create = async (req, res) => {
   const mediaMeta = {
     'type': 'Logo',
     'uploadedBy': req.auth._id,
-    'uploadedByType': 'employee',
+    'uploadedByType': 'Employee',
     'fields': [
       {name: 'media', maxCount: 1, mimetypesAllowed: ['image/png', 'image/jpeg'], required: true},
     ],
@@ -178,7 +178,7 @@ const updateLogo = async (req, res) => {
   const mediaMeta = {
     'type': 'Logo',
     'uploadedBy': req.auth._id,
-    'uploadedByType': 'employee',
+    'uploadedByType': 'Employee',
     'fields': [
       {name: 'media', maxCount: 1, mimetypesAllowed: ['image/png', 'image/jpeg'], required: true},
     ],
