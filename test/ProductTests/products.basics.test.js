@@ -8,7 +8,7 @@ import Organization from '../../server/models/organization.model';
 import Media from '../../server/models/media.model';
 import {EmployeeData} from '../../development/employee.data';
 import {OrganizationData} from '../../development/organization.data';
-import {ProductData} from '../../development/product.data';
+import {ProductData, getProductConstructor} from '../../development/product.data';
 import {dropDatabase, createEmployee, loginAdminEmployee, createOrg, createProductPostAgent} from '../helper';
 import StaticStrings from '../../config/StaticStrings';
 import S3Services from '../../server/services/S3.services';

@@ -17,7 +17,7 @@ router.route('/api/products')
 
 router.route('/api/products/:productId')
     .get(authCtrl.authorize([], false), productCtrl.read)
-    .put(authCtrl.authorize([ProductPermissions.EditContent]), productCtrl.update)
-    .delete(authCtrl.authorize([ProductPermissions.Delete]), productCtrl.remove);
+    .put(authCtrl.authorize([ProductPermissions.EditContent]), productCtrl.enforceSameOrganization, productCtrl.update)
+    .delete(authCtrl.authorize([ProductPermissions.Delete]), productCtrl.enforceSameOrganization, productCtrl.remove);
 
 export default router;
