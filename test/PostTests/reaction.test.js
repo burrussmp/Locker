@@ -35,14 +35,14 @@ const reactionTest = () => {
         user = await createUser(UserData[1]);
         userToken1 = user.access_token;
         user = await createUser(UserData[2]);
-        await agent.post(`/api/posts?access_token=${userToken0}&type=ContentPost`)
+        await agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
             .attach('media', image1)
             .field(PostData[0])
             .then((res)=>{
               res.status.should.eql(200);
               postId0 = res.body._id;
             });
-        await agent.post(`/api/posts?access_token=${userToken1}&type=ContentPost`)
+        await agent.post(`/api/posts?access_token=${userToken1}&type=ProductPost`)
             .attach('media', video)
             .field(PostData[1])
             .then((res)=>{

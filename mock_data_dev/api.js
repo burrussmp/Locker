@@ -56,14 +56,14 @@ const Follow = async (userId, token) => {
   }
 };
 
-const CreateContentPost = async (data, token) => {
+const CreateProductPost = async (data, token) => {
   const form = new FormData();
   form.append('media', fs.createReadStream(data.media));
   form.append('price', data.price);
   form.append('caption', data.caption);
   form.append('tags', data.tags);
   const res = await fetch(
-      `${SERVER}/api/posts?type=ContentPost&access_token=${token}`,
+      `${SERVER}/api/posts?type=ProductPost&access_token=${token}`,
       {
         method: 'POST',
         body: form,
@@ -126,6 +126,6 @@ const CreateReply = async (data, commentId, token) => {
 exports.SignUp = SignUp;
 exports.Follow = Follow;
 exports.UpdateProfilePhoto = UpdateProfilePhoto;
-exports.CreateContentPost = CreateContentPost;
+exports.CreateProductPost = CreateProductPost;
 exports.CreateReply = CreateReply;
 exports.CreateComment = CreateComment;

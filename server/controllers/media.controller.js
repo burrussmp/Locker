@@ -46,7 +46,7 @@ const AllDimensions = {
       height: 256,
     },
   },
-  ContentPost: {
+  ProductPost: {
     small: {
       width: 50,
       height: 75,

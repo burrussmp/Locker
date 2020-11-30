@@ -28,8 +28,8 @@
  */
 
  /**
-  * @api {post} /api/posts?type=ContentPost Create Content Post
-  * @apiDescription Create a new content post
+  * @api {post} /api/posts?type=ProductPost Create Product Post
+  * @apiDescription Create a new product post
   * @apiName PostApiPosts
   * @apiGroup Post
   * @apiVersion 0.1.0
@@ -63,7 +63,7 @@
  * @apiUse LoginError
  * @apiPermission PostRead
  * @apiUse PermissionError
- * @apiSuccess  (200) {String}      type        The type of post (e.g. "ContentPost")
+ * @apiSuccess  (200) {String}      type        The type of post (e.g. "ProductPost")
  * @apiSuccess  (200) {Object}      content     The content of the post (varies based on type)
  * @apiSuccess  (200) {String}      caption     The ID of the newly created post
  * @apiSuccess  (200) {String[]}    tags        The ID of the newly created post
@@ -76,11 +76,11 @@
         "caption": "Check out the new shoe!",
         "tags": ["shoe", "designer"],
         "_id": "5f4155c1284bd74c053c2ffe",
-        "type": "ContentPost",
+        "type": "ProductPost",
         "content": {
             "price": 99.99,
             "media": {
-                "key": "2998472058f3455c6843ece354b90af0_ContentPost",
+                "key": "2998472058f3455c6843ece354b90af0_ProductPost",
                 "mimetype": "image/png"
             }
         },

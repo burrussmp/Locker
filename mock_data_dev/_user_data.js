@@ -13,11 +13,11 @@ const UserData = [
     avatar: process.cwd() + '/mock_data_dev/assets/profile_imgs/male_1.jpg',
     follows: [1, 2, 3],
     posts: [{
-      type: 'ContentPost',
+      type: 'ProductPost',
       price: 59.99,
       caption: 'Big fan of this look, especially the jeans.',
       tags: 'jeans,designer',
-      media: process.cwd() + '/mock_data_dev/assets/content_posts/content_1.png',
+      media: process.cwd() + '/mock_data_dev/assets/product_posts/content_1.png',
       comments: [
         {
           'user': 0,
@@ -55,18 +55,18 @@ const UserData = [
     avatar: process.cwd() + '/mock_data_dev/assets/profile_imgs/women_1.jpg',
     follows: [0, 1],
     posts: [{
-      type: 'ContentPost',
+      type: 'ProductPost',
       price: 89.99,
       caption: 'It\'s like camo 2.0 :)',
       tags: 'yoga,pants,matching',
-      media: process.cwd() + '/mock_data_dev/assets/content_posts/content_2.png',
+      media: process.cwd() + '/mock_data_dev/assets/product_posts/content_2.png',
     },
     {
-      type: 'ContentPost',
+      type: 'ProductPost',
       price: 119.99,
       caption: 'I\'m actually not this fancy, but hey I can dream!',
       tags: 'blue,dress',
-      media: process.cwd() + '/mock_data_dev/assets/content_posts/content_3.jpg',
+      media: process.cwd() + '/mock_data_dev/assets/product_posts/content_3.jpg',
     },
     ],
   },
@@ -81,11 +81,11 @@ const UserData = [
     avatar: process.cwd() + '/mock_data_dev/assets/profile_imgs/male_3.jpg',
     follows: [0, 1, 2, 4],
     posts: [{
-      type: 'ContentPost',
+      type: 'ProductPost',
       price: 399.99,
       caption: 'Is this for Kim or for me? #yeezy',
       tags: 'Kanye',
-      media: process.cwd() + '/mock_data_dev/assets/content_posts/content_5.jpeg',
+      media: process.cwd() + '/mock_data_dev/assets/product_posts/content_5.jpeg',
     }],
   },
   {
@@ -99,17 +99,17 @@ const UserData = [
     avatar: process.cwd() + '/mock_data_dev/assets/profile_imgs/women_2.jpg',
     follows: [2, 3],
     posts: [{
-      type: 'ContentPost',
+      type: 'ProductPost',
       price: 49.99,
       caption: 'Finally I can match nature',
       tags: 'green,long',
-      media: process.cwd() + '/mock_data_dev/assets/content_posts/content_4.jpeg',
+      media: process.cwd() + '/mock_data_dev/assets/product_posts/content_4.jpeg',
     }, {
-      type: 'ContentPost',
+      type: 'ProductPost',
       price: 249.99,
       caption: 'Catwalk',
       tags: 'designer,floral,dress',
-      media: process.cwd() + '/mock_data_dev/assets/content_posts/content_7.jpeg',
+      media: process.cwd() + '/mock_data_dev/assets/product_posts/content_7.jpeg',
     }],
   },
 ];

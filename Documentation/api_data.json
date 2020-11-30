@@ -1554,7 +1554,7 @@
             "type": "String",
             "optional": false,
             "field": "type",
-            "description": "<p>The type of post (e.g. &quot;ContentPost&quot;)</p>"
+            "description": "<p>The type of post (e.g. &quot;ProductPost&quot;)</p>"
           },
           {
             "group": "200",
@@ -1603,7 +1603,7 @@
       "examples": [
         {
           "title": "Response (example):",
-          "content": "{\n    \"caption\": \"Check out the new shoe!\",\n    \"tags\": [\"shoe\", \"designer\"],\n    \"_id\": \"5f4155c1284bd74c053c2ffe\",\n    \"type\": \"ContentPost\",\n    \"content\": {\n        \"price\": 99.99,\n        \"media\": {\n            \"key\": \"2998472058f3455c6843ece354b90af0_ContentPost\",\n            \"mimetype\": \"image/png\"\n        }\n    },\n    \"postedBy\": \"5f4155c0284bd74c053c2ff9\",\n    \"createdAt\": \"2020-08-22T17:28:33.161Z\",\n    \"updatedAt\": \"2020-08-22T17:28:33.161Z\"\n}",
+          "content": "{\n    \"caption\": \"Check out the new shoe!\",\n    \"tags\": [\"shoe\", \"designer\"],\n    \"_id\": \"5f4155c1284bd74c053c2ffe\",\n    \"type\": \"ProductPost\",\n    \"content\": {\n        \"price\": 99.99,\n        \"media\": {\n            \"key\": \"2998472058f3455c6843ece354b90af0_ProductPost\",\n            \"mimetype\": \"image/png\"\n        }\n    },\n    \"postedBy\": \"5f4155c0284bd74c053c2ff9\",\n    \"createdAt\": \"2020-08-22T17:28:33.161Z\",\n    \"updatedAt\": \"2020-08-22T17:28:33.161Z\"\n}",
           "type": "json"
         }
       ]
@@ -1901,9 +1901,9 @@
   },
   {
     "type": "post",
-    "url": "/api/posts?type=ContentPost",
-    "title": "Create Content Post",
-    "description": "<p>Create a new content post</p>",
+    "url": "/api/posts?type=ProductPost",
+    "title": "Create Product Post",
+    "description": "<p>Create a new product post</p>",
     "name": "PostApiPosts",
     "group": "Post",
     "version": "0.1.0",
@@ -2013,7 +2013,7 @@
     "groupTitle": "Post",
     "sampleRequest": [
       {
-        "url": "http://localhost:3000/api/posts?type=ContentPost"
+        "url": "http://localhost:3000/api/posts?type=ProductPost"
       }
     ],
     "header": {

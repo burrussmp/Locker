@@ -31,7 +31,7 @@ const replyTest = () => {
         userToken1 = user.access_token;
         user = await createUser(UserData[2]);
         userToken2=user.access_token;
-        await agent.post(`/api/posts?access_token=${userToken0}&type=ContentPost`)
+        await agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
             .attach('media', image1)
             .field(PostData[0])
             .then((res)=>{
@@ -142,7 +142,7 @@ const replyTest = () => {
         userToken1 = user.access_token;
         user = await createUser(UserData[2]);
         userToken2=user.access_token;
-        await agent.post(`/api/posts?access_token=${userToken0}&type=ContentPost`)
+        await agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
             .attach('media', image1)
             .field(PostData[0])
             .then((res)=>{
@@ -312,7 +312,7 @@ const replyTest = () => {
         userToken1 = user.access_token;
         user = await createUser(UserData[2]);
         userToken2=user.access_token;
-        await agent.post(`/api/posts?access_token=${userToken0}&type=ContentPost`)
+        await agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
             .attach('media', image1)
             .field(PostData[0])
             .then((res)=>{
@@ -451,7 +451,7 @@ const replyTest = () => {
         userToken1 = user.access_token;
         user = await createUser(UserData[2]);
         userToken2=user.access_token;
-        await agent.post(`/api/posts?access_token=${userToken0}&type=ContentPost`)
+        await agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
             .attach('media', image1)
             .field(PostData[0])
             .then((res)=>{
@@ -770,7 +770,7 @@ const replyTest = () => {
         userToken1 = user.access_token;
         user = await createUser(UserData[2]);
         userToken2=user.access_token;
-        await agent.post(`/api/posts?access_token=${userToken0}&type=ContentPost`)
+        await agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
             .attach('media', image1)
             .field(PostData[0])
             .then((res)=>{
@@ -912,7 +912,7 @@ const replyTest = () => {
         userToken1 = user.access_token;
         user = await createUser(UserData[2]);
         userToken2=user.access_token;
-        await agent.post(`/api/posts?access_token=${userToken0}&type=ContentPost`)
+        await agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
             .attach('media', image1)
             .field(PostData[0])
             .then((res)=>{

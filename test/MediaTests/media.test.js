@@ -190,7 +190,7 @@ const mediaTestBasics = () => {
         });
       });
     });
-    // describe('GET Content Post media', () => {
+    // describe('GET Product Post media', () => {
     //   let Key; let Key2;
     //   const agent = chai.request.agent(app);
     //   let userToken0;
@@ -199,7 +199,7 @@ const mediaTestBasics = () => {
     //     const user = await createUser(UserData[0]);
     //     userToken0 = user.access_token;
     //     await agent
-    //         .post(`/api/posts?access_token=${userToken0}&type=ContentPost`)
+    //         .post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
     //         .attach('media', image1)
     //         .field(PostData[0])
     //         .then(async (res) => {
@@ -210,7 +210,7 @@ const mediaTestBasics = () => {
     //               });
     //         });
     //     await agent
-    //         .post(`/api/posts?access_token=${userToken0}&type=ContentPost`)
+    //         .post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
     //         .attach('media', video)
     //         .field(PostData[0])
     //         .then(async (res) => {

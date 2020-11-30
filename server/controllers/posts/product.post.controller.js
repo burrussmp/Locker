@@ -2,7 +2,7 @@
 'use strict';
 
 // imports
-import ContentPost from '../../models/posts/content.post.model';
+import ProductPost from '../../models/posts/product.post.model';
 import Product from '../../models/product.model';
 import Post from '../../models/post.model';
 import errorHandler from '../../services/dbErrorHandler';
@@ -10,7 +10,7 @@ import StaticStrings from '../../../config/StaticStrings';
 
 
 /**
- * @desc Fetches all (or specified) content posts
+ * @desc Fetches all (or specified) product posts posts
  * @param {String | undefined} postId If defined, retrieve specific post else retrieve all posts
  * @return {Promise<Response>} Returns a single post or list of posts
 */
@@ -24,12 +24,12 @@ const fetchPosts = async (postId=undefined) => {
 
 
 /**
- * @desc Creates a new content post.
+ * @desc Creates a new product post.
  * @param {Request} req HTTP request object
  * @param {Response} res HTTP response object
  * @return {Promise<Response>} Returns the created post
 */
-const createContentPost = async (req, res) => {
+const createProductPost = async (req, res) => {
   try {
     if (!req.body.product) {
       return res.status(400).json({error: `${StaticStrings.MissingRequiredField} 'product'`});
@@ -41,17 +41,17 @@ const createContentPost = async (req, res) => {
   } catch (err) {
     return res.status(400).json({err: err.message});
   }
-  let contentPost;
+  let productPost;
   try {
-    contentPost = new ContentPost({product: req.body.product});
-    contentPost = await contentPost.save();
+    productPost = new ProductPost({product: req.body.product});
+    productPost = await productPost.save();
   } catch (err) {
     return res.status(400).json({error: dbErrorHandler.getErrorMessage(err)});
   }
   try {
     const postData = {
-      type: 'ContentPost',
-      content: contentPost._id,
+      type: 'ProductPost',
+      content: productPost._id,
       postedBy: req.auth._id,
       postedByType: res.locals.cognitoPoolType,
       caption: req.body.caption,
@@ -62,10 +62,10 @@ const createContentPost = async (req, res) => {
     return res.status(200).json({'_id': newPost._id});
   } catch (err) {
     try {
-      await contentPost.deleteOne();
-      res.status(500).json({error: StaticStrings.UnknownServerError + `\nS3 Cleaned and content post deleted.\nOriginal error ${err.message}.`});
+      await productPost.deleteOne();
+      res.status(500).json({error: StaticStrings.UnknownServerError + `\nS3 Cleaned and product post deleted.\nOriginal error ${err.message}.`});
     } catch (err2) {
-      res.status(500).json({error: StaticStrings.UnknownServerError + `.\nUnable to clean content post because ${err2.message}.\nOriginal error ${err.message}.`});
+      res.status(500).json({error: StaticStrings.UnknownServerError + `.\nUnable to clean product post because ${err2.message}.\nOriginal error ${err.message}.`});
     }
   }
 };
@@ -77,7 +77,7 @@ const createContentPost = async (req, res) => {
  * @param {Response} res HTTP response object
  * @return {Promise<Response>} Returns the retrieved post
 */
-const getContentPost = async (req, res) => {
+const getProductPost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.postId).select('type caption tags postedBy postedByType createdAt updatedAt')
         .populate({
@@ -109,12 +109,12 @@ const getContentPost = async (req, res) => {
 
 
 /**
- * @desc Edits a content post (the caption and tags)
+ * @desc Edits a product post (the caption and tags)
  * @param {Request} req HTTP request object
  * @param {Response} res HTTP response object
  * @return {Promise<Response>} A 200 with post ID if success
 */
-const editContentPost = async (req, res) => {
+const editProductPost = async (req, res) => {
   try {
     const update = {};
     'caption' in req.body ? update.caption = req.body.caption : undefined;
@@ -130,8 +130,8 @@ const editContentPost = async (req, res) => {
 
 
 export default {
-  createContentPost,
+  createProductPost,
   fetchPosts,
-  getContentPost,
-  editContentPost,
+  getProductPost,
+  editProductPost,
 };

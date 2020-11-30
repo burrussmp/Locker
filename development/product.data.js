@@ -31,7 +31,7 @@ const ProductData = [
     'product_collection': 'tanks',
     'meta': {},
   }, {
-    type: 'ContentPost',
+    type: 'ProductPost',
     price: 99.99,
     caption: 'The third and final product',
     tags: [],

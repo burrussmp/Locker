@@ -17,7 +17,7 @@ const filterUser_signup = (data) => {
   };
 };
 
-const filter_content_post_create = (data) => {
+const filter_product_post_create = (data) => {
   return {
     media: data.media,
     price: data.price,
@@ -60,7 +60,7 @@ const update_fuzzy = async (attrs) => {
 
 
 exports.filterUser_signup = filterUser_signup;
-exports.filter_content_post_create = filter_content_post_create;
+exports.filter_product_post_create = filter_product_post_create;
 exports.filter_comment_create = filter_comment_create;
 exports.filter_reply_create = filter_reply_create;
 exports.dropDatabase = dropDatabase;

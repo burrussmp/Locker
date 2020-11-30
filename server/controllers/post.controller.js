@@ -8,7 +8,7 @@ import Post from '../models/post.model';
 import Comment from '../models/comment.model';
 import StaticStrings from '../../config/StaticStrings';
 import errorHandler from '../services/dbErrorHandler';
-import ContentPostController from './posts/content.post.controller';
+import ProductPostController from './posts/product.post.controller';
 import mongoose from 'mongoose';
 
 const ReactionTypes = mongoose.models.Post.schema.tree.reactions[0].tree.type.enum.values;
@@ -57,15 +57,15 @@ const listPosts = async (req, res) => {
 };
 
 /**
- * @desc Create a post based on the query parameter 'type'. Accepted types include 'ContentPost'
+ * @desc Create a post based on the query parameter 'type'. Accepted types include 'ProductPost'
  * @param {Request} req HTTP request object
  * @param {Response} res HTTP response object
  * @return {Promise<Response>} Create a new post.
  */
 const createPost = async (req, res) => {
   const type = req.query.type;
-  if (type == 'ContentPost') {
-    return ContentPostController.createContentPost(req, res);
+  if (type == 'ProductPost') {
+    return ProductPostController.createProductPost(req, res);
   } else {
     return res.status(501).json({error: StaticStrings.NotImplementedError});
   }
@@ -79,8 +79,8 @@ const createPost = async (req, res) => {
  */
 const getPost = async (req, res) => {
   try {
-    if (req.post.type == 'ContentPost') {
-      return ContentPostController.getContentPost(req, res);
+    if (req.post.type == 'ProductPost') {
+      return ProductPostController.getProductPost(req, res);
     } else {
       return res.status(501).json({error: StaticStrings.NotImplementedError});
     }
@@ -97,8 +97,8 @@ const getPost = async (req, res) => {
  */
 const editPost = async (req, res) => {
   try {
-    if (req.post.type == 'ContentPost') {
-      return ContentPostController.editContentPost(req, res);
+    if (req.post.type == 'ProductPost') {
+      return ProductPostController.editProductPost(req, res);
     } else {
       return res.status(501).json({error: StaticStrings.NotImplementedError});
     }

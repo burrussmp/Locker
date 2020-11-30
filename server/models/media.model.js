@@ -3,7 +3,7 @@
 import mongoose from 'mongoose';
 import StaticStrings from '../../config/StaticStrings';
 import authCtrl from '../controllers/auth.controller';
-import s3Services from '../../server/services/S3.services';
+import S3Services from '../../server/services/S3.services';
 
 const MediaSchema = new mongoose.Schema({
   key: {
@@ -15,7 +15,7 @@ const MediaSchema = new mongoose.Schema({
     type: String,
     required: StaticStrings.MediaModelErrors.TypeRequired,
     enum: {
-      values: ['Avatar', 'ContentPost', 'Logo', 'Product'],
+      values: ['Avatar', 'Post', 'Logo', 'Product'],
       message: StaticStrings.MediaModelErrors.UnacceptableType,
     },
   },
@@ -61,14 +61,14 @@ const MediaSchema = new mongoose.Schema({
 });
 
 MediaSchema.pre('deleteOne', {document: true, query: false}, async function() {
-  await s3Services.deleteMediaS3(this.key)
+  await S3Services.deleteMediaS3(this.key)
       .catch((err) => {
         console.log(err);
       });
   if (this.resized_keys && this.resized_keys.length != 0) {
     for (let i = 0; i < this.resized_keys.length; ++i) {
       const resizedKey = this.resized_keys[i];
-      s3Services.deleteMediaS3(resizedKey)
+      S3Services.deleteMediaS3(resizedKey)
           .catch((err) => {
             console.log(err);
           });
