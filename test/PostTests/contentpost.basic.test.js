@@ -92,8 +92,6 @@ const contentPostTestBasics = () => {
           const postID = res.body._id;
           return agent.get(`/api/posts/${postID}?access_token=${admin.access_token}`).then(async (res)=>{
             res.status.should.eql(200);
-            console.log(res.body);
-            console.log(res.body.content.product.all_media);
           });
         });
       });
