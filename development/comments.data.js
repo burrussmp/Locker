@@ -1,7 +1,7 @@
 'use strict';
 import Comment from '@server/models/comment.model';
 import {UserData} from './user.data';
-import {createUser} from '../test/helper';
+import {createUser} from '@test/helper';
 // comments
 const CommentData = [{
   text: 'This is a comment',

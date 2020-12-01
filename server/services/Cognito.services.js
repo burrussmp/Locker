@@ -8,6 +8,7 @@ global.fetch = require('node-fetch');
 import jwt from 'jsonwebtoken';
 import jwkToPem from 'jwk-to-pem';
 import aws from 'aws-sdk';
+
 import config from '@config/config';
 import validators from '@server/services/validators';
 import StaticStrings from '@config/StaticStrings';

@@ -3,13 +3,17 @@
 // imports
 const {v4: uuid4} = require('uuid');
 import aws from 'aws-sdk';
-import multer from 'multer';
-import errorHandler from './dbErrorHandler';
-import Media from '@server/models/media.model';
-import StaticStrings from '@config/StaticStrings';
-import config from '@config/config';
-import BlurHashEncoder from '@server/services/BlurHashEncoder';
 import _ from 'lodash';
+import multer from 'multer';
+
+import Media from '@server/models/media.model';
+
+import BlurHashEncoder from '@server/services/BlurHashEncoder';
+
+import config from '@config/config';
+import errorHandler from './dbErrorHandler';
+import StaticStrings from '@config/StaticStrings';
+
 
 // Configure AWS
 aws.config.update({

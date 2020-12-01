@@ -1,8 +1,8 @@
 /* eslint-disable max-len */
 import config from '@config/config';
-import app from './express';
+import app from '@server/express';
 import mongoose from 'mongoose';
-import permissions from './permissions';
+import permissions from '@server/permissions';
 import StaticStrings from '@config/StaticStrings';
 
 // Connection URL

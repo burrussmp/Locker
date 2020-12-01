@@ -17,7 +17,7 @@
         "@server": "./server",
         "@test": "./test",
         "@config": "./config",
-        "@development": "./development",
+        "@development": "./development"
       }
     }]
   ]

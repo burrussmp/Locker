@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import compress from 'compression';
 import cors from 'cors';
 import helmet from 'helmet';
+
 import userRoutes from '@server/routes/user.routes';
 import authRoutes from '@server/routes/auth.routes';
 import postRoutes from '@server/routes/post.routes';

@@ -10,13 +10,14 @@
     - User profile
     - Organization profile
 */
-
-import fetch from 'node-fetch';
-import config from '@config/config';
-import RBAC from './models/rbac.model';
 import fs from 'fs';
+import fetch from 'node-fetch';
 import FormData from 'form-data';
-import dbErrorHandler from './services/dbErrorHandler';
+
+import RBAC from './models/rbac.model';
+
+import config from '@config/config';
+import errorHandler from './services/dbErrorHandler';
 
 // all permissions associated with Post collection
 const PostPermissions = {
@@ -134,7 +135,7 @@ const setUpRBAC = async () => {
   try {
     await (new RBAC(UserRole)).save();
   } catch (err) {
-    // console.log(dbErrorHandler.getErrorMessage(err));
+    // console.log(errorHandler.getErrorMessage(err));
   }
 
   const adminRole = {
@@ -146,7 +147,7 @@ const setUpRBAC = async () => {
   try {
     await (new RBAC(adminRole)).save();
   } catch (err) {
-    // console.log(dbErrorHandler.getErrorMessage(err));
+    // console.log(errorHandler.getErrorMessage(err));
   }
 
   const supervisorRole = {
@@ -158,7 +159,7 @@ const setUpRBAC = async () => {
   try {
     await (new RBAC(supervisorRole)).save();
   } catch (err) {
-    // console.log(dbErrorHandler.getErrorMessage(err));
+    // console.log(errorHandler.getErrorMessage(err));
   }
 
   const employeeRole = {
@@ -169,7 +170,7 @@ const setUpRBAC = async () => {
   try {
     await (new RBAC(employeeRole)).save();
   } catch (err) {
-    // console.log(dbErrorHandler.getErrorMessage(err));
+    // console.log(errorHandler.getErrorMessage(err));
   }
 
   const NARole = {
@@ -181,7 +182,7 @@ const setUpRBAC = async () => {
   try {
     await (new RBAC(NARole)).save();
   } catch (err) {
-    // console.log(dbErrorHandler.getErrorMessage(err));
+    // console.log(errorHandler.getErrorMessage(err));
   }
 
   const admin = {
@@ -221,7 +222,7 @@ const setUpRBAC = async () => {
       });
     });
   } catch (err) {
-    console.log(dbErrorHandler.getErrorMessage(err));
+    console.log(errorHandler.getErrorMessage(err));
   }
 };
 

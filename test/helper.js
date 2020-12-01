@@ -13,7 +13,7 @@ import FormData from 'form-data';
 import fetch from 'node-fetch';
 import fs from 'fs';
 
-import {getProductConstructor} from '../development/product.data';
+import {getProductConstructor} from '@development/product.data';
 
 
 const createUser = async (data) => {
