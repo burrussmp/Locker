@@ -1,10 +1,10 @@
 'use strict';
 
-import ProductPostBasic from './product.post.basic.test';
-// import ReactionTest from './reaction.test';
+import ProductPostTests from './ProductPostTests/index';
+// import ReactionTest from './post.reaction.test';
 
 const postTests = () => {
-  describe('PATH: \'/api/posts\'', ProductPostBasic);
+  describe('PATH: \'/api/posts\'', ProductPostTests);
   // describe('PATH: /api/posts/:postId/reaction', ReactionTest);
 };
 

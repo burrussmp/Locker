@@ -1,3 +1,4 @@
+/* eslint-disable new-cap */
 /* eslint-disable max-len */
 'use strict';
 import Comment from '../models/comment.model';
@@ -29,6 +30,50 @@ const commentByID = async (req, res, next, id) => {
     return res.status(404).json({
       error: StaticStrings.CommentModelErrors.CommentNotFoundError,
     });
+  }
+};
+
+/**
+ * @desc Retrieve a particular comment and its stats from a post
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} A specific comment from a post
+ */
+const getComment = async (req, res) => {
+  try {
+    const commentId = mongoose.Types.ObjectId(req.params.commentId);
+    const reqId = mongoose.Types.ObjectId(req.auth._id);
+    const comment = await Comment.aggregate([
+      {$match: {_id: commentId}},
+      {$project: {
+        'text': '$text',
+        'postedBy': '$postedBy',
+        'createdAt': '$createdAt',
+        'likes': {$cond: {if: {$isArray: '$likes'}, then: {$size: '$likes'}, else: 0}},
+        'liked': {$cond: {if: {$and: [{$isArray: '$likes'}, {$in: [reqId, '$likes']}]}, then: true, else: false}},
+      },
+      },
+    ]);
+    return res.status(200).json(comment[0]);
+  } catch (err) {
+    return res.status(500).json({error: errorHandler.getErrorMessage(err)});
+  }
+};
+
+
+/**
+ * @desc Delete a comment (ID retrieved from URL path parameter)
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @return {Promise<Response>} If successful return the ID of deleted comment
+ */
+const deleteComment = async (req, res) => {
+  try {
+    const comment = await Comment.findById(req.params.commentId);
+    await comment.deleteOne();
+    return res.status(200).json({'_id': comment._id});
+  } catch (err) {
+    return res.status(400).json({error: errorHandler.getErrorMessage(err)});
   }
 };
 
@@ -244,4 +289,6 @@ export default {
   unlikeReply,
   likeComment,
   unlikeComment,
+  deleteComment,
+  getComment,
 };

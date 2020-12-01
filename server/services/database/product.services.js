@@ -18,9 +18,8 @@ const deserializeAttr = (data, name='Name not provided') => {
 };
 
 /**
- * @desc Create a query for a Mongoose find operation based on request query
- * parameters
- * @param {String} req Serialized data to parse
+ * @desc Create a query for a Mongoose find operation on a Product model
+ * @param {Request} req HTTP Request
  * @return {Object} A query to control what is returned from the product list
  */
 const queryBuilder = (req) => {

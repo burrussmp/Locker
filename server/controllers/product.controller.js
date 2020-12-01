@@ -149,7 +149,7 @@ const read = (req, res) => {
 const list = async (req, res) => {
   const query = ProductServices.queryBuilder(req);
   try {
-    const products = await Product.find(query, null, {limit: 100})
+    const products = await Product.find(query, null)
         .select('_id updatedAt createdAt');
     return res.json(products);
   } catch (err) {

@@ -110,10 +110,14 @@ ProductSchema.pre('findOneAndUpdate', async function() {
 ProductSchema.pre('deleteOne', {document: true, query: false}, async function() {
   // clean up all images
   let media = await mongoose.models.Media.findById(this.media); // delegate cleanup to media
-  await media.deleteOne();
+  if (media) {
+    await media.deleteOne();
+  }
   for (const additionalMedia of this.all_media) {
     media = await mongoose.models.Media.findById(additionalMedia); // delegate cleanup to media
-    await media.deleteOne();
+    if (media) {
+      await media.deleteOne();
+    }
   }
 });
 

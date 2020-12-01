@@ -17,13 +17,13 @@ router.route('/api/posts')
     .post(authCtrl.authorize([PostPermissions.Create]), postCtrl.createPost);
 
 router.route('/api/posts/:postId')
-    .get(authCtrl.authorize([PostPermissions.Create]), postCtrl.getPost)
+    .get(authCtrl.authorize([PostPermissions.Read]), postCtrl.getPost)
     .put(authCtrl.authorize([PostPermissions.EditContent]), authCtrl.requireOwnership, postCtrl.editPost)
     .delete(authCtrl.authorize([PostPermissions.Delete]), authCtrl.requireOwnership, postCtrl.deletePost);
 
 router.route('/api/:postId/comments')
-    .get(authCtrl.authorize([CommentPermissions.Read]), postCtrl.listComments)
-    .post(authCtrl.authorize([CommentPermissions.Create]), postCtrl.createComment);
+    .get(authCtrl.authorize([CommentPermissions.Read]), postCtrl.listPostComments)
+    .post(authCtrl.authorize([CommentPermissions.Create]), postCtrl.createPostComment);
 
 
 router.route('/api/posts/:postId/reaction')

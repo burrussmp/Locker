@@ -50,7 +50,7 @@ const createProductPost = async (req, res) => {
   }
   try {
     const postData = {
-      type: 'ProductPost',
+      contentType: 'ProductPost',
       content: productPost._id,
       postedBy: req.auth._id,
       postedByType: res.locals.cognitoPoolType,
@@ -122,9 +122,7 @@ const editProductPost = async (req, res) => {
     const post = await Post.findByIdAndUpdate(req.params.postId, update, {runValidators: true, new: true});
     return res.status(200).json({'_id': post._id});
   } catch (err) {
-    return res.status(400).json({
-      error: errorHandler.getErrorMessage(err),
-    });
+    return res.status(400).json({error: errorHandler.getErrorMessage(err)});
   }
 };
 

@@ -4,12 +4,17 @@
 'use strict';
 
 // imports
+import mongoose from 'mongoose';
 import Post from '../models/post.model';
 import Comment from '../models/comment.model';
+
+import ProductPostController from './posts/product.post.controller';
+
+import PostServices from '../services/database/post.services';
+
 import StaticStrings from '../../config/StaticStrings';
 import errorHandler from '../services/dbErrorHandler';
-import ProductPostController from './posts/product.post.controller';
-import mongoose from 'mongoose';
+
 
 const ReactionTypes = mongoose.models.Post.schema.tree.reactions[0].tree.type.enum.values;
 
@@ -42,14 +47,15 @@ const postByID = async (req, res, next, id) => {
 };
 
 /**
- * @desc List all the posts (just id and who uploaded them)
+ * @desc List all the posts (max = 100) and supports query parameters.
  * @param {Request} req HTTP request object
  * @param {Response} res HTTP response object
  * @return {Promise<Response>} A list of all the posts by their ID and when they were posted
  */
 const listPosts = async (req, res) => {
   try {
-    const posts = await Post.find().select('createdAt');
+    const query = PostServices.queryBuilder(req);
+    const posts = await Post.find(query, null, {limit: 100}).select('_id createdAt');
     return res.status(200).json(posts);
   } catch (err) {
     return res.status(500).json({error: errorHandler.getErrorMessage(err)});
@@ -57,7 +63,7 @@ const listPosts = async (req, res) => {
 };
 
 /**
- * @desc Create a post based on the query parameter 'type'. Accepted types include 'ProductPost'
+ * @desc Create a post based on the query parameter 'type'.
  * @param {Request} req HTTP request object
  * @param {Response} res HTTP response object
  * @return {Promise<Response>} Create a new post.
@@ -79,7 +85,7 @@ const createPost = async (req, res) => {
  */
 const getPost = async (req, res) => {
   try {
-    if (req.post.type == 'ProductPost') {
+    if (req.post.contentType == 'ProductPost') {
       return ProductPostController.getProductPost(req, res);
     } else {
       return res.status(501).json({error: StaticStrings.NotImplementedError});
@@ -97,7 +103,7 @@ const getPost = async (req, res) => {
  */
 const editPost = async (req, res) => {
   try {
-    if (req.post.type == 'ProductPost') {
+    if (req.post.contentType == 'ProductPost') {
       return ProductPostController.editProductPost(req, res);
     } else {
       return res.status(501).json({error: StaticStrings.NotImplementedError});
@@ -130,7 +136,7 @@ const deletePost = async (req, res) => {
  * @param {Response} res HTTP response object
  * @return {Promise<Response>} Returns a list of comment IDs
  */
-const listComments = async (req, res) => {
+const listPostComments = async (req, res) => {
   try {
     const postId = mongoose.Types.ObjectId(req.params.postId);
     const reqId = mongoose.Types.ObjectId(req.auth._id);
@@ -162,41 +168,13 @@ const listComments = async (req, res) => {
   }
 };
 
-
-/**
- * @desc Retrieve a particular comment and its stats from a post
- * @param {Request} req HTTP request object
- * @param {Response} res HTTP response object
- * @return {Promise<Response>} A specific comment from a post
- */
-const getComment = async (req, res) => {
-  try {
-    const commentId = mongoose.Types.ObjectId(req.params.commentId);
-    const reqId = mongoose.Types.ObjectId(req.auth._id);
-    const comment = await Comment.aggregate([
-      {$match: {_id: commentId}},
-      {$project: {
-        'text': '$text',
-        'postedBy': '$postedBy',
-        'createdAt': '$createdAt',
-        'likes': {$cond: {if: {$isArray: '$likes'}, then: {$size: '$likes'}, else: 0}},
-        'liked': {$cond: {if: {$and: [{$isArray: '$likes'}, {$in: [reqId, '$likes']}]}, then: true, else: false}},
-      },
-      },
-    ]);
-    return res.status(200).json(comment[0]);
-  } catch (err) {
-    return res.status(500).json({error: errorHandler.getErrorMessage(err)});
-  }
-};
-
 /**
  * @desc Creates a comment. The required fields are text, filling in postedBy.
  * @param {Request} req HTTP request object
  * @param {Response} res HTTP response object
  * @return {Promise<Response>} If successful return the ID of the new comment
  */
-const createComment = async (req, res) => {
+const createPostComment = async (req, res) => {
   try {
     const commentData = {
       text: req.body.text,
@@ -214,22 +192,6 @@ const createComment = async (req, res) => {
     } catch (err) {
       return res.status(400).json({error: errorHandler.getErrorMessage(err)});
     }
-  } catch (err) {
-    return res.status(400).json({error: errorHandler.getErrorMessage(err)});
-  }
-};
-
-/**
- * @desc Delete a comment (ID retrieved from URL path parameter)
- * @param {Request} req HTTP request object
- * @param {Response} res HTTP response object
- * @return {Promise<Response>} If successful return the ID of deleted comment
- */
-const deleteComment = async (req, res) => {
-  try {
-    const comment = await Comment.findById(req.params.commentId);
-    await comment.deleteOne();
-    return res.status(200).json({'_id': comment._id});
   } catch (err) {
     return res.status(400).json({error: errorHandler.getErrorMessage(err)});
   }
@@ -324,10 +286,8 @@ export default {
   createPost,
   editPost,
   deletePost,
-  listComments,
-  getComment,
-  createComment,
-  deleteComment,
+  listPostComments,
+  createPostComment,
   getReaction,
   changeReaction,
   ReactionTypes,

@@ -1,7 +1,6 @@
 /* eslint-disable new-cap */
 /* eslint-disable max-len */
 import express from 'express';
-import postCtrl from '../controllers/post.controller';
 import commentCtrl from '../controllers/comment.controller';
 import authCtrl from '../controllers/auth.controller';
 import permission from '../permissions';
@@ -14,8 +13,8 @@ router.param('replyId', commentCtrl.replyByID);
 const CommentPermissions = permission.CommentPermissions;
 
 router.route('/api/comments/:commentId')
-    .get(authCtrl.authorize([CommentPermissions.Read]), postCtrl.getComment)
-    .delete(authCtrl.authorize([CommentPermissions.Delete]), authCtrl.requireOwnership, postCtrl.deleteComment);
+    .get(authCtrl.authorize([CommentPermissions.Read]), commentCtrl.getComment)
+    .delete(authCtrl.authorize([CommentPermissions.Delete]), authCtrl.requireOwnership, commentCtrl.deleteComment);
 
 
 router.route('/api/:commentId/replies')

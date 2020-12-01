@@ -34,7 +34,7 @@ const tagLimit = (val) => {
 };
 
 const PostSchema = new mongoose.Schema({
-  type: {
+  contentType: {
     type: String,
     trim: true,
     required: StaticStrings.PostModelErrors.TypeRequired,
@@ -45,7 +45,7 @@ const PostSchema = new mongoose.Schema({
   },
   content: {
     type: mongoose.Schema.Types.ObjectId,
-    refPath: 'type',
+    refPath: 'contentType',
     required: StaticStrings.PostModelErrors.MissingContent,
   },
   postedByType: {
@@ -90,7 +90,7 @@ const PostSchema = new mongoose.Schema({
 
 // cleanup
 PostSchema.pre('deleteOne', {document: true, query: false}, async function() {
-  const content = await mongoose.model(this.type).findById(this.content); // delegate cleaning to the post
+  const content = await mongoose.model(this.contentType).findById(this.content); // delegate cleaning to the post
   if (content) {
     await content.deleteOne();
     for (const comment of this.comments) {
