@@ -2,10 +2,13 @@
 'use strict';
 
 // imports
-import StaticStrings from '../../config/StaticStrings';
-import S3Services from '../services/S3.services';
 import Sharp from 'sharp';
-import Media from '../models/media.model';
+
+import Media from '@server/models/media.model';
+
+import S3Services from '@server/services/S3.services';
+
+import StaticStrings from '@config/StaticStrings';
 
 const ErrorMessages = StaticStrings.MediaControllerErrors;
 

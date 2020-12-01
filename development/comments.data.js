@@ -1,5 +1,5 @@
 'use strict';
-import Comment from '../server/models/comment.model';
+import Comment from '@server/models/comment.model';
 import {UserData} from './user.data';
 import {createUser} from '../test/helper';
 // comments

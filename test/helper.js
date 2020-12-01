@@ -2,13 +2,13 @@
 'use strict';
 
 
-import User from '../server/models/user.model';
-import Employee from '../server/models/employee.model';
-import Organization from '../server/models/organization.model';
-import Product from '../server/models/product.model';
-import Post from '../server/models/post.model';
-import RBAC from '../server/models/rbac.model';
-import permissions from '../server/permissions';
+import User from '@server/models/user.model';
+import Employee from '@server/models/employee.model';
+import Organization from '@server/models/organization.model';
+import Product from '@server/models/product.model';
+import Post from '@server/models/post.model';
+import RBAC from '@server/models/rbac.model';
+import permissions from '@server/permissions';
 import FormData from 'form-data';
 import fetch from 'node-fetch';
 import fs from 'fs';

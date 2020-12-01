@@ -2,10 +2,10 @@
 /* eslint-disable max-len */
 import chai from 'chai';
 import chaiHttp from 'chai-http';
-import {app} from '../../server/server';
-import {EmployeeData, getEmployeeConstructor} from '../../development/employee.data';
-import Organization from '../../server/models/organization.model';
-import {dropDatabase, loginAdminEmployee} from '../helper';
+import {app} from '@server/server';
+import {EmployeeData, getEmployeeConstructor} from '@development/employee.data';
+import Organization from '@server/models/organization.model';
+import {dropDatabase, loginAdminEmployee} from '@test/helper';
 
 
 chai.use(chaiHttp);

@@ -1,15 +1,15 @@
 /* eslint-disable max-len */
 import chai from 'chai';
 import chaiHttp from 'chai-http';
-import {app} from '../../server/server';
-import {UserData} from '../../development/user.data';
-import Media from '../../server/models/media.model';
-import User from '../../server/models/user.model';
-import StaticStrings from '../../config/StaticStrings';
+import {app} from '@server/server';
+import {UserData} from '@development/user.data';
+import Media from '@server/models/media.model';
+import User from '@server/models/user.model';
+import StaticStrings from '@config/StaticStrings';
 const fs = require('fs').promises;
-import S3Services from '../../server/services/S3.services';
+import S3Services from '@server/services/S3.services';
 import fetch from 'node-fetch';
-import {dropDatabase, bufferEquality, createUser} from '../helper';
+import {dropDatabase, bufferEquality, createUser} from '@test/helper';
 
 chai.use(chaiHttp);
 chai.should();

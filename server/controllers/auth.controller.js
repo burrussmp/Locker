@@ -1,13 +1,16 @@
 /* eslint-disable max-len */
 // imports
-import User from '../models/user.model';
-import Employee from '../models/employee.model';
-import RBAC from '../models/rbac.model';
-import StaticStrings from '../../config/StaticStrings';
-import config from '../../config/config';
-import CognitoAPI from '../services/Cognito.services';
-import dbErrorHandler from '../services/dbErrorHandler';
 import jwt from 'jsonwebtoken';
+
+import User from '@server/models/user.model';
+import Employee from '@server/models/employee.model';
+import RBAC from '@server/models/rbac.model';
+
+import CognitoAPI from '@server/services/Cognito.services';
+import errorHandler from '@server/services/dbErrorHandler';
+
+import StaticStrings from '@config/StaticStrings';
+import config from '@config/config';
 
 const ALLOWED_COGNITO_POOL_TYPES = ['Employee', 'User'];
 /**
@@ -98,7 +101,7 @@ const login = async (req, res) => {
         _id: person._id,
       });
     }).catch((err) => {
-      return res.status('401').json({error: dbErrorHandler.getErrorMessage(err)});
+      return res.status('401').json({error: errorHandler.getErrorMessage(err)});
     });
   } catch (err) {
     return res.status('500').json({error: StaticStrings.LoginErrors.ServerError});

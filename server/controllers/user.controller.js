@@ -1,17 +1,20 @@
 /* eslint-disable max-len */
 'use strict';
 // imports
-import User from '../models/user.model';
-import RBAC from '../models/rbac.model';
-import Media from '../models/media.model';
-import errorHandler from '../services/dbErrorHandler';
-import StaticStrings from '../../config/StaticStrings';
-import S3Services from '../services/S3.services';
 import _ from 'lodash';
 import fs from 'fs';
+
+import User from '@server/models/user.model';
+import RBAC from '@server/models/rbac.model';
+import Media from '@server/models/media.model';
+
 import mediaController from './media.controller';
-import CognitoAPI from '../services/Cognito.services';
-import dbErrorHandler from '../services/dbErrorHandler';
+
+import S3Services from '@server/services/S3.services';
+import CognitoAPI from '@server/services/Cognito.services';
+
+import errorHandler from '@server/services/dbErrorHandler';
+import StaticStrings from '@config/StaticStrings';
 
 const CognitoServices = CognitoAPI.UserCognitoPool;
 
@@ -214,7 +217,7 @@ const changePassword = async (req, res) => {
     await CognitoServices.changePassword(req.query.access_token, req.body.old_password, req.body.password);
     return res.status(200).json({message: StaticStrings.UpdatedPasswordSuccess});
   } catch (err) {
-    const errMessage = dbErrorHandler.getErrorMessage(err);
+    const errMessage = errorHandler.getErrorMessage(err);
     if (errMessage == 'Incorrect username or password.') {
       res.status(400).json({error: StaticStrings.UserModelErrors.PasswordUpdateIncorrectError});
     } else {

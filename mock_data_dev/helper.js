@@ -1,8 +1,8 @@
 /* eslint-disable camelcase */
 'use strict';
 
-import User from '../server/models/user.model';
-import Post from '../server/models/post.model';
+import User from '@server/models/user.model';
+import Post from '@server/models/post.model';
 import mongoose from 'mongoose';
 
 const filterUser_signup = (data) => {

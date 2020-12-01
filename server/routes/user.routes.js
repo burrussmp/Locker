@@ -2,9 +2,9 @@
 /* eslint-disable new-cap */
 /* eslint-disable max-len */
 import express from 'express';
-import userCtrl from '../controllers/user.controller';
-import authCtrl from '../controllers/auth.controller';
-import permission from '../permissions';
+import userCtrl from '@server/controllers/user.controller';
+import authCtrl from '@server/controllers/auth.controller';
+import permission from '@server/permissions';
 
 const UserPermissions = permission.UserPermissions;
 

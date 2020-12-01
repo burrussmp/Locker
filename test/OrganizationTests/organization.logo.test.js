@@ -2,16 +2,16 @@
 import chai from 'chai';
 const fs = require('fs').promises;
 import chaiHttp from 'chai-http';
-import {app} from '../../server/server';
-import Employee from '../../server/models/employee.model';
-import Organization from '../../server/models/organization.model';
-import RBAC from '../../server/models/rbac.model';
-import Media from '../../server/models/media.model';
-import {EmployeeData, getEmployeeConstructor} from '../../development/employee.data';
-import {OrganizationData} from '../../development/organization.data';
-import {bufferEquality, dropDatabase, createEmployee, loginAdminEmployee, createOrg} from '../helper';
-import StaticStrings from '../../config/StaticStrings';
-import S3Services from '../../server/services/S3.services';
+import {app} from '@server/server';
+import Employee from '@server/models/employee.model';
+import Organization from '@server/models/organization.model';
+import RBAC from '@server/models/rbac.model';
+import Media from '@server/models/media.model';
+import {EmployeeData, getEmployeeConstructor} from '@development/employee.data';
+import {OrganizationData} from '@development/organization.data';
+import {bufferEquality, dropDatabase, createEmployee, loginAdminEmployee, createOrg} from '@test/helper';
+import StaticStrings from '@config/StaticStrings';
+import S3Services from '@server/services/S3.services';
 
 chai.use(chaiHttp);
 chai.should();

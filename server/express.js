@@ -4,15 +4,15 @@ import cookieParser from 'cookie-parser';
 import compress from 'compression';
 import cors from 'cors';
 import helmet from 'helmet';
-import userRoutes from './routes/user.routes';
-import authRoutes from './routes/auth.routes';
-import postRoutes from './routes/post.routes';
-import commentRoutes from './routes/comment.routes';
-import mediaRoutes from './routes/media.routes';
-import searchRoutes from './routes/search.routes';
-import organizationRoutes from './routes/organization.routes';
-import employeeRoutes from './routes/employee.routes';
-import productRoutes from './routes/product.routes';
+import userRoutes from '@server/routes/user.routes';
+import authRoutes from '@server/routes/auth.routes';
+import postRoutes from '@server/routes/post.routes';
+import commentRoutes from '@server/routes/comment.routes';
+import mediaRoutes from '@server/routes/media.routes';
+import searchRoutes from '@server/routes/search.routes';
+import organizationRoutes from '@server/routes/organization.routes';
+import employeeRoutes from '@server/routes/employee.routes';
+import productRoutes from '@server/routes/product.routes';
 
 // modules for server side rendering
 

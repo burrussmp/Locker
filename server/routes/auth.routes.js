@@ -2,7 +2,7 @@
 /* eslint-disable new-cap */
 // imports
 import express from 'express';
-import authCtrl from '../controllers/auth.controller';
+import authCtrl from '@server/controllers/auth.controller';
 
 // create router
 const router = express.Router();

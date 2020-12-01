@@ -2,13 +2,13 @@
 
 import chai from 'chai';
 import chaiHttp from 'chai-http';
-import {app} from '../../server/server';
-import {EmployeeData, getEmployeeConstructor} from '../../development/employee.data';
-import {dropDatabase, createEmployee, loginAdminEmployee} from '../helper';
-import RBAC from '../../server/models/rbac.model';
-import Employee from '../../server/models/employee.model';
+import {app} from '@server/server';
+import {EmployeeData, getEmployeeConstructor} from '@development/employee.data';
+import {dropDatabase, createEmployee, loginAdminEmployee} from '@test/helper';
+import RBAC from '@server/models/rbac.model';
+import Employee from '@server/models/employee.model';
 
-import StaticStrings from '../../config/StaticStrings';
+import StaticStrings from '@config/StaticStrings';
 chai.use(chaiHttp);
 chai.should();
 

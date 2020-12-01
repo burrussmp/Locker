@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 'use strict';
 import mongoose from 'mongoose';
-import StaticStrings from '../../config/StaticStrings';
+import StaticStrings from '@config/StaticStrings';
 
 
 /**

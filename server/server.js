@@ -1,9 +1,9 @@
 /* eslint-disable max-len */
-import config from './../config/config';
+import config from '@config/config';
 import app from './express';
 import mongoose from 'mongoose';
 import permissions from './permissions';
-import StaticStrings from '../config/StaticStrings';
+import StaticStrings from '@config/StaticStrings';
 
 // Connection URL
 mongoose.Promise = global.Promise;

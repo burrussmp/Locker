@@ -16,8 +16,8 @@ mongoose.connection.on('error', () => {
 const API = require('./api');
 const Users = require('./_user_data');
 const helper = require('./helper');
-require('../server/models/comment.model');
-require('../server/models/posts/content.post.model');
+require('@server/models/comment.model');
+require('@server/models/posts/content.post.model');
 
 (async () => {
   console.log('Dropping data base...');

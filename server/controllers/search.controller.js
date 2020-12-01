@@ -1,5 +1,5 @@
 // imports
-import User from '../models/user.model';
+import User from '@server/models/user.model';
 
 /**
  *

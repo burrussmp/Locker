@@ -2,10 +2,10 @@
 // Import the dependencies for testing
 import chai from 'chai';
 import chaiHttp from 'chai-http';
-import {app} from '../../server/server';
-import {UserData} from '../../development/user.data';
-import {dropDatabase, createUser} from '../helper';
-import StaticStrings from '../../config/StaticStrings';
+import {app} from '@server/server';
+import {UserData} from '@development/user.data';
+import {dropDatabase, createUser} from '@test/helper';
+import StaticStrings from '@config/StaticStrings';
 
 
 // Configure chai

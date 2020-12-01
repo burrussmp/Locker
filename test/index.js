@@ -1,22 +1,22 @@
-// import UserTest from './UserTests/index';
-import AuthTest from './AuthTests/index';
-import UserTest from './UserTests/index';
-import CommentTest from './CommentTests/index';
-import PostTest from './PostTests/index';
-import MediaTest from './MediaTests/index';
-import SearchTest from './SearchTests/index';
-import OrganizationTest from './OrganizationTests/index';
-import EmployeeTest from './EmployeeTests/index';
-import ProductTest from './ProductTests/index';
-// import {dropDatabase} from './helper';
+// import UserTest from '@test/UserTests/index';
+import AuthTest from '@test/AuthTests/index';
+import UserTest from '@test/UserTests/index';
+import CommentTest from '@test/CommentTests/index';
+import PostTest from '@test/PostTests/index';
+import MediaTest from '@test/MediaTests/index';
+import SearchTest from '@test/SearchTests/index';
+import OrganizationTest from '@test/OrganizationTests/index';
+import EmployeeTest from '@test/EmployeeTests/index';
+import ProductTest from '@test/ProductTests/index';
+// import {dropDatabase} from '@test/helper';
 
 
 // dropDatabase();
 // describe('Auth Tests', AuthTest);
 // describe('User Tests', UserTest);
-describe('Post Test', PostTest);
+// describe('Post Test', PostTest);
 // describe('Comment Test', CommentTest);
-// describe('Media Test', MediaTest);
-// describe('Organization Test', OrganizationTest);
-// describe('Employee Test', EmployeeTest);
-// describe('Product Tests', ProductTest);
+describe('Media Test', MediaTest);
+describe('Organization Test', OrganizationTest);
+describe('Employee Test', EmployeeTest);
+describe('Product Tests', ProductTest);

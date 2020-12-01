@@ -1,10 +1,10 @@
 /* eslint-disable max-len */
 import chai from 'chai';
 import chaiHttp from 'chai-http';
-import {app} from '../../server/server';
-import {UserData} from '../../development/user.data';
-import User from '../../server/models/user.model';
-import {dropDatabase, createUser} from '../helper';
+import {app} from '@server/server';
+import {UserData} from '@development/user.data';
+import User from '@server/models/user.model';
+import {dropDatabase, createUser} from '@test/helper';
 
 chai.use(chaiHttp);
 chai.should();

@@ -1,15 +1,20 @@
 /* eslint-disable max-len */
 'use strict';
 // imports
-import Organization from '../models/organization.model';
-import Media from '../models/media.model';
-import Employee from '../models/employee.model';
-import RBAC from '../models/rbac.model';
-import mediaCtrl from '../controllers/media.controller';
-import errorHandler from '../services/dbErrorHandler';
-import StaticStrings from '../../config/StaticStrings';
-import S3Services from '../services/S3.services';
 import _ from 'lodash';
+
+import Organization from '@server/models/organization.model';
+import Media from '@server/models/media.model';
+import Employee from '@server/models/employee.model';
+import RBAC from '@server/models/rbac.model';
+
+import mediaCtrl from '@server/controllers/media.controller';
+
+import S3Services from '@server/services/S3.services';
+
+
+import errorHandler from '@server/services/dbErrorHandler';
+import StaticStrings from '@config/StaticStrings';
 
 const OrganizationControllerErrors = StaticStrings.OrganizationControllerErrors;
 

@@ -1,9 +1,9 @@
 /* eslint-disable new-cap */
 /* eslint-disable max-len */
 import express from 'express';
-import postCtrl from '../controllers/post.controller';
-import authCtrl from '../controllers/auth.controller';
-import permission from '../permissions';
+import postCtrl from '@server/controllers/post.controller';
+import authCtrl from '@server/controllers/auth.controller';
+import permission from '@server/permissions';
 
 const PostPermissions = permission.PostPermissions;
 const CommentPermissions = permission.CommentPermissions;

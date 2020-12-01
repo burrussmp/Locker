@@ -2,9 +2,9 @@
 /* eslint-disable max-len */
 // imports
 import express from 'express';
-import searchCtrl from '../controllers/search.controller';
-import authCtrl from '../controllers/auth.controller';
-import permission from '../permissions';
+import searchCtrl from '@server/controllers/search.controller';
+import authCtrl from '@server/controllers/auth.controller';
+import permission from '@server/permissions';
 
 const UserPermissions = permission.UserPermissions;
 // create new router

@@ -4,7 +4,7 @@
 
 // imports
 import mongoose from 'mongoose';
-import Comment from '../../models/comment.model';
+import Comment from '@server/models/comment.model';
 
 
 /**

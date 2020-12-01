@@ -2,12 +2,12 @@
 import chai from 'chai';
 import chaiHttp from 'chai-http';
 
-import {app} from '../../server/server';
-import {UserData} from '../../development/user.data';
-import {dropDatabase, createUser} from '../helper';
-import User from '../../server/models/user.model';
-import RBAC from '../../server/models/rbac.model';
-import StaticStrings from '../../config/StaticStrings';
+import {app} from '@server/server';
+import {UserData} from '@development/user.data';
+import {dropDatabase, createUser} from '@test/helper';
+import User from '@server/models/user.model';
+import RBAC from '@server/models/rbac.model';
+import StaticStrings from '@config/StaticStrings';
 
 chai.use(chaiHttp);
 chai.should();

@@ -1,6 +1,6 @@
 import chai from 'chai';
 import chaiHttp from 'chai-http';
-import RBAC from '../../server/models/rbac.model';
+import RBAC from '@server/models/rbac.model';
 
 chai.use(chaiHttp);
 chai.should();

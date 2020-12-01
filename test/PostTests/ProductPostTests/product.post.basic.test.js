@@ -1,19 +1,19 @@
 /* eslint-disable max-len */
 import chai from 'chai';
 import chaiHttp from 'chai-http';
-import {app} from '../../../server/server';
+import {app} from '@server/server';
 
-import Employee from '../../../server/models/employee.model';
-import RBAC from '../../../server/models/rbac.model';
-import Organization from '../../../server/models/organization.model';
-import ProductPost from '../../../server/models/posts/product.post.model';
+import Employee from '@server/models/employee.model';
+import RBAC from '@server/models/rbac.model';
+import Organization from '@server/models/organization.model';
+import ProductPost from '@server/models/posts/product.post.model';
 
-import {UserData} from '../../../development/user.data';
-import {ProductData} from '../../../development/product.data';
-import {EmployeeData, getEmployeeConstructor} from '../../../development/employee.data';
+import {UserData} from '@development/user.data';
+import {ProductData} from '@development/product.data';
+import {EmployeeData, getEmployeeConstructor} from '@development/employee.data';
 
-import {dropDatabase, createUser, createEmployee, loginAdminEmployee, createProductPostAgent} from '../../helper';
-import StaticStrings from '../../../config/StaticStrings';
+import {dropDatabase, createUser, createEmployee, loginAdminEmployee, createProductPostAgent} from '@test/helper';
+import StaticStrings from '@config/StaticStrings';
 
 chai.use(chaiHttp);
 chai.should();

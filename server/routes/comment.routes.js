@@ -1,9 +1,9 @@
 /* eslint-disable new-cap */
 /* eslint-disable max-len */
 import express from 'express';
-import commentCtrl from '../controllers/comment.controller';
-import authCtrl from '../controllers/auth.controller';
-import permission from '../permissions';
+import commentCtrl from '@server/controllers/comment.controller';
+import authCtrl from '@server/controllers/auth.controller';
+import permission from '@server/permissions';
 
 const router = express.Router();
 

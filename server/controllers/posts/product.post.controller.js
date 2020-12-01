@@ -2,12 +2,12 @@
 'use strict';
 
 // imports
-import ProductPost from '../../models/posts/product.post.model';
-import Product from '../../models/product.model';
-import Post from '../../models/post.model';
-import errorHandler from '../../services/dbErrorHandler';
-import StaticStrings from '../../../config/StaticStrings';
+import ProductPost from '@server/models/posts/product.post.model';
+import Product from '@server/models/product.model';
+import Post from '@server/models/post.model';
 
+import StaticStrings from '@config/StaticStrings';
+import errorHandler from '@server/services/dbErrorHandler';
 
 /**
  * @desc Fetches all (or specified) product posts posts
@@ -46,7 +46,7 @@ const createProductPost = async (req, res) => {
     productPost = new ProductPost({product: req.body.product});
     productPost = await productPost.save();
   } catch (err) {
-    return res.status(400).json({error: dbErrorHandler.getErrorMessage(err)});
+    return res.status(400).json({error: errorHandler.getErrorMessage(err)});
   }
   try {
     const postData = {

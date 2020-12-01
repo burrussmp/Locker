@@ -1,11 +1,11 @@
 /* eslint-disable max-len */
 import chai from 'chai';
 import chaiHttp from 'chai-http';
-import {app} from '../../server/server';
-import {EmployeeData, getEmployeeConstructor} from '../../development/employee.data';
-import {OrganizationData, getConstructorData} from '../../development/organization.data';
-import {dropDatabase, createEmployee, loginAdminEmployee, createOrg} from '../helper';
-import StaticStrings from '../../config/StaticStrings';
+import {app} from '@server/server';
+import {EmployeeData, getEmployeeConstructor} from '@development/employee.data';
+import {OrganizationData, getConstructorData} from '@development/organization.data';
+import {dropDatabase, createEmployee, loginAdminEmployee, createOrg} from '@test/helper';
+import StaticStrings from '@config/StaticStrings';
 
 
 chai.use(chaiHttp);

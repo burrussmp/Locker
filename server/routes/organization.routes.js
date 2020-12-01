@@ -1,9 +1,9 @@
 /* eslint-disable new-cap */
 /* eslint-disable max-len */
 import express from 'express';
-import orgCtrl from '../controllers/organization.controller';
-import authCtrl from '../controllers/auth.controller';
-import permission from '../permissions';
+import orgCtrl from '@server/controllers/organization.controller';
+import authCtrl from '@server/controllers/auth.controller';
+import permission from '@server/permissions';
 
 const OrganizationPermissions = permission.OrganizationPermissions;
 

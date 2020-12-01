@@ -6,9 +6,10 @@ import mongoose from 'mongoose';
 // eslint-disable-next-line camelcase
 import mongoose_fuzzy_searching from 'mongoose-fuzzy-searching';
 
-import StaticStrings from '../../config/StaticStrings';
-import CognitoAPI from '../services/Cognito.services';
-import validators from '../services/validators';
+import CognitoAPI from '@server/services/Cognito.services';
+import validators from '@server/services/validators';
+import StaticStrings from '@config/StaticStrings';
+
 
 const CognitoServices = CognitoAPI.UserCognitoPool;
 

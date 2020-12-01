@@ -4,7 +4,7 @@
 
 // imports
 import mongoose from 'mongoose';
-import StaticStrings from '../../../config/StaticStrings';
+import StaticStrings from '@config/StaticStrings';
 
 const ProductPostErrors = StaticStrings.PostModelErrors.ProductPostErrors;
 

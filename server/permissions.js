@@ -12,7 +12,7 @@
 */
 
 import fetch from 'node-fetch';
-import config from '../config/config';
+import config from '@config/config';
 import RBAC from './models/rbac.model';
 import fs from 'fs';
 import FormData from 'form-data';
@@ -73,13 +73,14 @@ const ProductPermissions = {
   EditContent: 'product:edit',
 };
 
-const extend = (permissionArray, newPermissions) => {
-  return permissionArray.concat(newPermissions);
+const extend = (...arrayOfPermissions) => {
+  const allPermissions = [].concat(...arrayOfPermissions);
+  return [...new Set(allPermissions)];
 };
 
 const getPermissionArray = (type) => {
   const permissions = {};
-  permissions['user'] = [
+  permissions['user'] = extend([
     UserPermissions.EditContent,
     UserPermissions.Delete,
     UserPermissions.Read,
@@ -92,11 +93,15 @@ const getPermissionArray = (type) => {
     PostPermissions.Read,
     PostPermissions.Interact,
     ProductPermissions.Read,
-  ];
-  permissions['employee'] = extend(permissions['user'], [
+  ]);
+  permissions['employee'] = extend([
+    UserPermissions.Read,
+    CommentPermissions.Read,
+    PostPermissions.Read,
     PostPermissions.Create,
     PostPermissions.EditContent,
     PostPermissions.Delete,
+    ProductPermissions.Read,
     ProductPermissions.Create,
     ProductPermissions.Delete,
     ProductPermissions.EditContent,
@@ -113,7 +118,7 @@ const getPermissionArray = (type) => {
     OrganizationPermissions.AddEmployee,
     OrganizationPermissions.DeleteEmployee,
   ]);
-  permissions['admin'] = extend(permissions['supervisor'], [
+  permissions['admin'] = extend(permissions['user'], permissions['supervisor'], [
     OrganizationPermissions.Create,
     OrganizationPermissions.Delete,
   ]);

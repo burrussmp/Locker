@@ -4,8 +4,8 @@
 import mongoose from 'mongoose';
 import _ from 'lodash';
 
-import validators from '../services/validators';
-import StaticStrings from '../../config/StaticStrings';
+import validators from '@server/services/validators';
+import StaticStrings from '@config/StaticStrings';
 
 const RBACModelErrors = StaticStrings.RBACModelErrors;
 

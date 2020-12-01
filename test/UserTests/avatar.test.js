@@ -3,14 +3,14 @@ import chai from 'chai';
 import chaiHttp from 'chai-http';
 const fs = require('fs').promises;
 import fetch from 'node-fetch';
-import {app} from '../../server/server';
-import {UserData} from '../../development/user.data';
-import {dropDatabase, bufferEquality, createUser} from '../helper';
-import User from '../../server/models/user.model';
-import RBAC from '../../server/models/rbac.model';
-import Media from '../../server/models/media.model';
-import StaticStrings from '../../config/StaticStrings';
-import S3Services from '../../server/services/S3.services';
+import {app} from '@server/server';
+import {UserData} from '@development/user.data';
+import {dropDatabase, bufferEquality, createUser} from '@test/helper';
+import User from '@server/models/user.model';
+import RBAC from '@server/models/rbac.model';
+import Media from '@server/models/media.model';
+import StaticStrings from '@config/StaticStrings';
+import S3Services from '@server/services/S3.services';
 
 // Configure chai
 chai.use(chaiHttp);

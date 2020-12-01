@@ -2,9 +2,9 @@
 /* eslint-disable max-len */
 // imports
 import express from 'express';
-import employeeCtrl from '../controllers/employee.controller';
-import authCtrl from '../controllers/auth.controller';
-import permission from '../permissions';
+import employeeCtrl from '@server/controllers/employee.controller';
+import authCtrl from '@server/controllers/auth.controller';
+import permission from '@server/permissions';
 
 const EmployeePermissions = permission.EmployeePermissions;
 

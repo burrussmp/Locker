@@ -1,10 +1,11 @@
 /* eslint-disable new-cap */
 /* eslint-disable max-len */
 'use strict';
-import Comment from '../models/comment.model';
-import StaticStrings from '../../config/StaticStrings';
-import CommentServices from '../services/database/comments.services';
-import errorHandler from '../services/dbErrorHandler';
+import Comment from '@server/models/comment.model';
+import CommentServices from '@server/services/database/comments.services';
+
+import StaticStrings from '@config/StaticStrings';
+import errorHandler from '@server/services/dbErrorHandler';
 
 
 /**

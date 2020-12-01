@@ -1,7 +1,7 @@
 {
-  "name": "Locker",
+  "name": "locker",
   "version": "0.0.0",
-  "description": "Locker",
+  "description": "The server for l ocker",
   "author": "Matthew Burruss",
   "license": "MIT",
   "keywords": [
@@ -21,8 +21,7 @@
     "test": "NODE_ENV=test mocha --timeout 30000 ./test/mochacfg.js --require @babel/register ./test/index.js",
     "development": "nodemon",
     "setup_dev": "NODE_ENV=development node --require @babel/register ./mock_data_dev/index.js",
-    "build": "webpack --config webpack.config.client.production.js && webpack --mode=production --config webpack.config.server.js",
-    "start": "NODE_ENV=production node ./dist/server.generated.js"
+    "build": "webpack --config webpack.config.client.production.js && webpack --mode=production --config webpack.config.server.js"
   },
   "engines": {
     "node": "13.12.0",
@@ -34,9 +33,12 @@
     "@babel/preset-react": "7.9.4",
     "@babel/register": "^7.10.5",
     "babel-loader": "^8.0.0-beta.6",
+    "babel-plugin-module-resolver": "^4.0.0",
     "babel-polyfill": "^6.26.0",
     "eslint": "^7.12.1",
     "eslint-config-google": "^0.14.0",
+    "eslint-import-resolver-babel-module": "^5.2.0",
+    "eslint-plugin-import": "^2.22.1",
     "file-loader": "6.0.0",
     "mocha": "^8.1.1",
     "mocha-loader": "^5.1.2",

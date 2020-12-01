@@ -1,14 +1,16 @@
 /* eslint-disable max-len */
 'use strict';
 // imports
-import Media from '../models/media.model';
-import Product from '../models/product.model';
-import errorHandler from '../services/dbErrorHandler';
-import StaticStrings from '../../config/StaticStrings';
 import _ from 'lodash';
-import S3Services from '../services/S3.services';
-import dbErrorHandler from '../services/dbErrorHandler';
-import ProductServices from '../services/database/product.services';
+
+import Media from '@server/models/media.model';
+import Product from '@server/models/product.model';
+
+import S3Services from '@server/services/S3.services';
+import ProductServices from '@server/services/database/product.services';
+
+import errorHandler from '@server/services/dbErrorHandler';
+import StaticStrings from '@config/StaticStrings';
 
 const ProductControllerErrors = StaticStrings.ProductControllerErrors;
 
@@ -115,7 +117,7 @@ const create = async (req, res) => {
             await mediaDoc.deleteOne();
           }
         }
-        return res.status(400).json({error: dbErrorHandler.getErrorMessage(err)});
+        return res.status(400).json({error: errorHandler.getErrorMessage(err)});
       } catch (err2) {
         const errMessage = `Server Error: Unable to create product because ${err.message} and failed to clean s3 because ${err2.message}`;
         return res.status(500).json({error: errMessage});

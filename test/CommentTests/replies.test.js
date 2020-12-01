@@ -1,15 +1,15 @@
 /* eslint-disable max-len */
 import chai from 'chai';
 import chaiHttp from 'chai-http';
-import {app} from '../../server/server';
-import {CommentData} from '../../development/comments.data';
-import {UserData} from '../../development/user.data';
-import {dropDatabase, createUser} from '../helper';
-import User from '../../server/models/user.model';
-import Comment from '../../server/models/comment.model';
-import StaticStrings from '../../config/StaticStrings';
-import {PostData} from '../../development/post.data';
-import permissions from '../../server/permissions';
+import {app} from '@server/server';
+import {CommentData} from '@development/comments.data';
+import {UserData} from '@development/user.data';
+import {dropDatabase, createUser} from '@test/helper';
+import User from '@server/models/user.model';
+import Comment from '@server/models/comment.model';
+import StaticStrings from '@config/StaticStrings';
+import {PostData} from '@development/post.data';
+import permissions from '@server/permissions';
 
 const image1 = process.cwd() + '/test/resources/profile1.png';
 

@@ -1,9 +1,9 @@
 /* eslint-disable new-cap */
 /* eslint-disable max-len */
 import express from 'express';
-import productCtrl from '../controllers/product.controller';
-import authCtrl from '../controllers/auth.controller';
-import permission from '../permissions';
+import productCtrl from '@server/controllers/product.controller';
+import authCtrl from '@server/controllers/auth.controller';
+import permission from '@server/permissions';
 
 const ProductPermissions = permission.ProductPermissions;
 

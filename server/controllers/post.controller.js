@@ -5,15 +5,15 @@
 
 // imports
 import mongoose from 'mongoose';
-import Post from '../models/post.model';
-import Comment from '../models/comment.model';
+import Post from '@server/models/post.model';
+import Comment from '@server/models/comment.model';
 
 import ProductPostController from './posts/product.post.controller';
 
-import PostServices from '../services/database/post.services';
+import PostServices from '@server/services/database/post.services';
 
-import StaticStrings from '../../config/StaticStrings';
-import errorHandler from '../services/dbErrorHandler';
+import StaticStrings from '@config/StaticStrings';
+import errorHandler from '@server/services/dbErrorHandler';
 
 
 const ReactionTypes = mongoose.models.Post.schema.tree.reactions[0].tree.type.enum.values;

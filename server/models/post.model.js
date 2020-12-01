@@ -3,8 +3,8 @@
 'use strict';
 
 import mongoose from 'mongoose';
-import StaticStrings from '../../config/StaticStrings';
-import authCtrl from '../controllers/auth.controller';
+import authCtrl from '@server/controllers/auth.controller';
+import StaticStrings from '@config/StaticStrings';
 
 const ReactionTypes = ['like', 'love', 'laugh', 'surprise', 'mad', 'sad'];
 const ReactionSchema = new mongoose.Schema({

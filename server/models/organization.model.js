@@ -1,8 +1,8 @@
 /* eslint-disable no-invalid-this */
 /* eslint-disable max-len */
 import mongoose from 'mongoose';
-import StaticStrings from '../../config/StaticStrings';
-import validators from '../services/validators';
+import validators from '@server/services/validators';
+import StaticStrings from '@config/StaticStrings';
 
 const OrganizationModelErrors = StaticStrings.OrganizationModelErrors;
 

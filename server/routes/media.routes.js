@@ -1,8 +1,8 @@
 /* eslint-disable new-cap */
 /* eslint-disable max-len */
 import express from 'express';
-import mediaController from '../controllers/media.controller';
-import authCtrl from '../controllers/auth.controller';
+import mediaController from '@server/controllers/media.controller';
+import authCtrl from '@server/controllers/auth.controller';
 
 const router = express.Router();
 

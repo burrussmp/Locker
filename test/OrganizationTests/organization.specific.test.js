@@ -1,15 +1,15 @@
 /* eslint-disable max-len */
 import chai from 'chai';
 import chaiHttp from 'chai-http';
-import {app} from '../../server/server';
-import Employee from '../../server/models/employee.model';
-import Organization from '../../server/models/organization.model';
-import RBAC from '../../server/models/rbac.model';
-import Media from '../../server/models/media.model';
-import {EmployeeData, getEmployeeConstructor} from '../../development/employee.data';
-import {OrganizationData} from '../../development/organization.data';
-import {dropDatabase, createEmployee, loginAdminEmployee, createOrg} from '../helper';
-import StaticStrings from '../../config/StaticStrings';
+import {app} from '@server/server';
+import Employee from '@server/models/employee.model';
+import Organization from '@server/models/organization.model';
+import RBAC from '@server/models/rbac.model';
+import Media from '@server/models/media.model';
+import {EmployeeData, getEmployeeConstructor} from '@development/employee.data';
+import {OrganizationData} from '@development/organization.data';
+import {dropDatabase, createEmployee, loginAdminEmployee, createOrg} from '@test/helper';
+import StaticStrings from '@config/StaticStrings';
 
 
 chai.use(chaiHttp);

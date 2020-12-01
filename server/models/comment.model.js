@@ -1,7 +1,7 @@
 /* eslint-disable no-invalid-this */
 import mongoose from 'mongoose';
-import StaticStrings from '../../config/StaticStrings';
-import Post from '../models/post.model';
+import StaticStrings from '@config/StaticStrings';
+import Post from '@server/models/post.model';
 
 const ReplySchema = new mongoose.Schema({
   text: {
