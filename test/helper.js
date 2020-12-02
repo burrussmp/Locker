@@ -112,7 +112,7 @@ const getAccessToken = async (data) => {
 };
 
 const dropDatabase = async () => {
-  for (const model of [User, Post, Employee, Organization, RBAC, Product]) {
+  for (const model of [User, Employee, Post, Organization, Product, RBAC]) {
     const cursor = model.find().cursor();
     for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
       await doc.deleteOne();

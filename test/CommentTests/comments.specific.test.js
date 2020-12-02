@@ -128,7 +128,6 @@ const commentsTest = () => {
         const user = await createUser(UserData[0]);
         const comment2 = await agent.post(`/api/${post._id}/comments?access_token=${user.access_token}`).send(CommentData[1]).then((res)=>res.body);
         return agent.delete(`/api/comments/${comment2._id}?access_token=${admin.access_token}`).then(async (res)=>{
-          console.log(res.body);
           res.status.should.eql(200);
         });
       });
