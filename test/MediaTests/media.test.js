@@ -19,9 +19,8 @@ const image1 = process.cwd() + '/test/resources/profile1.png';
 const mediaTestBasics = () => {
   describe('Media test basics', () => {
     describe('GET avatar basics (testing size query parameter) and using /api/users/:userID/avatar', () => {
-      let userId0; let Key;
+      let Key;
       const agent = chai.request.agent(app);
-      let userToken0;
       before(async () => {
         try {
           await dropDatabase();
@@ -30,10 +29,8 @@ const mediaTestBasics = () => {
             await doc.deleteOne();
           }
           const user = await createUser(UserData[0]);
-          userId0 = user._id;
-          userToken0 = user.access_token;
           await agent
-              .post(`/api/users/${userId0}/avatar?access_token=${userToken0}`)
+              .post(`/api/users/${user._id}/avatar?access_token=${user.access_token}`)
               .attach('media', image1);
 
           const userDoc = await User.findById(userId0).populate('profile_photo').exec();
@@ -51,7 +48,7 @@ const mediaTestBasics = () => {
       });
       it('GET profile photo', async () => {
         return fetch(
-            `http://localhost:3000/api/users/${userId0}/avatar?access_token=${userToken0}`,
+            `http://localhost:3000/api/users/${user._id}/avatar?access_token=${user.access_token}`,
         )
             .then((res) => res.blob())
             .then(async (res) => {
@@ -63,7 +60,7 @@ const mediaTestBasics = () => {
       });
       it('Adjust the size of the profile to small for /api/users/:userId/avatar', async () => {
         return fetch(
-            `http://localhost:3000/api/users/${userId0}/avatar?access_token=${userToken0}&size=small`,
+            `http://localhost:3000/api/users/${user._id}/avatar?access_token=${user.access_token}&size=small`,
         ).then(async (res) => {
           res.status.should.eql(200);
           const media = await Media.findOne({key: Key});
@@ -75,7 +72,7 @@ const mediaTestBasics = () => {
       });
       it('Adjust the size of the profile to medium for /api/users/:userId/avatar', async () => {
         return fetch(
-            `http://localhost:3000/api/users/${userId0}/avatar?access_token=${userToken0}&size=medium`,
+            `http://localhost:3000/api/users/${user._id}/avatar?access_token=${user.access_token}&size=medium`,
         ).then(async (res) => {
           res.status.should.eql(200);
           const media = await Media.findOne({key: Key});
@@ -84,7 +81,7 @@ const mediaTestBasics = () => {
       });
       it('Adjust the size of the profile to large for /api/users/:userId/avatar', async () => {
         return fetch(
-            `http://localhost:3000/api/users/${userId0}/avatar?access_token=${userToken0}&size=large`,
+            `http://localhost:3000/api/users/${user._id}/avatar?access_token=${user.access_token}&size=large`,
         ).then(async (res) => {
           res.status.should.eql(200);
           const media = await Media.findOne({key: Key});
@@ -93,7 +90,7 @@ const mediaTestBasics = () => {
       });
       it('Adjust the size of the profile to xlarge for /api/users/:userId/avatar', async () => {
         return fetch(
-            `http://localhost:3000/api/users/${userId0}/avatar?access_token=${userToken0}&size=xlarge`,
+            `http://localhost:3000/api/users/${user._id}/avatar?access_token=${user.access_token}&size=xlarge`,
         ).then(async (res) => {
           res.status.should.eql(200);
           const media = await Media.findOne({key: Key});
@@ -102,7 +99,7 @@ const mediaTestBasics = () => {
       });
       it('Query parameter \'media_type\' should have no affect for /api/users/:userId/avatar', async () => {
         return fetch(
-            `http://localhost:3000/api/users/${userId0}/avatar?access_token=${userToken0}&size=xlarge&media_type=ContentType`,
+            `http://localhost:3000/api/users/${user._id}/avatar?access_token=${user.access_token}&size=xlarge&media_type=ContentType`,
         ).then(async (res) => {
           res.status.should.eql(200);
           const media = await Media.findOne({key: Key});
@@ -113,10 +110,10 @@ const mediaTestBasics = () => {
       });
       it('Update profile (should remove all in S3 but one i.e. one we just updated) for /api/users/:userId/avatar', async () => {
         await agent
-            .post(`/api/users/${userId0}/avatar?access_token=${userToken0}`)
+            .post(`/api/users/${userId0}/avatar?access_token=${user.access_token}`)
             .attach('media', image1);
         return fetch(
-            `http://localhost:3000/api/users/${userId0}/avatar?access_token=${userToken0}`,
+            `http://localhost:3000/api/users/${user._id}/avatar?access_token=${user.access_token}`,
         ).then(async (res) => {
           res.status.should.eql(200);
           const listS3 = await S3Services.listObjectsS3();
@@ -128,7 +125,7 @@ const mediaTestBasics = () => {
       });
       it('Incorrect query parameter \'size\' should fail for /api/users/:userId/avatar', async () => {
         return fetch(
-            `http://localhost:3000/api/users/${userId0}/avatar?access_token=${userToken0}&size=BAD`,
+            `http://localhost:3000/api/users/${user._id}/avatar?access_token=${user.access_token}&size=BAD`,
         ).then(async (res) => {
           res.status.should.eql(400);
           const body = await res.json();
@@ -139,7 +136,7 @@ const mediaTestBasics = () => {
       });
       it('Incorrect query parameter \'size\' should fail for /api/media/', async () => {
         return fetch(
-            `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&size=BAD`,
+            `http://localhost:3000/api/media/${Key}?access_token=${user.access_token}&size=BAD`,
         ).then(async (res) => {
           res.status.should.eql(400);
           const body = await res.json();
@@ -152,7 +149,7 @@ const mediaTestBasics = () => {
       });
       it('Adjust the size of the profile to small for /api/media/', async () => {
         return fetch(
-            `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&size=small`,
+            `http://localhost:3000/api/media/${Key}?access_token=${user.access_token}&size=small`,
         ).then(async (res) => {
           res.status.should.eql(200);
           const media = await Media.findOne({key: Key});
@@ -164,7 +161,7 @@ const mediaTestBasics = () => {
       });
       it('Adjust the size of the profile to medium for /api/media/', async () => {
         return fetch(
-            `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&size=medium`,
+            `http://localhost:3000/api/media/${Key}?access_token=${user.access_token}&size=medium`,
         ).then(async (res) => {
           res.status.should.eql(200);
           const media = await Media.findOne({key: Key});
@@ -173,7 +170,7 @@ const mediaTestBasics = () => {
       });
       it('Adjust the size of the profile to large for /api/media/', async () => {
         return fetch(
-            `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&size=large`,
+            `http://localhost:3000/api/media/${Key}?access_token=${user.access_token}&size=large`,
         ).then(async (res) => {
           res.status.should.eql(200);
           const media = await Media.findOne({key: Key});
@@ -182,7 +179,7 @@ const mediaTestBasics = () => {
       });
       it('Adjust the size of the profile to xlarge for /api/media/', async () => {
         return fetch(
-            `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&size=xlarge`,
+            `http://localhost:3000/api/media/${Key}?access_token=${user.access_token}&size=xlarge`,
         ).then(async (res) => {
           res.status.should.eql(200);
           const media = await Media.findOne({key: Key});
@@ -193,29 +190,29 @@ const mediaTestBasics = () => {
     // describe('GET Product Post media', () => {
     //   let Key; let Key2;
     //   const agent = chai.request.agent(app);
-    //   let userToken0;
+    //   let admin.access_token;
     //   before(async () => {
     //     await dropDatabase();
     //     const user = await createUser(UserData[0]);
-    //     userToken0 = user.access_token;
+    //     admin.access_token = user.access_token;
     //     await agent
-    //         .post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
+    //         .post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`)
     //         .attach('media', image1)
     //         .field(PostData[0])
     //         .then(async (res) => {
     //           await agent
-    //               .get(`/api/posts/${res.body._id}?access_token=${userToken0}`)
+    //               .get(`/api/posts/${res.body._id}?access_token=${admin.access_token}`)
     //               .then((res) => {
     //                 Key = res.body.content.media.key;
     //               });
     //         });
     //     await agent
-    //         .post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
+    //         .post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`)
     //         .attach('media', video)
     //         .field(PostData[0])
     //         .then(async (res) => {
     //           await agent
-    //               .get(`/api/posts/${res.body._id}?access_token=${userToken0}`)
+    //               .get(`/api/posts/${res.body._id}?access_token=${admin.access_token}`)
     //               .then((res) => {
     //                 Key2 = res.body.content.media.key;
     //               });
@@ -226,21 +223,21 @@ const mediaTestBasics = () => {
     //   });
     //   it('See if you can get an image w/out any query parameters (should be fine)', async () => {
     //     return fetch(
-    //         `http://localhost:3000/api/media/${Key}?access_token=${userToken0}`,
+    //         `http://localhost:3000/api/media/${Key}?access_token=${admin.access_token}`,
     //     ).then(async (res) => {
     //       res.status.should.eql(200);
     //     });
     //   });
     //   it('See if you can get a video w/out any query parameters (should be fine)', async () => {
     //     return fetch(
-    //         `http://localhost:3000/api/media/${Key2}?access_token=${userToken0}`,
+    //         `http://localhost:3000/api/media/${Key2}?access_token=${admin.access_token}`,
     //     ).then(async (res) => {
     //       res.status.should.eql(200);
     //     });
     //   });
     //   it('Try to resize a non-image (should fail)', async () => {
     //     return fetch(
-    //         `http://localhost:3000/api/media/${Key2}?access_token=${userToken0}&size=small`,
+    //         `http://localhost:3000/api/media/${Key2}?access_token=${admin.access_token}&size=small`,
     //     ).then(async (res) => {
     //       res.status.should.eql(400);
     //       const body = await res.json();
@@ -253,7 +250,7 @@ const mediaTestBasics = () => {
     //   });
     //   it('Try to resize an image (should be fine)', async () => {
     //     return fetch(
-    //         `http://localhost:3000/api/media/${Key}?access_token=${userToken0}&size=small`,
+    //         `http://localhost:3000/api/media/${Key}?access_token=${admin.access_token}&size=small`,
     //     ).then(async (res) => {
     //       res.status.should.eql(200);
     //       const listS3 = await S3Services.listObjectsS3();

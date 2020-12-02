@@ -87,7 +87,6 @@ const getPermissionArray = (type) => {
     UserPermissions.Read,
     UserPermissions.ChangePassword,
     CommentPermissions.Create,
-    CommentPermissions.EditContent,
     CommentPermissions.Read,
     CommentPermissions.Delete,
     CommentPermissions.Interact,

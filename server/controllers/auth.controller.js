@@ -127,7 +127,7 @@ const logout = (req, res) => {
 const isAdmin = (req) => {
   const authorization = retrieveAccessToken(req);
   const isAdminRole = req.auth && req.auth.level == 0 && req.auth.role == 'admin';
-  return authorization && authorization === process.env.ADMIN_SECRET || isAdminRole;
+  return (authorization && authorization === process.env.ADMIN_SECRET) || isAdminRole;
 };
 
 /**
@@ -173,6 +173,7 @@ const checkPermissions = async (req, res, next) => {
       }
       req.auth.organization = person.organization;
       req.auth._id = person._id.toString();
+      req.auth.role = roleBasedAccessControl.role;
       req.auth.level = roleBasedAccessControl.level;
     } else {
       return res.status(500).json({error: StaticStrings.ServerErrorTokenNotDecrypted});

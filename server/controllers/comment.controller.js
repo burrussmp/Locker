@@ -1,6 +1,8 @@
 /* eslint-disable new-cap */
 /* eslint-disable max-len */
 'use strict';
+import mongoose from 'mongoose';
+
 import Comment from '@server/models/comment.model';
 import CommentServices from '@server/services/database/comments.services';
 
@@ -57,6 +59,7 @@ const getComment = async (req, res) => {
     ]);
     return res.status(200).json(comment[0]);
   } catch (err) {
+    console.log(err);
     return res.status(500).json({error: errorHandler.getErrorMessage(err)});
   }
 };

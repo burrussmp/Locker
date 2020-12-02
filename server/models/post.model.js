@@ -94,7 +94,7 @@ PostSchema.pre('deleteOne', {document: true, query: false}, async function() {
   if (content) {
     await content.deleteOne();
     for (const comment of this.comments) {
-      await mongoose.model('Comment').findByIdAndRemove(comment._id);
+      await mongoose.model('Comment').findByIdAndDelete(comment._id);
     }
   }
 });

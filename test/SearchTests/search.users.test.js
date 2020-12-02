@@ -12,31 +12,30 @@ chai.should();
 const searchUserTests = () => {
   describe('Auth password tests', () => {
     describe('GET avatar basics (testing size query parameter) and using /api/users/:userID/avatar', () => {
+      let user;
       const agent = chai.request.agent(app);
-      let userToken0;
       before(async () => {
         await dropDatabase();
-        let user = await createUser(UserData[0]);
-        userToken0 = user.access_token;
-        user = await createUser(UserData[1]);
-        user = await createUser(UserData[2]);
+        user = await createUser(UserData[0]);
+        await createUser(UserData[1]);
+        await createUser(UserData[2]);
       });
       after(async () => {
         await dropDatabase();
       });
       it('Basic (empty, missing, and strings should succeed)', async () => {
         return agent
-            .post(`/api/search/users?access_token=${userToken0}`)
+            .post(`/api/search/users?access_token=${user.access_token}`)
             .send({search: ''})
             .then(async (res) => {
               res.status.should.eql(200);
               return agent
-                  .post(`/api/search/users?access_token=${userToken0}`)
+                  .post(`/api/search/users?access_token=${user.access_token}`)
                   .send({wrong: ''})
                   .then(async (res) => {
                     res.status.should.eql(200);
                     return agent
-                        .post(`/api/search/users?access_token=${userToken0}`)
+                        .post(`/api/search/users?access_token=${user.access_token}`)
                         .send({search: UserData[0].username})
                         .then(async (res) => {
                           res.status.should.eql(200);
@@ -61,7 +60,7 @@ const searchUserTests = () => {
             {new: true},
         );
         return agent
-            .post(`/api/search/users?access_token=${userToken0}`)
+            .post(`/api/search/users?access_token=${user.access_token}`)
             .send({search: UserData[0].username})
             .then(async (res) => {
               res.status.should.eql(403);

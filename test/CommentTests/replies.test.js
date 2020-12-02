@@ -21,35 +21,35 @@ const replyTest = () => {
     describe('GET \'/api/:commentId/replies\'', ()=>{
       let commentIDArray;
       const agent = chai.request.agent(app);
-      let userToken0; let userToken1; let userToken2;
-      let postId0;
+      let admin.access_token; let userToken1; let userToken2;
+      let post._id;
       before(async ()=>{
         await dropDatabase();
         let user = await createUser(UserData[0]);
-        userToken0 = user.access_token;
+        admin.access_token = user.access_token;
         user = await createUser(UserData[1]);
         userToken1 = user.access_token;
         user = await createUser(UserData[2]);
         userToken2=user.access_token;
-        await agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
+        await agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`)
             .attach('media', image1)
             .field(PostData[0])
             .then((res)=>{
               console.log(res.body.error);
               res.status.should.eql(200);
-              postId0 = res.body._id;
+              post._id = res.body._id;
             });
-        await agent.post(`/api/${postId0}/comments?access_token=${userToken1}`)
+        await agent.post(`/api/${post._id}/comments?access_token=${userToken1}`)
             .send({text: CommentData[0].text})
             .then((res)=>{
               res.status.should.eql(200);
             });
-        await agent.post(`/api/${postId0}/comments?access_token=${userToken0}`)
+        await agent.post(`/api/${post._id}/comments?access_token=${admin.access_token}`)
             .send({text: CommentData[1].text})
             .then((res)=>{
               res.status.should.eql(200);
             });
-        await agent.post(`/api/${postId0}/comments?access_token=${userToken2}`)
+        await agent.post(`/api/${post._id}/comments?access_token=${userToken2}`)
             .send({text: CommentData[2].text})
             .then((res)=>{
               res.status.should.eql(200);
@@ -84,7 +84,7 @@ const replyTest = () => {
         await dropDatabase();
       });
       it('See if all replies are of the proper length', async ()=>{
-        return agent.get(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.get(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .then((res)=>{
               res.status.should.eql(200);
               res.body.length.should.eql(0);
@@ -105,7 +105,7 @@ const replyTest = () => {
             });
       });
       it('If the comment doesn\'t exist, should get 404', async ()=>{
-        return agent.get(`/api/mwahah/replies?access_token=${userToken0}`)
+        return agent.get(`/api/mwahah/replies?access_token=${admin.access_token}`)
             .then((res)=>{
               res.status.should.eql(404);
               res.body.error.should.eql(StaticStrings.CommentModelErrors.CommentNotFoundError);
@@ -120,7 +120,7 @@ const replyTest = () => {
       });
       it('Missing privileges', async ()=>{
         await User.findOneAndUpdate({'username': UserData[0].username}, {'permissions': []}, {new: true});
-        return agent.get(`/api/${commentIDArray[1]}/replies?access_token=${userToken0}`)
+        return agent.get(`/api/${commentIDArray[1]}/replies?access_token=${admin.access_token}`)
             .then((res)=>{
               res.status.should.eql(403);
               res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
@@ -131,35 +131,35 @@ const replyTest = () => {
       let commentIDArray;
       let userId0;
       const agent = chai.request.agent(app);
-      let userToken0; let userToken1; let userToken2;
-      let postId0;
+      let admin.access_token; let userToken1; let userToken2;
+      let post._id;
       before(async ()=>{
         await dropDatabase();
         let user = await createUser(UserData[0]);
         userId0 = user._id;
-        userToken0 = user.access_token;
+        admin.access_token = user.access_token;
         user = await createUser(UserData[1]);
         userToken1 = user.access_token;
         user = await createUser(UserData[2]);
         userToken2=user.access_token;
-        await agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
+        await agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`)
             .attach('media', image1)
             .field(PostData[0])
             .then((res)=>{
               res.status.should.eql(200);
-              postId0 = res.body._id;
+              post._id = res.body._id;
             });
-        await agent.post(`/api/${postId0}/comments?access_token=${userToken1}`)
+        await agent.post(`/api/${post._id}/comments?access_token=${userToken1}`)
             .send({text: CommentData[0].text})
             .then((res)=>{
               res.status.should.eql(200);
             });
-        await agent.post(`/api/${postId0}/comments?access_token=${userToken0}`)
+        await agent.post(`/api/${post._id}/comments?access_token=${admin.access_token}`)
             .send({text: CommentData[1].text})
             .then((res)=>{
               res.status.should.eql(200);
             });
-        await agent.post(`/api/${postId0}/comments?access_token=${userToken2}`)
+        await agent.post(`/api/${post._id}/comments?access_token=${userToken2}`)
             .send({text: CommentData[2].text})
             .then((res)=>{
               res.status.should.eql(200);
@@ -195,7 +195,7 @@ const replyTest = () => {
       });
       const newReply = 'This is a new reply';
       it('Correctly posts reply', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: newReply})
             .then((res)=>{
               res.status.should.eql(200);
@@ -208,14 +208,14 @@ const replyTest = () => {
                     res.body[replyIndex].text.should.eql(newReply);
                     res.body[replyIndex].likes.should.eql(replyIndex);
                     const id = res.body[replyIndex]._id;
-                    return agent.delete(`/api/${commentIDArray[0]}/replies/${id}?access_token=${userToken0}`).then((res)=>{
+                    return agent.delete(`/api/${commentIDArray[0]}/replies/${id}?access_token=${admin.access_token}`).then((res)=>{
                       res.status.should.eql(200);
                     });
                   });
             });
       });
       it('Extra field (should succeed)', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: newReply, dumb_field: 'hello'})
             .then((res)=>{
               res.status.should.eql(200);
@@ -228,14 +228,14 @@ const replyTest = () => {
                     res.body[replyIndex].text.should.eql(newReply);
                     res.body[replyIndex].likes.should.eql(0);
                     const id = res.body[replyIndex]._id;
-                    return agent.delete(`/api/${commentIDArray[0]}/replies/${id}?access_token=${userToken0}`).then((res)=>{
+                    return agent.delete(`/api/${commentIDArray[0]}/replies/${id}?access_token=${admin.access_token}`).then((res)=>{
                       res.status.should.eql(200);
                     });
                   });
             });
       });
       it('Missing text field (should fail)', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({dumb_field: 'hello'})
             .then((res)=>{
               res.status.should.eql(400);
@@ -247,7 +247,7 @@ const replyTest = () => {
             });
       });
       it('Empty text field (should fail)', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: ''})
             .then((res)=>{
               res.status.should.eql(400);
@@ -259,7 +259,7 @@ const replyTest = () => {
             });
       });
       it('Text field all spaces(should fail)', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: '  '})
             .then((res)=>{
               res.status.should.eql(400);
@@ -271,7 +271,7 @@ const replyTest = () => {
             });
       });
       it('If the comment doesn\'t exist, should get 404', async ()=>{
-        return agent.post(`/api/mwahah/replies?access_token=${userToken0}`)
+        return agent.post(`/api/mwahah/replies?access_token=${admin.access_token}`)
             .send({text: newReply})
             .then((res)=>{
               res.status.should.eql(404);
@@ -288,7 +288,7 @@ const replyTest = () => {
       });
       it('Missing privileges', async ()=>{
         await User.findOneAndUpdate({'username': UserData[0].username}, {'permissions': []}, {new: true});
-        return agent.post(`/api/${commentIDArray[1]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[1]}/replies?access_token=${admin.access_token}`)
             .send({text: newReply})
             .then(async (res)=>{
               res.status.should.eql(403);
@@ -301,35 +301,35 @@ const replyTest = () => {
       let commentIDArray;
       let userId0;
       const agent = chai.request.agent(app);
-      let userToken0; let userToken1; let userToken2;
-      let postId0;
+      let admin.access_token; let userToken1; let userToken2;
+      let post._id;
       before(async ()=>{
         await dropDatabase();
         let user = await createUser(UserData[0]);
         userId0 = user._id;
-        userToken0 = user.access_token;
+        admin.access_token = user.access_token;
         user = await createUser(UserData[1]);
         userToken1 = user.access_token;
         user = await createUser(UserData[2]);
         userToken2=user.access_token;
-        await agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
+        await agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`)
             .attach('media', image1)
             .field(PostData[0])
             .then((res)=>{
               res.status.should.eql(200);
-              postId0 = res.body._id;
+              post._id = res.body._id;
             });
-        await agent.post(`/api/${postId0}/comments?access_token=${userToken1}`)
+        await agent.post(`/api/${post._id}/comments?access_token=${userToken1}`)
             .send({text: CommentData[0].text})
             .then((res)=>{
               res.status.should.eql(200);
             });
-        await agent.post(`/api/${postId0}/comments?access_token=${userToken0}`)
+        await agent.post(`/api/${post._id}/comments?access_token=${admin.access_token}`)
             .send({text: CommentData[1].text})
             .then((res)=>{
               res.status.should.eql(200);
             });
-        await agent.post(`/api/${postId0}/comments?access_token=${userToken2}`)
+        await agent.post(`/api/${post._id}/comments?access_token=${userToken2}`)
             .send({text: CommentData[2].text})
             .then((res)=>{
               res.status.should.eql(200);
@@ -364,10 +364,10 @@ const replyTest = () => {
         await dropDatabase();
       });
       it('Like a comment twice (should succeed and only place 1 like)', async ()=>{
-        return agent.put(`/api/${commentIDArray[0]}/likes?access_token=${userToken0}`)
+        return agent.put(`/api/${commentIDArray[0]}/likes?access_token=${admin.access_token}`)
             .then((res)=>{
               res.status.should.eql(200);
-              return agent.put(`/api/${commentIDArray[0]}/likes?access_token=${userToken0}`)
+              return agent.put(`/api/${commentIDArray[0]}/likes?access_token=${admin.access_token}`)
                   .then(async (res)=>{
                     res.status.should.eql(200);
                     res.body.message.should.eql(StaticStrings.LikedCommentSuccess);
@@ -378,7 +378,7 @@ const replyTest = () => {
             });
       });
       it('Unlike a comment first (should do nothing)', async ()=>{
-        return agent.delete(`/api/${commentIDArray[0]}/likes?access_token=${userToken0}`)
+        return agent.delete(`/api/${commentIDArray[0]}/likes?access_token=${admin.access_token}`)
             .then(async (res)=>{
               res.status.should.eql(200);
               res.body.message.should.eql(StaticStrings.UnlikedCommentSuccess);
@@ -387,10 +387,10 @@ const replyTest = () => {
             });
       });
       it('Like a comment, then unlike the comment', async ()=>{
-        return agent.put(`/api/${commentIDArray[0]}/likes?access_token=${userToken0}`)
+        return agent.put(`/api/${commentIDArray[0]}/likes?access_token=${admin.access_token}`)
             .then((res)=>{
               res.status.should.eql(200);
-              return agent.delete(`/api/${commentIDArray[0]}/likes?access_token=${userToken0}`)
+              return agent.delete(`/api/${commentIDArray[0]}/likes?access_token=${admin.access_token}`)
                   .then(async (res)=>{
                     res.status.should.eql(200);
                     res.body.message.should.eql(StaticStrings.UnlikedCommentSuccess);
@@ -400,11 +400,11 @@ const replyTest = () => {
             });
       });
       it('If the comment doesn\'t exist, should get 404', async ()=>{
-        return agent.put(`/api/mwahah/likes?access_token=${userToken0}`)
+        return agent.put(`/api/mwahah/likes?access_token=${admin.access_token}`)
             .then((res)=>{
               res.status.should.eql(404);
               res.body.error.should.eql(StaticStrings.CommentModelErrors.CommentNotFoundError);
-              return agent.delete(`/api/mwahah/likes?access_token=${userToken0}`)
+              return agent.delete(`/api/mwahah/likes?access_token=${admin.access_token}`)
                   .then((res)=>{
                     res.status.should.eql(404);
                     res.body.error.should.eql(StaticStrings.CommentModelErrors.CommentNotFoundError);
@@ -425,11 +425,11 @@ const replyTest = () => {
       });
       it('Missing privileges', async ()=>{
         await User.findOneAndUpdate({'username': UserData[0].username}, {'permissions': ['post:edit_content']}, {new: true});
-        return agent.delete(`/api/${commentIDArray[1]}/likes?access_token=${userToken0}`)
+        return agent.delete(`/api/${commentIDArray[1]}/likes?access_token=${admin.access_token}`)
             .then((res)=>{
               res.status.should.eql(403);
               res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
-              return agent.put(`/api/${commentIDArray[1]}/likes?access_token=${userToken0}`)
+              return agent.put(`/api/${commentIDArray[1]}/likes?access_token=${admin.access_token}`)
                   .then(async (res)=>{
                     res.status.should.eql(403);
                     res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
@@ -441,34 +441,34 @@ const replyTest = () => {
     describe('GET \'/api/:commentId/replies/:replyId\'', ()=>{
       let commentIDArray;
       const agent = chai.request.agent(app);
-      let userToken0; let userToken1; let userToken2;
-      let postId0;
+      let admin.access_token; let userToken1; let userToken2;
+      let post._id;
       before(async ()=>{
         await dropDatabase();
         let user = await createUser(UserData[0]);
-        userToken0 = user.access_token;
+        admin.access_token = user.access_token;
         user = await createUser(UserData[1]);
         userToken1 = user.access_token;
         user = await createUser(UserData[2]);
         userToken2=user.access_token;
-        await agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
+        await agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`)
             .attach('media', image1)
             .field(PostData[0])
             .then((res)=>{
               res.status.should.eql(200);
-              postId0 = res.body._id;
+              post._id = res.body._id;
             });
-        await agent.post(`/api/${postId0}/comments?access_token=${userToken1}`)
+        await agent.post(`/api/${post._id}/comments?access_token=${userToken1}`)
             .send({text: CommentData[0].text})
             .then((res)=>{
               res.status.should.eql(200);
             });
-        await agent.post(`/api/${postId0}/comments?access_token=${userToken0}`)
+        await agent.post(`/api/${post._id}/comments?access_token=${admin.access_token}`)
             .send({text: CommentData[1].text})
             .then((res)=>{
               res.status.should.eql(200);
             });
-        await agent.post(`/api/${postId0}/comments?access_token=${userToken2}`)
+        await agent.post(`/api/${post._id}/comments?access_token=${userToken2}`)
             .send({text: CommentData[2].text})
             .then((res)=>{
               res.status.should.eql(200);
@@ -503,12 +503,12 @@ const replyTest = () => {
         await dropDatabase();
       });
       it('Get a specific reply (should succeed)', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: 'What a reply!'})
             .then((res)=>{
               res.status.should.eql(200);
               const replyId = res.body._id;
-              return agent.get(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${userToken0}`)
+              return agent.get(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${admin.access_token}`)
                   .then(async (res)=>{
                     res.status.should.eql(200);
                     res.body.text.should.eql('What a reply!');
@@ -516,11 +516,11 @@ const replyTest = () => {
             });
       });
       it('Reply doesn\'t exist (should get 404)', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: 'What a reply!'})
             .then((res)=>{
               res.status.should.eql(200);
-              return agent.get(`/api/${commentIDArray[0]}/replies/${'4314739849'}?access_token=${userToken0}`)
+              return agent.get(`/api/${commentIDArray[0]}/replies/${'4314739849'}?access_token=${admin.access_token}`)
                   .then(async (res)=>{
                     res.status.should.eql(404);
                     res.body.error.should.eql(StaticStrings.CommentModelErrors.ReplyNotFound);
@@ -528,12 +528,12 @@ const replyTest = () => {
             });
       });
       it('Comment doesn\'t exist (should get 404)', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: 'What a reply!'})
             .then((res)=>{
               res.status.should.eql(200);
               const replyId = res.body._id;
-              return agent.get(`/api/${'jflksjflkdsjf'}/replies/${replyId}?access_token=${userToken0}`)
+              return agent.get(`/api/${'jflksjflkdsjf'}/replies/${replyId}?access_token=${admin.access_token}`)
                   .then(async (res)=>{
                     res.status.should.eql(404);
                     res.body.error.should.eql(StaticStrings.CommentModelErrors.CommentNotFoundError);
@@ -541,7 +541,7 @@ const replyTest = () => {
             });
       });
       it('Not logged in (should fail)', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: 'What a reply!'})
             .then((res)=>{
               res.status.should.eql(200);
@@ -554,13 +554,13 @@ const replyTest = () => {
             });
       });
       it('Missing privileges', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: 'What a reply!'})
             .then(async (res)=>{
               res.status.should.eql(200);
               const replyId = res.body._id;
               await User.findOneAndUpdate({'username': UserData[0].username}, {'permissions': ['post:edit_content']}, {new: true});
-              return agent.get(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${userToken0}`)
+              return agent.get(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${admin.access_token}`)
                   .then(async (res)=>{
                     res.status.should.eql(403);
                     res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
@@ -576,7 +576,7 @@ const replyTest = () => {
     //     let commentIDArray;
     //     let userId0,userId1,userId2;
     //     let agent = chai.request.agent(app);
-    //     let userToken0,userToken1;
+    //     let admin.access_token,userToken1;
     //     beforeEach(async()=>{
     //         await dropDatabase();
     //         await Setup();
@@ -616,7 +616,7 @@ const replyTest = () => {
     //             login: UserData[0].email,
     //             password: UserData[0].password
     //         }).then((res) => {
-    //             userToken0 = res.body.access_token;
+    //             admin.access_token = res.body.access_token;
     //         });
     //         await agent.post('/auth/login').send({
     //             login: UserData[1].email,
@@ -626,12 +626,12 @@ const replyTest = () => {
     //         });
     //     });
     //     it("Edit a reply (should succeed)",async()=>{
-    //         return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+    //         return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
     //         .send({text:"What a reply!"})
     //         .then((res)=>{
     //             res.status.should.eql(200);
     //             let replyId = res.body._id;
-    //             return agent.put(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${userToken0}`)
+    //             return agent.put(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${admin.access_token}`)
     //             .send({text:"This should change!"})
     //             .then(async res=>{
     //                 res.status.should.eql(200);
@@ -641,7 +641,7 @@ const replyTest = () => {
     //         });
     //     })
     //     it("Try to edit reply of comment you own but didn't write the reply (should fail)",async()=>{
-    //         return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+    //         return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
     //         .send({text:"What a reply!"})
     //         .then(async (res)=>{
     //             res.status.should.eql(200);
@@ -657,12 +657,12 @@ const replyTest = () => {
     //         });
     //     })
     //     it("Edit a reply, but text is empty (should fail)",async()=>{
-    //         return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+    //         return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
     //         .send({text:"What a reply!"})
     //         .then((res)=>{
     //             res.status.should.eql(200);
     //             let replyId = res.body._id;
-    //             return agent.put(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${userToken0}`)
+    //             return agent.put(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${admin.access_token}`)
     //             .send({text:"   "})
     //             .then(async res=>{
     //                 res.status.should.eql(400);
@@ -671,12 +671,12 @@ const replyTest = () => {
     //         });
     //     });
     //     it("Edit a reply, but missing text field (should fail)",async()=>{
-    //         return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+    //         return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
     //         .send({text:"What a reply!"})
     //         .then((res)=>{
     //             res.status.should.eql(200);
     //             let replyId = res.body._id;
-    //             return agent.put(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${userToken0}`)
+    //             return agent.put(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${admin.access_token}`)
     //             .send({other_field:""})
     //             .then(async res=>{
     //                 res.status.should.eql(400);
@@ -686,12 +686,12 @@ const replyTest = () => {
     //     });
     //     it("Edit a reply, but text is too long (should fail)",async()=>{
     //         let new_text = new Array(122).join('a');
-    //         return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+    //         return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
     //         .send({text:"hi"})
     //         .then((res)=>{
     //             res.status.should.eql(200);
     //             let replyId = res.body._id;
-    //             return agent.put(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${userToken0}`)
+    //             return agent.put(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${admin.access_token}`)
     //             .send({text:new_text})
     //             .then(async res=>{
     //                 res.status.should.eql(400);
@@ -700,12 +700,12 @@ const replyTest = () => {
     //         });
     //     })
     //     it("Reply doesn't exist (should get 404)",async()=>{
-    //         return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+    //         return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
     //         .send({text:"hi"})
     //         .then((res)=>{
     //             res.status.should.eql(200);
     //             let replyId = res.body._id;
-    //             return agent.put(`/api/${commentIDArray[0]}/replies/${"dummy"}?access_token=${userToken0}`)
+    //             return agent.put(`/api/${commentIDArray[0]}/replies/${"dummy"}?access_token=${admin.access_token}`)
     //             .send({text:"new text"})
     //             .then(async res=>{
     //                 res.status.should.eql(404);
@@ -714,12 +714,12 @@ const replyTest = () => {
     //         });
     //     })
     //     it("Comment doesn't exist (should get 404)",async()=>{
-    //         return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+    //         return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
     //         .send({text:"hi"})
     //         .then((res)=>{
     //             res.status.should.eql(200);
     //             let replyId = res.body._id;
-    //             return agent.put(`/api/${"dumb"}/replies/${replyId}?access_token=${userToken0}`)
+    //             return agent.put(`/api/${"dumb"}/replies/${replyId}?access_token=${admin.access_token}`)
     //             .send({text:"new text"})
     //             .then(async res=>{
     //                 res.status.should.eql(404);
@@ -728,7 +728,7 @@ const replyTest = () => {
     //         });
     //     })
     //     it("Not logged in (should fail)",async()=>{
-    //         return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+    //         return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
     //         .send({text:"hi"})
     //         .then((res)=>{
     //             res.status.should.eql(200);
@@ -742,13 +742,13 @@ const replyTest = () => {
     //         });
     //     })
     //     it("Missing privileges",async()=>{
-    //         return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+    //         return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
     //         .send({text:"hi"})
     //         .then(async (res)=>{
     //             res.status.should.eql(200);
     //             let replyId = res.body._id;
     //             await User.findOneAndUpdate({'username':UserData[0].username},{'permissions':["post:edit_content"]},{new:true});
-    //             return agent.put(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${userToken0}`)
+    //             return agent.put(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${admin.access_token}`)
     //             .send({text:"new text"})
     //             .then(async res=>{
     //                 res.status.should.eql(403);
@@ -760,34 +760,34 @@ const replyTest = () => {
     describe('DELETE \'/api/:commentId/replies/:replyId\'', ()=>{
       let commentIDArray;
       const agent = chai.request.agent(app);
-      let userToken0; let userToken1; let userToken2;
-      let postId0;
+      let admin.access_token; let userToken1; let userToken2;
+      let post._id;
       before(async ()=>{
         await dropDatabase();
         let user = await createUser(UserData[0]);
-        userToken0 = user.access_token;
+        admin.access_token = user.access_token;
         user = await createUser(UserData[1]);
         userToken1 = user.access_token;
         user = await createUser(UserData[2]);
         userToken2=user.access_token;
-        await agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
+        await agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`)
             .attach('media', image1)
             .field(PostData[0])
             .then((res)=>{
               res.status.should.eql(200);
-              postId0 = res.body._id;
+              post._id = res.body._id;
             });
-        await agent.post(`/api/${postId0}/comments?access_token=${userToken1}`)
+        await agent.post(`/api/${post._id}/comments?access_token=${userToken1}`)
             .send({text: CommentData[0].text})
             .then((res)=>{
               res.status.should.eql(200);
             });
-        await agent.post(`/api/${postId0}/comments?access_token=${userToken0}`)
+        await agent.post(`/api/${post._id}/comments?access_token=${admin.access_token}`)
             .send({text: CommentData[1].text})
             .then((res)=>{
               res.status.should.eql(200);
             });
-        await agent.post(`/api/${postId0}/comments?access_token=${userToken2}`)
+        await agent.post(`/api/${post._id}/comments?access_token=${userToken2}`)
             .send({text: CommentData[2].text})
             .then((res)=>{
               res.status.should.eql(200);
@@ -822,15 +822,15 @@ const replyTest = () => {
         await dropDatabase();
       });
       it('Delete a reply (should succeed)', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: 'What a reply!'})
             .then((res)=>{
               res.status.should.eql(200);
               const replyId = res.body._id;
-              return agent.delete(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${userToken0}`)
+              return agent.delete(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${admin.access_token}`)
                   .then(async (res)=>{
                     res.status.should.eql(200);
-                    return agent.get(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${userToken0}`)
+                    return agent.get(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${admin.access_token}`)
                         .then((res)=>{
                           res.status.should.eql(404);
                         });
@@ -838,7 +838,7 @@ const replyTest = () => {
             });
       });
       it('Try to delete reply of comment you own but didn\'t write the reply (should fail)', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: 'What a reply!'})
             .then((res)=>{
               res.status.should.eql(200);
@@ -850,30 +850,30 @@ const replyTest = () => {
             });
       });
       it('Reply doesn\'t exist (should get 404)', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: 'What a reply!'})
             .then((res)=>{
               res.status.should.eql(200);
-              return agent.delete(`/api/${commentIDArray[0]}/replies/${'dumb'}?access_token=${userToken0}`)
+              return agent.delete(`/api/${commentIDArray[0]}/replies/${'dumb'}?access_token=${admin.access_token}`)
                   .then(async (res)=>{
                     res.status.should.eql(404);
                   });
             });
       });
       it('Comment doesn\'t exist (should get 404)', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: 'What a reply!'})
             .then((res)=>{
               res.status.should.eql(200);
               const replyId = res.body._id;
-              return agent.delete(`/api/${'dumb'}/replies/${replyId}?access_token=${userToken0}`)
+              return agent.delete(`/api/${'dumb'}/replies/${replyId}?access_token=${admin.access_token}`)
                   .then(async (res)=>{
                     res.status.should.eql(404);
                   });
             });
       });
       it('Not logged in (should fail)', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: 'What a reply!'})
             .then((res)=>{
               res.status.should.eql(200);
@@ -885,13 +885,13 @@ const replyTest = () => {
             });
       });
       it('Missing privileges', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: 'What a reply!'})
             .then(async (res)=>{
               res.status.should.eql(200);
               const replyId = res.body._id;
               await User.findOneAndUpdate({'username': UserData[0].username}, {'permissions': ['post:edit_content']}, {new: true});
-              return agent.delete(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${userToken0}`)
+              return agent.delete(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${admin.access_token}`)
                   .then(async (res)=>{
                     res.status.should.eql(403);
                     await User.findOneAndUpdate({'username': UserData[0].username}, {'permissions': permissions.get_permission_array('user')}, {new: true});
@@ -902,34 +902,34 @@ const replyTest = () => {
     describe('PUT/DELETE \'/api/:commentId/replies/:replyId/likes\'', ()=>{
       let commentIDArray;
       const agent = chai.request.agent(app);
-      let userToken0; let userToken1; let userToken2;
-      let postId0;
+      let admin.access_token; let userToken1; let userToken2;
+      let post._id;
       before(async ()=>{
         await dropDatabase();
         let user = await createUser(UserData[0]);
-        userToken0 = user.access_token;
+        admin.access_token = user.access_token;
         user = await createUser(UserData[1]);
         userToken1 = user.access_token;
         user = await createUser(UserData[2]);
         userToken2=user.access_token;
-        await agent.post(`/api/posts?access_token=${userToken0}&type=ProductPost`)
+        await agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`)
             .attach('media', image1)
             .field(PostData[0])
             .then((res)=>{
               res.status.should.eql(200);
-              postId0 = res.body._id;
+              post._id = res.body._id;
             });
-        await agent.post(`/api/${postId0}/comments?access_token=${userToken1}`)
+        await agent.post(`/api/${post._id}/comments?access_token=${userToken1}`)
             .send({text: CommentData[0].text})
             .then((res)=>{
               res.status.should.eql(200);
             });
-        await agent.post(`/api/${postId0}/comments?access_token=${userToken0}`)
+        await agent.post(`/api/${post._id}/comments?access_token=${admin.access_token}`)
             .send({text: CommentData[1].text})
             .then((res)=>{
               res.status.should.eql(200);
             });
-        await agent.post(`/api/${postId0}/comments?access_token=${userToken2}`)
+        await agent.post(`/api/${post._id}/comments?access_token=${userToken2}`)
             .send({text: CommentData[2].text})
             .then((res)=>{
               res.status.should.eql(200);
@@ -964,16 +964,16 @@ const replyTest = () => {
         await dropDatabase();
       });
       it('Like a reply (should succeed)', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: 'What a reply!'})
             .then((res)=>{
               res.status.should.eql(200);
               const replyId = res.body._id;
-              return agent.put(`/api/${commentIDArray[0]}/replies/${replyId}/likes?access_token=${userToken0}`)
+              return agent.put(`/api/${commentIDArray[0]}/replies/${replyId}/likes?access_token=${admin.access_token}`)
                   .then(async (res)=>{
                     res.status.should.eql(200);
                     res.body._id.should.eql(replyId);
-                    return agent.get(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${userToken0}`)
+                    return agent.get(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${admin.access_token}`)
                         .then((res)=>{
                           res.status.should.eql(200);
                           res.body.likes.should.eql(1);
@@ -982,16 +982,16 @@ const replyTest = () => {
             });
       });
       it('Unlike a reply before liking (should succeed)', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: 'What a reply!'})
             .then((res)=>{
               res.status.should.eql(200);
               const replyId = res.body._id;
-              return agent.delete(`/api/${commentIDArray[0]}/replies/${replyId}/likes?access_token=${userToken0}`)
+              return agent.delete(`/api/${commentIDArray[0]}/replies/${replyId}/likes?access_token=${admin.access_token}`)
                   .then(async (res)=>{
                     res.status.should.eql(200);
                     res.body._id.should.eql(replyId);
-                    return agent.get(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${userToken0}`)
+                    return agent.get(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${admin.access_token}`)
                         .then((res)=>{
                           res.status.should.eql(200);
                           res.body.likes.should.eql(0);
@@ -1000,18 +1000,18 @@ const replyTest = () => {
             });
       });
       it('Like a reply twice (should only work once but succeed)', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: 'What a reply!'})
             .then((res)=>{
               res.status.should.eql(200);
               const replyId = res.body._id;
-              return agent.put(`/api/${commentIDArray[0]}/replies/${replyId}/likes?access_token=${userToken0}`)
+              return agent.put(`/api/${commentIDArray[0]}/replies/${replyId}/likes?access_token=${admin.access_token}`)
                   .then(()=>{
-                    return agent.put(`/api/${commentIDArray[0]}/replies/${replyId}/likes?access_token=${userToken0}`)
+                    return agent.put(`/api/${commentIDArray[0]}/replies/${replyId}/likes?access_token=${admin.access_token}`)
                         .then(async (res)=>{
                           res.status.should.eql(200);
                           res.body._id.should.eql(replyId);
-                          return agent.get(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${userToken0}`)
+                          return agent.get(`/api/${commentIDArray[0]}/replies/${replyId}?access_token=${admin.access_token}`)
                               .then((res)=>{
                                 res.status.should.eql(200);
                                 res.body.likes.should.eql(1);
@@ -1021,18 +1021,18 @@ const replyTest = () => {
             });
       });
       it('Like a reply and then unlike (should succeed)', async ()=>{
-        return agent.post(`/api/${commentIDArray[1]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[1]}/replies?access_token=${admin.access_token}`)
             .send({text: 'What a reply!'})
             .then((res)=>{
               res.status.should.eql(200);
               const replyId = res.body._id;
-              return agent.put(`/api/${commentIDArray[1]}/replies/${replyId}/likes?access_token=${userToken0}`)
+              return agent.put(`/api/${commentIDArray[1]}/replies/${replyId}/likes?access_token=${admin.access_token}`)
                   .then(()=>{
-                    return agent.delete(`/api/${commentIDArray[1]}/replies/${replyId}/likes?access_token=${userToken0}`)
+                    return agent.delete(`/api/${commentIDArray[1]}/replies/${replyId}/likes?access_token=${admin.access_token}`)
                         .then(async (res)=>{
                           res.status.should.eql(200);
                           res.body._id.should.eql(replyId);
-                          return agent.get(`/api/${commentIDArray[1]}/replies/${replyId}?access_token=${userToken0}`)
+                          return agent.get(`/api/${commentIDArray[1]}/replies/${replyId}?access_token=${admin.access_token}`)
                               .then((res)=>{
                                 res.status.should.eql(200);
                                 res.body.likes.should.eql(0);
@@ -1042,30 +1042,30 @@ const replyTest = () => {
             });
       });
       it('(Like) Reply doesn\'t exist (should get 404)', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: 'What a reply!'})
             .then((res)=>{
               res.status.should.eql(200);
-              return agent.put(`/api/${commentIDArray[0]}/replies/${'dumb'}/likes?access_token=${userToken0}`)
+              return agent.put(`/api/${commentIDArray[0]}/replies/${'dumb'}/likes?access_token=${admin.access_token}`)
                   .then(async (res)=>{
                     res.status.should.eql(404);
                   });
             });
       });
       it('(Like) Comment doesn\'t exist (should get 404)', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: 'What a reply!'})
             .then((res)=>{
               res.status.should.eql(200);
               const replyId = res.body._id;
-              return agent.put(`/api/${'Dumb'}/replies/${replyId}/likes?access_token=${userToken0}`)
+              return agent.put(`/api/${'Dumb'}/replies/${replyId}/likes?access_token=${admin.access_token}`)
                   .then(async (res)=>{
                     res.status.should.eql(404);
                   });
             });
       });
       it('(Like) Not logged in (should fail)', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: 'What a reply!'})
             .then((res)=>{
               res.status.should.eql(200);
@@ -1077,13 +1077,13 @@ const replyTest = () => {
             });
       });
       it('(Like) Missing privileges', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: 'What a reply!'})
             .then(async (res)=>{
               res.status.should.eql(200);
               const replyId = res.body._id;
               await User.findOneAndUpdate({'username': UserData[0].username}, {'permissions': ['post:edit_content']}, {new: true});
-              return agent.put(`/api/${commentIDArray[0]}/replies/${replyId}/likes?access_token=${userToken0}`)
+              return agent.put(`/api/${commentIDArray[0]}/replies/${replyId}/likes?access_token=${admin.access_token}`)
                   .then(async (res)=>{
                     res.status.should.eql(403);
                     await User.findOneAndUpdate({'username': UserData[0].username}, {'permissions': permissions.get_permission_array('user')}, {new: true});
@@ -1091,30 +1091,30 @@ const replyTest = () => {
             });
       });
       it('(Unlike) Reply doesn\'t exist (should get 404)', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: 'What a reply!'})
             .then((res)=>{
               res.status.should.eql(200);
-              return agent.delete(`/api/${commentIDArray[0]}/replies/${'dumb'}/likes?access_token=${userToken0}`)
+              return agent.delete(`/api/${commentIDArray[0]}/replies/${'dumb'}/likes?access_token=${admin.access_token}`)
                   .then(async (res)=>{
                     res.status.should.eql(404);
                   });
             });
       });
       it('(Unlike) Comment doesn\'t exist (should get 404)', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: 'What a reply!'})
             .then((res)=>{
               res.status.should.eql(200);
               const replyId = res.body._id;
-              return agent.delete(`/api/${'Dumb'}/replies/${replyId}/likes?access_token=${userToken0}`)
+              return agent.delete(`/api/${'Dumb'}/replies/${replyId}/likes?access_token=${admin.access_token}`)
                   .then(async (res)=>{
                     res.status.should.eql(404);
                   });
             });
       });
       it('(Unlike) Not logged in (should fail)', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: 'What a reply!'})
             .then((res)=>{
               res.status.should.eql(200);
@@ -1126,13 +1126,13 @@ const replyTest = () => {
             });
       });
       it('(Unlike) Missing privileges', async ()=>{
-        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${userToken0}`)
+        return agent.post(`/api/${commentIDArray[0]}/replies?access_token=${admin.access_token}`)
             .send({text: 'What a reply!'})
             .then(async (res)=>{
               res.status.should.eql(200);
               const replyId = res.body._id;
               await User.findOneAndUpdate({'username': UserData[0].username}, {'permissions': ['post:edit_content']}, {new: true});
-              return agent.delete(`/api/${commentIDArray[0]}/replies/${replyId}/likes?access_token=${userToken0}`)
+              return agent.delete(`/api/${commentIDArray[0]}/replies/${replyId}/likes?access_token=${admin.access_token}`)
                   .then(async (res)=>{
                     res.status.should.eql(403);
                     await User.findOneAndUpdate({'username': UserData[0].username}, {'permissions': permissions.get_permission_array('user')}, {new: true});
