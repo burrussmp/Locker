@@ -1,14 +1,15 @@
 /* eslint-disable import/no-named-as-default-member */
 'use strict';
 
-// import RepliesTest from './replies.test';
 import CommentBasic from '@test/CommentTests/comments.basic.test';
 import CommentSpecific from '@test/CommentTests/comments.specific.test';
+import RepliesBasic from '@test/CommentTests/replies.basic.test';
+// import RepliesSpecific from '@test/CommentTests/replies.specific.test';
 
 const commentTests = () => {
-  // describe('PATH: \'/api/:commentId\'', RepliesTest);
   // describe('PATH: /api/:postId/comments', CommentBasic);
-  describe('PATH: /api/comments/:commentId', CommentSpecific);
+  // describe('PATH: /api/comments/:commentId', CommentSpecific);
+  describe('PATH: \'/api/comments/:commentId/replies\'', RepliesBasic);
 };
 
 export default commentTests;
