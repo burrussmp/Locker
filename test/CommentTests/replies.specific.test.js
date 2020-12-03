@@ -40,53 +40,53 @@ const replySpecific = () => {
       after(async ()=>{
         await dropDatabase();
       });
-    //   it('Get Reply: Execute (should succeed)', async ()=>{
-    //     return agent.get(`/api/comments/${comment._id}/replies/${reply._id}?access_token=${admin.access_token}`).then((res)=>{
-    //       res.status.should.eql(200);
-    //       res.body.postedBy.should.eql(admin.id.toString());
-    //       res.body.likes.should.eql(0);
-    //       res.body.liked.should.be.false;
-    //       res.body.text.should.eql('test');
-    //     });
-    //   });
-    //   it('Get Reply: Not logged in (should fail)', async ()=>{
-    //     return agent.get(`/api/comments/${comment._id}/replies/${reply._id}`).then((res)=>{
-    //       res.status.should.eql(401);
-    //       res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError);
-    //     });
-    //   });
-    //   it('Get Reply: Insufficient permissions  (should fail)', async ()=>{
-    //     const role = await RBAC.findOne({'role': 'none'});
-    //     await Employee.findByIdAndUpdate(admin.id, {'permissions': role._id});
-    //     return agent.get(`/api/comments/${comment._id}/replies/${reply._id}?access_token=${admin.access_token}`).then((res)=>{
-    //       res.status.should.eql(403);
-    //       res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
-    //     });
-    //   });
-    //   it('Get Reply: Comment doesnt exist  (should fail)', async ()=>{
-    //     return agent.get(`/api/comments/${123456}/replies/${reply._id}?access_token=${admin.access_token}`).then((res)=>{
-    //       res.status.should.eql(404);
-    //       res.body.error.should.eql(StaticStrings.CommentModelErrors.CommentNotFoundError);
-    //     });
-    //   });
-    //   it('Get Reply: Reply doesnt exist  (should fail)', async ()=>{
-    //     return agent.get(`/api/comments/${comment._id}/replies/${1234}?access_token=${admin.access_token}`).then((res)=>{
-    //       res.status.should.eql(404);
-    //       res.body.error.should.eql(StaticStrings.CommentModelErrors.ReplyNotFound);
-    //     });
-    //   });
-    //   it('Get Reply: As user (should work)', async ()=>{
-    //     const user = await createUser(UserData[0]);
-    //     return agent.get(`/api/comments/${comment._id}/replies/replies/${reply._id}?access_token=${user.access_token}`).then(async (res)=>{
-    //       res.status.should.eql(200);
-    //     });
-    //   });
-    //   it('Get Reply: As employee (should succeed)', async ()=>{
-    //     const employee = await createEmployee(admin, getEmployeeConstructor(EmployeeData[1]));
-    //     return agent.get(`/api/comments/${comment._id}/replies/replies/${reply._id}?access_token=${employee.access_token}`).then(async (res)=>{
-    //       res.status.should.eql(200);
-    //     });
-    //   });
+      it('Get Reply: Execute (should succeed)', async ()=>{
+        return agent.get(`/api/comments/${comment._id}/replies/${reply._id}?access_token=${admin.access_token}`).then((res)=>{
+          res.status.should.eql(200);
+          res.body.postedBy.should.eql(admin.id.toString());
+          res.body.likes.should.eql(0);
+          res.body.liked.should.be.false;
+          res.body.text.should.eql('test');
+        });
+      });
+      it('Get Reply: Not logged in (should fail)', async ()=>{
+        return agent.get(`/api/comments/${comment._id}/replies/${reply._id}`).then((res)=>{
+          res.status.should.eql(401);
+          res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError);
+        });
+      });
+      it('Get Reply: Insufficient permissions  (should fail)', async ()=>{
+        const role = await RBAC.findOne({'role': 'none'});
+        await Employee.findByIdAndUpdate(admin.id, {'permissions': role._id});
+        return agent.get(`/api/comments/${comment._id}/replies/${reply._id}?access_token=${admin.access_token}`).then((res)=>{
+          res.status.should.eql(403);
+          res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
+        });
+      });
+      it('Get Reply: Comment doesnt exist  (should fail)', async ()=>{
+        return agent.get(`/api/comments/${123456}/replies/${reply._id}?access_token=${admin.access_token}`).then((res)=>{
+          res.status.should.eql(404);
+          res.body.error.should.eql(StaticStrings.CommentModelErrors.CommentNotFoundError);
+        });
+      });
+      it('Get Reply: Reply doesnt exist  (should fail)', async ()=>{
+        return agent.get(`/api/comments/${comment._id}/replies/${1234}?access_token=${admin.access_token}`).then((res)=>{
+          res.status.should.eql(404);
+          res.body.error.should.eql(StaticStrings.CommentModelErrors.ReplyNotFound);
+        });
+      });
+      it('Get Reply: As user (should work)', async ()=>{
+        const user = await createUser(UserData[0]);
+        return agent.get(`/api/comments/${comment._id}/replies/replies/${reply._id}?access_token=${user.access_token}`).then(async (res)=>{
+          res.status.should.eql(200);
+        });
+      });
+      it('Get Reply: As employee (should succeed)', async ()=>{
+        const employee = await createEmployee(admin, getEmployeeConstructor(EmployeeData[1]));
+        return agent.get(`/api/comments/${comment._id}/replies/replies/${reply._id}?access_token=${employee.access_token}`).then(async (res)=>{
+          res.status.should.eql(200);
+        });
+      });
     });
     describe('DELETE \'/api/:commentId/replies/:replyId\'', ()=>{
       let admin; let comment; let reply;

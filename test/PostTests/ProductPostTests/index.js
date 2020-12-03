@@ -5,7 +5,7 @@ import Specific from './product.post.specific.test';
 
 
 const productPostTests = () => {
-//   describe('PRODUCT POSTS: \'/api/posts\'', Basic);
+  describe('PRODUCT POSTS: \'/api/posts\'', Basic);
   describe('PATH: \'/api/posts/:postId\'', Specific);
 };
 

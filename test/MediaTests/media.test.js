@@ -7,16 +7,14 @@ import {app} from '@server/server';
 
 import Media from '@server/models/media.model';
 import User from '@server/models/user.model';
-import Organization from '@server/models/organization.model';
 
 import S3Services from '@server/services/S3.services';
 import StaticStrings from '@config/StaticStrings';
 
 
 import {UserData} from '@development/user.data';
-import {ProductData} from '@development/product.data';
 
-import {dropDatabase, bufferEquality, createUser, loginAdminEmployee, createProductPostAgent} from '@test/helper';
+import {dropDatabase, bufferEquality, createUser} from '@test/helper';
 
 chai.use(chaiHttp);
 chai.should();
@@ -52,7 +50,7 @@ const mediaTestBasics = () => {
         });
       });
       it('Adjust the size of the profile to small for /api/users/:userId/avatar', async () => {
-        return fetch(`http://localhost:3000/api/users/${user._id}/avatar?access_token=${user.access_token}&size=small`,).then(async (res) => {
+        return fetch(`http://localhost:3000/api/users/${user._id}/avatar?access_token=${user.access_token}&size=small`).then(async (res) => {
           res.status.should.eql(200);
           const media = await Media.findOne({key: Key});
           media.resized_keys.length.should.eql(1);
@@ -98,7 +96,7 @@ const mediaTestBasics = () => {
         });
       });
       it('Incorrect query parameter \'size\' should fail for /api/users/:userId/avatar', async () => {
-        return fetch(`http://localhost:3000/api/users/${user._id}/avatar?access_token=${user.access_token}&size=BAD`,).then(async (res) => {
+        return fetch(`http://localhost:3000/api/users/${user._id}/avatar?access_token=${user.access_token}&size=BAD`).then(async (res) => {
           res.status.should.eql(400);
           const body = await res.json();
           body.error.should.eql(StaticStrings.MediaControllerErrors.SizeQueryParameterInvalid);
@@ -147,61 +145,61 @@ const mediaTestBasics = () => {
         });
       });
     });
-    // describe('GET Product Post media', () => {
-    //   const agent = chai.request.agent(app);
-    //   let admin; let imageKey; let videoKey;
-    //   beforeEach(async () => {
-    //     await dropDatabase();
-    //     admin = await loginAdminEmployee();
-    //     const anyOrg = await Organization.findOne();
-    //     const newProductData = JSON.parse(JSON.stringify(ProductData[1]));
-    //     newProductData.organization = anyOrg._id.toString();
-    //     const product = await createProductPostAgent(agent, newProductData, admin.access_token).then((res)=>res.body);
-    //     const reqBody = {product: product._id};
-    //     const post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then((res)=>res.body);
-    //     const postDetails = await agent.get(`/api/posts/${post._id}?access_token=${admin.access_token}`).then((res)=>res.body);
-    //     imageKey = postDetails.content.product.media.key;
-    //     videoKey = postDetails.content.product.all_media[1].key;
-    //   });
-    //   after(async () => {
-    //     await dropDatabase();
-    //   });
-    //   it('See if you can get an image w/out any query parameters (should be fine)', async () => {
-    //     return fetch(`http://localhost:3000/api/media/${imageKey}?access_token=${admin.access_token}`).then(async (res) => {
-    //       res.status.should.eql(200);
-    //     });
-    //   });
-    //   it('See if you can get a video w/out any query parameters (should be fine)', async () => {
-    //     return fetch(`http://localhost:3000/api/media/${videoKey}?access_token=${admin.access_token}`).then(async (res) => {
-    //       res.status.should.eql(200);
-    //     });
-    //   });
-    //   it('Try to resize a non-image (should fail)', async () => {
-    //     return fetch(`http://localhost:3000/api/media/${videoKey}?access_token=${admin.access_token}&size=small`).then(async (res) => {
-    //       res.status.should.eql(400);
-    //       const body = await res.json();
-    //       body.error.should.eql(StaticStrings.MediaControllerErrors.CannotResizeNotImage);
-    //       const media = await Media.findOne({key: videoKey});
-    //       media.resized_keys.length.should.eql(0);
-    //     });
-    //   });
-    //   it('Try to resize an image (should be fine)', async () => {
-    //     return fetch(`http://localhost:3000/api/media/${imageKey}?access_token=${admin.access_token}&size=small`).then(async (res) => {
-    //       res.status.should.eql(200);
-    //       const media = await Media.findOne({key: imageKey});
-    //       media.resized_keys.length.should.eql(1);
-    //       return S3Services.fileExistsS3(media.resized_keys[0]);
-    //     });
-    //   });
-    //   it('Try to resize an image where media type is not supported (should be fine)', async () => {
-    //     await Media.findOneAndUpdate({key: imageKey}, {type: '404'});
-    //     return fetch(`http://localhost:3000/api/media/${imageKey}?access_token=${admin.access_token}&size=small`).then(async (res) => {
-    //       res.status.should.eql(422);
-    //       const body = await res.json();
-    //       body.error.should.eql(StaticStrings.MediaControllerErrors.MediaTypeNotImplementedResize);
-    //     });
-    //   });
-    // });
+    describe('GET Product Post media', () => {
+      const agent = chai.request.agent(app);
+      let admin; let imageKey; let videoKey;
+      beforeEach(async () => {
+        await dropDatabase();
+        admin = await loginAdminEmployee();
+        const anyOrg = await Organization.findOne();
+        const newProductData = JSON.parse(JSON.stringify(ProductData[1]));
+        newProductData.organization = anyOrg._id.toString();
+        const product = await createProductPostAgent(agent, newProductData, admin.access_token).then((res)=>res.body);
+        const reqBody = {product: product._id};
+        const post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then((res)=>res.body);
+        const postDetails = await agent.get(`/api/posts/${post._id}?access_token=${admin.access_token}`).then((res)=>res.body);
+        imageKey = postDetails.content.product.media.key;
+        videoKey = postDetails.content.product.all_media[1].key;
+      });
+      after(async () => {
+        await dropDatabase();
+      });
+      it('See if you can get an image w/out any query parameters (should be fine)', async () => {
+        return fetch(`http://localhost:3000/api/media/${imageKey}?access_token=${admin.access_token}`).then(async (res) => {
+          res.status.should.eql(200);
+        });
+      });
+      it('See if you can get a video w/out any query parameters (should be fine)', async () => {
+        return fetch(`http://localhost:3000/api/media/${videoKey}?access_token=${admin.access_token}`).then(async (res) => {
+          res.status.should.eql(200);
+        });
+      });
+      it('Try to resize a non-image (should fail)', async () => {
+        return fetch(`http://localhost:3000/api/media/${videoKey}?access_token=${admin.access_token}&size=small`).then(async (res) => {
+          res.status.should.eql(400);
+          const body = await res.json();
+          body.error.should.eql(StaticStrings.MediaControllerErrors.CannotResizeNotImage);
+          const media = await Media.findOne({key: videoKey});
+          media.resized_keys.length.should.eql(0);
+        });
+      });
+      it('Try to resize an image (should be fine)', async () => {
+        return fetch(`http://localhost:3000/api/media/${imageKey}?access_token=${admin.access_token}&size=small`).then(async (res) => {
+          res.status.should.eql(200);
+          const media = await Media.findOne({key: imageKey});
+          media.resized_keys.length.should.eql(1);
+          return S3Services.fileExistsS3(media.resized_keys[0]);
+        });
+      });
+      it('Try to resize an image where media type is not supported (should be fine)', async () => {
+        await Media.findOneAndUpdate({key: imageKey}, {type: '404'});
+        return fetch(`http://localhost:3000/api/media/${imageKey}?access_token=${admin.access_token}&size=small`).then(async (res) => {
+          res.status.should.eql(422);
+          const body = await res.json();
+          body.error.should.eql(StaticStrings.MediaControllerErrors.MediaTypeNotImplementedResize);
+        });
+      });
+    });
   });
 };
 

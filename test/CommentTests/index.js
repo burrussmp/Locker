@@ -8,9 +8,9 @@ import RepliesBasic from '@test/CommentTests/replies.basic.test';
 import RepliesSpecific from '@test/CommentTests/replies.specific.test';
 
 const commentTests = () => {
-  // describe('PATH: /api/:postId/comments', CommentBasic);
-  // describe('PATH: /api/comments/:commentId', CommentSpecific);
-  // describe('PATH: \'/api/comments/:commentId/replies\'', RepliesBasic);
+  describe('PATH: /api/:postId/comments', CommentBasic);
+  describe('PATH: /api/comments/:commentId', CommentSpecific);
+  describe('PATH: \'/api/comments/:commentId/replies\'', RepliesBasic);
   describe('PATH: \'/api/comments/:commentId/replies/:replyId\'', RepliesSpecific);
 };
 
