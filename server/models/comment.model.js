@@ -8,7 +8,7 @@ const ReplySchema = new mongoose.Schema({
     type: String,
     trim: true,
     required: StaticStrings.CommentModelErrors.ReplyTextRequired,
-    maxlength: [300, StaticStrings.CommentModelErrors.MaxCommentSizeError],
+    maxlength: [300, StaticStrings.CommentModelErrors.MaxReplySizeError],
   },
   postedBy: {
     type: mongoose.Schema.ObjectId,

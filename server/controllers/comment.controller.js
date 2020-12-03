@@ -160,11 +160,7 @@ const createReply = async (req, res) => {
     const newReply = await CommentServices.addReply(req.params.commentId, reply);
     return res.status(200).json({'_id': newReply._id});
   } catch (err) {
-    if (errorHandler.getErrorMessage(err).includes(StaticStrings.CommentModelErrors.ReplyTextRequired)) {
-      return res.status(400).json({error: StaticStrings.CommentModelErrors.ReplyTextRequired});
-    } else {
-      return res.status(400).json({error: errorHandler.getErrorMessage(err)});
-    }
+    return res.status(400).json({error: errorHandler.getErrorMessage(err)});
   }
 };
 

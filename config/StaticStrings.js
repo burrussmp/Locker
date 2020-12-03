@@ -140,7 +140,8 @@ const StaticStrings = {
     MissingTextField: 'Missing text field in request body',
   },
   CommentModelErrors: {
-    MaxCommentSizeError: 'Text must be less than 300 characters',
+    MaxCommentSizeError: 'Comment must be less than 300 characters',
+    MaxReplySizeError: 'Reply must be less than 300 characters',
     CommentNotFoundError: 'Comment not found',
     ReplyTextRequired: 'The reply text cannot be empty',
     ReplyNotFound: 'Reply not found',
