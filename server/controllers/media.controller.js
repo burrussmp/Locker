@@ -49,7 +49,7 @@ const AllDimensions = {
       height: 256,
     },
   },
-  ProductPost: {
+  Product: {
     small: {
       width: 50,
       height: 75,
@@ -127,7 +127,7 @@ const getMediaByKeyResize = async (req, res, key) => {
   }
   const typeSizes = AllDimensions[media.type];
   if (!typeSizes) {
-    return res.status(501).json({error: ErrorMessages.MediaTypeNotImplementedResize});
+    return res.status(422).json({error: ErrorMessages.MediaTypeNotImplementedResize});
   }
   const dimensions = typeSizes[req.query.size];
   if (!dimensions) {

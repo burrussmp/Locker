@@ -27,6 +27,7 @@ const ProductData = [
     'tags': ['tag1', 'tag2', 'tag3'],
     'all_media': [
       process.cwd() + '/test/resources/product_assets/mason_core_rib_tank2.jpg',
+      process.cwd() + '/test/resources/sample_vid.mp4',
     ],
     'product_collection': 'tanks',
     'meta': {},

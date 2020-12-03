@@ -79,7 +79,7 @@ const createProductPost = async (req, res) => {
 */
 const getProductPost = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.postId).select('type caption tags postedBy postedByType createdAt updatedAt')
+    const post = await Post.findById(req.params.postId).select('contentType caption tags postedBy postedByType createdAt updatedAt')
         .populate({
           path: 'postedBy',
           select: 'profile_photo',
