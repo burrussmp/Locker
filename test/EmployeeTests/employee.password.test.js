@@ -25,7 +25,8 @@ const employeeChangePasswordTest = () => {
         employee = await createEmployee(admin, getEmployeeConstructor(EmployeeData[1]));
       });
       it('Not owner (should fail)', async ()=>{
-        return agent.put(`/api/employees/${employee.id}/password?access_token=${admin.access_token}`)
+        const supervisor = await createEmployee(admin, getEmployeeConstructor(EmployeeData[0]));
+        return agent.put(`/api/employees/${employee.id}/password?access_token=${supervisor.access_token}`)
             .send({
               'old_password': EmployeeData[1].password,
               'password': validPassword,

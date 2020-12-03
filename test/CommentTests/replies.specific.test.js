@@ -77,13 +77,13 @@ const replySpecific = () => {
       });
       it('Get Reply: As user (should work)', async ()=>{
         const user = await createUser(UserData[0]);
-        return agent.get(`/api/comments/${comment._id}/replies/replies/${reply._id}?access_token=${user.access_token}`).then(async (res)=>{
+        return agent.get(`/api/comments/${comment._id}/replies/${reply._id}?access_token=${user.access_token}`).then(async (res)=>{
           res.status.should.eql(200);
         });
       });
       it('Get Reply: As employee (should succeed)', async ()=>{
         const employee = await createEmployee(admin, getEmployeeConstructor(EmployeeData[1]));
-        return agent.get(`/api/comments/${comment._id}/replies/replies/${reply._id}?access_token=${employee.access_token}`).then(async (res)=>{
+        return agent.get(`/api/comments/${comment._id}/replies/${reply._id}?access_token=${employee.access_token}`).then(async (res)=>{
           res.status.should.eql(200);
         });
       });

@@ -194,7 +194,10 @@ const update = async (req, res) => {
 };
 
 /**
- * @desc Delete an employee
+ * @desc Delete an employee.
+ *  Must be 1) At least a supervisor (unless admin)
+ * 2) Have higher permissions than the authorizer (supervisor cannot delete admin)
+ * 3) Be a part of the same organization
  * @param {Request} req HTTP request object
  * @param {Response} res HTTP response object
  * @return {Promise<Response>} The employee that was deleted
@@ -202,6 +205,13 @@ const update = async (req, res) => {
  */
 const remove = async (req, res) => {
   try {
+    if (req.profile.permissions.level < req.auth.level) {
+      const errMessage = `Requester authorization insufficient: Requester level ${req.auth.level} & level of requestee ${req.profile.permissions.level}`;
+      return res.status(401).json({error: errMessage});
+    }
+    if (req.auth.level != 0 && req.profile.organization._id.toString() != req.auth.organization.toString()) {
+      return res.status(401).json({error: StaticStrings.EmployeeControllerErrors.RequireAdminOrRequesterInOrg});
+    }
     const deletedEmployee = await req.profile.deleteOne();
     return res.json(deletedEmployee);
   } catch (err) {

@@ -3,10 +3,11 @@ import chai from 'chai';
 import chaiHttp from 'chai-http';
 import {app} from '@server/server';
 import Media from '@server/models/media.model';
+import {OrganizationData} from '@development/organization.data';
 import {EmployeeData, getEmployeeConstructor} from '@development/employee.data';
 
 import StaticStrings from '@config/StaticStrings';
-import {dropDatabase, loginAdminEmployee, createEmployee} from '@test/helper';
+import {dropDatabase, loginAdminEmployee, createEmployee, createOrg} from '@test/helper';
 
 
 chai.use(chaiHttp);
@@ -151,58 +152,73 @@ const employeeSpecificTest = () => {
         admin = await loginAdminEmployee();
         employee = await createEmployee(admin, getEmployeeConstructor(EmployeeData[1]));
       });
-      it('Delete an employee (should succeed)', async ()=>{
-        return agent.delete(`/api/employees/${employee.id}?access_token=${employee.access_token}`)
-            .then((res)=>{
-              res.status.should.eql(200);
-              return agent.get(`/api/employees/${employee.id}?access_token=${employee.access_token}`)
-                  .then((res)=>{
-                    res.status.should.eql(404);
-                  });
-            });
+      it('Delete Employee: As supervisor (should succeed)', async ()=>{
+        const supervisor = await createEmployee(admin, getEmployeeConstructor(EmployeeData[0]));
+        return agent.delete(`/api/employees/${employee.id}?access_token=${supervisor.access_token}`).then((res)=>{
+          res.status.should.eql(200);
+          return agent.get(`/api/employees/${employee.id}?access_token=${supervisor.access_token}`).then((res)=>{
+            res.status.should.eql(404);
+          });
+        });
       });
-      it('Delete an employee, profile should be deleted (should succeed)', async ()=>{
-        return agent.post(`/api/employees/${employee.id}/avatar?access_token=${employee.access_token}`)
-            .attach('media', EmployeeData[1].profile)
-            .then(async (res)=> {
-              res.status.should.eql(200);
-              let media = await Media.findOne({uploadedBy: employee.id});
-              (media == undefined || media == null).should.be.false;
-              return agent.delete(`/api/employees/${employee.id}?access_token=${employee.access_token}`)
-                  .then(async (res)=>{
-                    res.status.should.eql(200);
-                    media = await Media.findOne({uploadedBy: employee.id});
-                    (media == undefined || media == null).should.be.true;
-                  });
-            });
+      it('Delete Employee: As employee and lacking permissions (should fail)', async ()=>{
+        return agent.delete(`/api/employees/${employee.id}?access_token=${employee.access_token}`).then((res)=>{
+          res.status.should.eql(403);
+          res.body.error.should.eql(StaticStrings.InsufficientPermissionsError);
+        });
       });
-      it('Not logged in (should fail)', async ()=>{
-        const newField = {'first_name': 'first_name'};
-        return agent.delete(`/api/employees/${employee.id}`)
-            .send(newField)
-            .then((res)=>{
-              res.status.should.eql(401);
-              res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError);
-              return agent.get(`/api/employees/${employee.id}?access_token=${employee.access_token}`)
-                  .then((res)=>{
-                    res.status.should.eql(200);
-                    res.body.first_name.should.eql(EmployeeData[1].first_name);
-                  });
-            });
+      it('Delete an employee as admin (should succeed)', async ()=>{
+        return agent.delete(`/api/employees/${employee.id}?access_token=${admin.access_token}`).then((res)=>{
+          res.status.should.eql(200);
+          return agent.get(`/api/employees/${employee.id}?access_token=${admin.access_token}`).then((res)=>{
+            res.status.should.eql(404);
+          });
+        });
       });
-      it('Not owner (should fail)', async ()=>{
-        const newField = {'first_name': 'first_name'};
-        return agent.delete(`/api/employees/${admin.id}?access_token=${employee.access_token}`)
-            .send(newField)
-            .then((res)=>{
-              res.status.should.eql(403);
-              res.body.error.should.eql(StaticStrings.NotOwnerError);
-              return agent.get(`/api/employees/${admin.id}?access_token=${employee.access_token}`)
-                  .then((res)=>{
-                    res.status.should.eql(200);
-                    res.body._id.should.eql(admin.id);
-                  });
-            });
+      it('Delete an employee: Profile should be deleted (should succeed)', async ()=>{
+        return agent.post(`/api/employees/${employee.id}/avatar?access_token=${employee.access_token}`).attach('media', EmployeeData[1].profile).then(async (res)=> {
+          res.status.should.eql(200);
+          let media = await Media.findOne({uploadedBy: employee.id});
+          (media == undefined || media == null).should.be.false;
+          return agent.delete(`/api/employees/${employee.id}?access_token=${admin.access_token}`)
+              .then(async (res)=>{
+                res.status.should.eql(200);
+                media = await Media.findOne({uploadedBy: employee.id});
+                (media == undefined || media == null).should.be.true;
+              });
+        });
+      });
+      it('Delete employee: Not logged in (should fail)', async ()=>{
+        return agent.delete(`/api/employees/${employee.id}`).then((res)=>{
+          res.status.should.eql(401);
+          res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError);
+          return agent.get(`/api/employees/${employee.id}?access_token=${employee.access_token}`).then((res)=>{
+            res.status.should.eql(200);
+            res.body.first_name.should.eql(EmployeeData[1].first_name);
+          });
+        });
+      });
+      it('Delete Employee: Not part of same organization (should fail)', async ()=>{
+        await createOrg(admin.access_token, OrganizationData[0]);
+        const supervisorOtherOrg = await createEmployee(admin, getEmployeeConstructor(EmployeeData[4]));
+        return agent.delete(`/api/employees/${employee.id}?access_token=${supervisorOtherOrg.access_token}`).then((res)=>{
+          res.status.should.eql(401);
+          res.body.error.should.eql(StaticStrings.EmployeeControllerErrors.RequireAdminOrRequesterInOrg);
+        });
+      });
+      it('Delete Employee: Not part of same organization, but admin (should succeed)', async ()=>{
+        await createOrg(admin.access_token, OrganizationData[0]);
+        const supervisorOtherOrg = await createEmployee(admin, getEmployeeConstructor(EmployeeData[4]));
+        return agent.delete(`/api/employees/${supervisorOtherOrg.id}?access_token=${admin.access_token}`).then((res)=>{
+          res.status.should.eql(200);
+        });
+      });
+      it('Delete Employee: Supervisor tries to delete admin (should fail)', async ()=>{
+        const supervisor = await createEmployee(admin, getEmployeeConstructor(EmployeeData[0]));
+        return agent.delete(`/api/employees/${admin.id}?access_token=${supervisor.access_token}`).then((res)=>{
+          res.status.should.eql(401);
+          res.body.error.should.include('Requester authorization insufficient');
+        });
       });
     });
   });

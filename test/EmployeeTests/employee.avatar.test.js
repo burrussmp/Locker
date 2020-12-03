@@ -55,7 +55,7 @@ const employeeAvatarTest = () => {
               });
             });
       });
-      it('Delete an employee and then see if cleaned up in S3', async ()=>{
+      it('Delete an employee and then see if avatar cleaned up in S3', async ()=>{
         return agent.post(`/api/employees/${employee.id}/avatar?access_token=${employee.access_token}`)
             .attach('media', EmployeeData[1].profile)
             .then(async (res)=>{
@@ -178,7 +178,7 @@ const employeeAvatarTest = () => {
             });
       });
     });
-    describe('/DELETE /api/employees/:employeeId/avatar (An employee has a non-default photo to begin each test)', ()=>{
+    describe('/DELETE /api/employees/:employeeId/avatar', ()=>{
       const agent = chai.request.agent(app);
       let admin; let employee;
       beforeEach( async () =>{
@@ -203,36 +203,33 @@ const employeeAvatarTest = () => {
       it('Delete employee and see if S3 gets cleaned up correctly', async ()=>{
         const image = await Media.findOne({'uploadedBy': employee.id});
         const key = image.key;
-        return agent.delete(`/api/employees/${employee.id}?access_token=${employee.access_token}`)
-            .then(async (res)=>{
-              res.status.should.eql(200);
-              return S3Services.fileExistsS3(key).catch(async (err)=>{
-                err.statusCode.should.eql(404);
-                const image = await Media.findOne({'key': key});
-                (image == null || image == undefined).should.be.true;
-              });
-            });
+        return agent.delete(`/api/employees/${employee.id}/avatar?access_token=${employee.access_token}`).then(async (res)=>{
+          res.status.should.eql(200);
+          return S3Services.fileExistsS3(key).catch(async (err)=>{
+            err.statusCode.should.eql(404);
+            const image = await Media.findOne({'key': key});
+            (image == null || image == undefined).should.be.true;
+          });
+        });
       });
       it('Not owner (should fail)', async ()=>{
-        return agent.delete(`/api/employees/${employee.id}?access_token=${admin.access_token}`)
-            .then((res)=>{
-              res.status.should.eql(403);
-              res.body.error.should.eql(StaticStrings.NotOwnerError);
-            });
+        const supervisor = await createEmployee(admin, getEmployeeConstructor(EmployeeData[0]));
+        return agent.delete(`/api/employees/${employee.id}/avatar?access_token=${supervisor.access_token}`).then((res)=>{
+          res.status.should.eql(403);
+          res.body.error.should.eql(StaticStrings.NotOwnerError);
+        });
       });
       it('Not logged in (should fail)', async ()=>{
-        return agent.delete(`/api/employees/${employee.id}`)
-            .then((res)=>{
-              res.status.should.eql(401);
-              res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError);
-            });
+        return agent.delete(`/api/employees/${employee.id}/avatar`).then((res)=>{
+          res.status.should.eql(401);
+          res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError);
+        });
       });
       it('User does not exists (should fail)', async ()=>{
-        return agent.delete(`/api/employees/404?access_token=${employee.access_token}`)
-            .then((res)=>{
-              res.status.should.eql(404);
-              res.body.error.should.eql(StaticStrings.EmployeeControllerErrors.EmployeeNotFound);
-            });
+        return agent.delete(`/api/employees/404/avatar?access_token=${employee.access_token}`).then((res)=>{
+          res.status.should.eql(404);
+          res.body.error.should.eql(StaticStrings.EmployeeControllerErrors.EmployeeNotFound);
+        });
       });
     });
   });

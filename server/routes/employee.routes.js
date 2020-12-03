@@ -21,12 +21,12 @@ router.route('/api/employees')
 router.route('/api/employees/:employeeId')
     .get(authCtrl.authorize([EmployeePermissions.Read]), employeeCtrl.read)
     .put(authCtrl.authorize([EmployeePermissions.EditContent]), authCtrl.requireOwnership, employeeCtrl.update)
-    .delete(authCtrl.authorize([EmployeePermissions.Delete]), authCtrl.requireOwnership, employeeCtrl.remove);
+    .delete(authCtrl.authorize([EmployeePermissions.Delete]), employeeCtrl.remove);
 
 router.route('/api/employees/:employeeId/avatar')
     .get(authCtrl.authorize([EmployeePermissions.Read]), employeeCtrl.getProfilePhoto)
     .post(authCtrl.authorize([EmployeePermissions.EditContent]), authCtrl.requireOwnership, employeeCtrl.uploadProfilePhoto)
-    .delete(authCtrl.authorize([EmployeePermissions.Delete]), authCtrl.requireOwnership, employeeCtrl.removeProfilePhoto);
+    .delete(authCtrl.authorize([EmployeePermissions.EditContent]), authCtrl.requireOwnership, employeeCtrl.removeProfilePhoto);
 
 router.route('/api/employees/:employeeId/password')
     .put(authCtrl.authorize([EmployeePermissions.EditContent]), authCtrl.requireOwnership, employeeCtrl.changePassword);
