@@ -1,0 +1,309 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Deploy dev environment resources for locker
+Resources:
+  DevUser:
+    Type: 'AWS::IAM::User'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: b15904b7-3757-4492-b0fc-7e68c9c02af9
+  DevGroup:
+    Type: 'AWS::IAM::Group'
+    Properties:
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonCognitoPowerUser'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 3ad35e6b-c713-488c-b49a-67b8e367dff1
+  AddDevUsersToDevGroup:
+    Type: 'AWS::IAM::UserToGroupAddition'
+    Properties:
+      GroupName: !Ref DevGroup
+      Users:
+        - !Ref DevUser
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 0e6ee7fb-5d34-42ba-b929-dd8ca4105884
+  DevStorageIAMPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: DevStorageIAMPolicy
+      PolicyDocument:
+        Statement:
+          Effect: Allow
+          Action:
+            - 's3:PutObject'
+            - 's3:GetObject'
+            - 's3:DeleteObject'
+            - 's3:PutObjectAcl'
+          Resource: !Join 
+            - ''
+            - - !GetAtt 
+                - DevStorage
+                - Arn
+              - /*
+      Groups:
+        - !Ref DevGroup
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 66f200ab-f116-49a2-aba6-cd06148fec1d
+  DevStorage:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: environment
+          Value: dev
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 3c617f1b-429a-4074-ad23-e78b584f5585
+    DeletionPolicy: Delete
+  DevStoragePolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      PolicyDocument:
+        Id: DevStorageBucketPolicy
+        Version: 2012-10-17
+        Statement:
+          - Sid: Dev storage permissions
+            Effect: Allow
+            Principal:
+              AWS: !GetAtt 
+                - DevUser
+                - Arn
+            Action:
+              - 's3:GetBucketLocation'
+              - 's3:ListBucket'
+            Resource: !GetAtt 
+              - DevStorage
+              - Arn
+          - Effect: Allow
+            Principal:
+              AWS: !GetAtt 
+                - DevUser
+                - Arn
+            Action:
+              - 's3:PutObject'
+              - 's3:GetObject'
+              - 's3:DeleteObject'
+              - 's3:PutObjectAcl'
+            Resource: !Join 
+              - ''
+              - - !GetAtt 
+                  - DevStorage
+                  - Arn
+                - /*
+      Bucket: !Ref DevStorage
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 07c3cf50-8d6c-4e05-8671-84bf9bfca5b9
+  DevUserAccessKeys:
+    Type: 'AWS::IAM::AccessKey'
+    Properties:
+      UserName: !Ref DevUser
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 12229436-db3b-48ad-865e-b13fda2a3cf7
+  DevUserPool:
+    Type: 'AWS::Cognito::UserPool'
+    Properties:
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1 
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false
+      AliasAttributes:
+        - email
+        - preferred_username
+        - phone_number
+      LambdaConfig:
+        PreSignUp: 'arn:aws:lambda:us-east-1:047429572273:function:lambda-trigger-pre-sign-up-auto-confirm-and-verify'
+      MfaConfiguration: 'OFF'
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+          RequireUppercase: true
+          TemporaryPasswordValidityDays: 1
+      Schema:
+        - Name: email
+          Required: true
+          Mutable: true
+      UsernameConfiguration:
+        CaseSensitive: true
+      UserPoolAddOns:
+        AdvancedSecurityMode: 'OFF'
+      UserPoolName: 'Dev-User-Pool'
+  DevUserPoolAppClient:
+    Type: 'AWS::Cognito::UserPoolClient'
+    Properties:
+      UserPoolId: !Ref DevUserPool
+      ClientName: Dev-User-Pool-Client
+      GenerateSecret: false
+      PreventUserExistenceErrors: 'ENABLED'
+  PreSignUpUserPoolPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn: DevUserPool
+    Properties: 
+      Action: lambda:InvokeFunction
+      FunctionName: 'arn:aws:lambda:us-east-1:047429572273:function:lambda-trigger-pre-sign-up-auto-confirm-and-verify'
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !GetAtt
+        - DevUserPool
+        - Arn
+  DevEmployeePool:
+    Type: 'AWS::Cognito::UserPool'
+    Properties:
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1 
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false
+      AliasAttributes:
+        - email
+      LambdaConfig:
+        PreSignUp: 'arn:aws:lambda:us-east-1:047429572273:function:lambda-trigger-pre-sign-up-auto-confirm-and-verify'
+      MfaConfiguration: 'OFF'
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+          RequireUppercase: true
+          TemporaryPasswordValidityDays: 1
+      Schema:
+        - Name: email
+          Required: true
+          Mutable: true
+      UsernameConfiguration:
+        CaseSensitive: true
+      UserPoolAddOns:
+        AdvancedSecurityMode: 'OFF'
+      UserPoolName: 'Dev-Employee-Pool'
+  DevEmployeePoolAppClient:
+    Type: 'AWS::Cognito::UserPoolClient'
+    Properties:
+      UserPoolId: !Ref DevEmployeePool
+      ClientName: Dev-Employee-Pool-Client
+      GenerateSecret: false
+      PreventUserExistenceErrors: 'ENABLED'
+  PreSignUpEmployeePoolPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn: DevEmployeePool
+    Properties: 
+      Action: lambda:InvokeFunction
+      FunctionName: 'arn:aws:lambda:us-east-1:047429572273:function:lambda-trigger-pre-sign-up-auto-confirm-and-verify'
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !GetAtt
+        - DevEmployeePool
+        - Arn
+Outputs:
+  Region:
+    Description: The AWS Region
+    Value: !Ref 'AWS::Region'
+  DevUserAccessKey:
+    Value: !Ref DevUserAccessKeys
+    Description: AWSAccessKeyId of new user
+  DevUserSecretKey:
+    Value: !GetAtt 
+      - DevUserAccessKeys
+      - SecretAccessKey
+    Description: AWSSecretAccessKey of new user
+  DevBucketName:
+    Value: !Ref DevStorage
+    Description: The name of the dev env storage bucket
+  DevUserPoolID:
+    Value: !Ref DevUserPool
+    Description: The dev env User user pool ID
+  DevUserPoolClientID:
+    Value: !Ref DevUserPoolAppClient
+    Description: The client ID for the dev env User user pool
+  DevEmployeePoolID:
+    Value: !Ref DevEmployeePool
+    Description: The dev env Employee user pool ID
+  DevEmployeePoolClientID:
+    Value: !Ref DevEmployeePoolAppClient
+    Description: The client ID for the dev env Employee user pool
+Metadata:
+  'AWS::CloudFormation::Designer':
+    3c617f1b-429a-4074-ad23-e78b584f5585:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 60
+        'y': 90
+      z: 1
+      embeds: []
+    3ad35e6b-c713-488c-b49a-67b8e367dff1:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: -40
+        'y': 190
+      z: 1
+      embeds: []
+      isassociatedwith:
+        - add8b1e5-be78-48f9-b81a-6288569d27c9
+        - 66f200ab-f116-49a2-aba6-cd06148fec1d
+    66f200ab-f116-49a2-aba6-cd06148fec1d:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: -40
+        'y': 90
+      z: 1
+      embeds: []
+      isassociatedwith:
+        - 3ad35e6b-c713-488c-b49a-67b8e367dff1
+    b15904b7-3757-4492-b0fc-7e68c9c02af9:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 170
+        'y': 190
+      z: 1
+      embeds: []
+    12229436-db3b-48ad-865e-b13fda2a3cf7:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 290
+        'y': 190
+      z: 1
+      embeds: []
+    07c3cf50-8d6c-4e05-8671-84bf9bfca5b9:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 170
+        'y': 90
+      z: 1
+      embeds: []
+      isassociatedwith:
+        - 3c617f1b-429a-4074-ad23-e78b584f5585
+    0e6ee7fb-5d34-42ba-b929-dd8ca4105884:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 70
+        'y': 190
+      z: 0
+      embeds: []
+      isassociatedwith:
+        - b15904b7-3757-4492-b0fc-7e68c9c02af9
+        - 3ad35e6b-c713-488c-b49a-67b8e367dff1

@@ -10,10 +10,10 @@ import EmployeeRole from './employee.role.test';
 
 const employeeTests = () => {
   describe('PATH: \'/api/employees\'', BasicTest);
-  describe('PATH: \'/api/employees/:employeeId\'', EmployeeSpecific);
-  describe('PATH: \'/api/employees/:employeeId/avatar\'', EmployeeAvatar);
-  describe('PATH: \'/api/employees/:employeeId/password\'', EmployeePassword);
-  describe('PATH: \'/api/employees/:employeeId/role\'', EmployeeRole);
+//   describe('PATH: \'/api/employees/:employeeId\'', EmployeeSpecific);
+//   describe('PATH: \'/api/employees/:employeeId/avatar\'', EmployeeAvatar);
+//   describe('PATH: \'/api/employees/:employeeId/password\'', EmployeePassword);
+//   describe('PATH: \'/api/employees/:employeeId/role\'', EmployeeRole);
 };
 
 export default employeeTests;

@@ -16,27 +16,25 @@ const getMongodbURI = () => {
 const getAWSConfig = () => {
   if (process.env.NODE_ENV == 'development') {
     return {
+      region: process.env.AWS_DEV_REGION,
       aws_access_key: process.env.AWS_ACCESS_KEY_ID_DEV,
       aws_secret: process.env.AWS_SECRET_ACCESS_KEY_DEV,
-      aws_s3_region: process.env.AWS_S3_REGION_DEV,
+      aws_bucket_name: process.env.AWS_S3_DEV_BUCKET_NAME,
       aws_user_pool_id: process.env.AWS_USER_POOL_ID_DEV,
       aws_user_pool_client_id: process.env.AWS_USER_POOL_CLIENT_ID_DEV,
-      aws_user_pool_region: process.env.AWS_USER_POOL_REGION_DEV,
       aws_employee_pool_id: process.env.AWS_EMPLOYEE_POOL_ID_DEV,
       aws_employee_pool_client_id: process.env.AWS_EMPLOYEE_POOL_CLIENT_ID_DEV,
-      aws_employee_pool_region: process.env.AWS_EMPLOYEE_POOL_REGION_DEV,
     };
   } else if (process.env.NODE_ENV == 'test') {
     return {
+      region: process.env.AWS_TEST_REGION,
       aws_access_key: process.env.AWS_ACCESS_KEY_ID_TEST,
       aws_secret: process.env.AWS_SECRET_ACCESS_KEY_TEST,
-      aws_s3_region: process.env.AWS_S3_REGION_TEST,
+      aws_bucket_name: process.env.AWS_S3_TEST_BUCKET_NAME,
       aws_user_pool_id: process.env.AWS_USER_POOL_ID_TEST,
       aws_user_pool_client_id: process.env.AWS_USER_POOL_CLIENT_ID_TEST,
-      aws_user_pool_region: process.env.AWS_USER_POOL_REGION_TEST,
       aws_employee_pool_id: process.env.AWS_EMPLOYEE_POOL_ID_TEST,
       aws_employee_pool_client_id: process.env.AWS_EMPLOYEE_POOL_CLIENT_ID_TEST,
-      aws_employee_pool_region: process.env.AWS_EMPLOYEE_POOL_REGION_TEST,
     };
   } else {
     throw Error(`NODE_ENV set to ${process.env.NODE_ENV}: Invalid must be development, test, or production`);
@@ -48,7 +46,6 @@ const config = {
   port: process.env.PORT || 3000,
   address: process.env.ADDRESS || '127.0.0.1',
   mongoUri: getMongodbURI(),
-  bucket_name: process.env.NODE_ENV == 'development' ? 'locker-media-storage-dev' : 'locker-media-storage-test',
   aws_config: getAWSConfig(),
 };
 

@@ -17,7 +17,7 @@ import StaticStrings from '@config/StaticStrings';
 aws.config.update({
   secretAccessKey: config.aws_config.aws_secret,
   accessKeyId: config.aws_config.aws_access_key,
-  region: config.aws_config.aws_s3_region,
+  region: config.aws_config.region,
 });
 
 /**
@@ -36,7 +36,7 @@ const generateCognitoAPI = (type) => {
       UserPoolId: config.aws_config.aws_user_pool_id,
       ClientId: config.aws_config.aws_user_pool_client_id,
     };
-    UserPoolRegion = config.aws_config.aws_user_pool_region;
+    UserPoolRegion = config.aws_config.region;
     UserPool = new AmazonCognitoIdentity.CognitoUserPool(UserPoolConfig);
     cognitoCanUpdate = ['username', 'email', 'phone_number'];
   } else if (type == 'Employee') {
@@ -44,7 +44,7 @@ const generateCognitoAPI = (type) => {
       UserPoolId: config.aws_config.aws_employee_pool_id,
       ClientId: config.aws_config.aws_employee_pool_client_id,
     };
-    UserPoolRegion = config.aws_config.aws_employee_pool_region;
+    UserPoolRegion = config.aws_config.region;
     UserPool = new AmazonCognitoIdentity.CognitoUserPool(UserPoolConfig);
     cognitoCanUpdate = ['email'];
   }

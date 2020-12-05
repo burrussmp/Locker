@@ -19,7 +19,7 @@ import StaticStrings from '@config/StaticStrings';
 aws.config.update({
   secretAccessKey: config.aws_config.aws_secret,
   accessKeyId: config.aws_config.aws_access_key,
-  region: 'us-east-1',
+  region: config.aws_config.region,
 });
 
 
@@ -30,7 +30,7 @@ aws.config.update({
  */
 const getMediaS3 = (key) => {
   const params = {
-    Bucket: config.bucket_name,
+    Bucket: config.aws_config.aws_bucket_name,
     Key: key,
   };
   return s3.getObject(params).promise();
@@ -46,7 +46,7 @@ const s3 = new aws.S3();
  */
 const deleteMediaS3 = async (key) => {
   const params = {
-    Bucket: config.bucket_name,
+    Bucket: config.aws_config.aws_bucket_name,
     Key: key,
   };
   try {
@@ -63,7 +63,7 @@ const deleteMediaS3 = async (key) => {
  */
 const listObjectsS3 = () => {
   const params = {
-    Bucket: config.bucket_name,
+    Bucket: config.aws_config.aws_bucket_name,
     MaxKeys: 1000,
   };
   return s3.listObjectsV2(params).promise();
@@ -76,7 +76,7 @@ const listObjectsS3 = () => {
  */
 const fileExistsS3 = async (key) => {
   const params = {
-    Bucket: config.bucket_name,
+    Bucket: config.aws_config.aws_bucket_name,
     Key: key,
   };
   return s3.headObject(params).promise();
@@ -92,7 +92,7 @@ const fileExistsS3 = async (key) => {
  */
 const putObjectS3 = async (key, buffer, contentType, metaData = undefined) => {
   const params = {
-    Bucket: config.bucket_name,
+    Bucket: config.aws_config.aws_bucket_name,
     Key: key,
     ContentType: contentType,
     Body: buffer,
