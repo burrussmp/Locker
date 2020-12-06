@@ -1,9 +1,11 @@
+/* eslint-disable max-len */
 /* eslint-disable camelcase */
 'use strict';
 
 import User from '@server/models/user.model';
 import Post from '@server/models/post.model';
-import mongoose from 'mongoose';
+import permissions from '@server/permissions';
+
 
 const filterUser_signup = (data) => {
   return {
@@ -39,15 +41,13 @@ const filter_reply_create = (data) => {
 };
 
 const dropDatabase = async () => {
-  let cursor = User.find().cursor();
-  for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
-    await doc.deleteOne();
+  for (const model of [User, Post]) {
+    const cursor = model.find().cursor();
+    for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
+      await doc.deleteOne();
+    }
   }
-  cursor = Post.find().cursor();
-  for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
-    await doc.deleteOne();
-  }
-  return mongoose.connection.dropDatabase();
+  await permissions.setUpRBAC();
 };
 
 

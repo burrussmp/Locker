@@ -44,7 +44,7 @@ const getAWSConfig = () => {
 const config = {
   env: process.env.NODE_ENV || 'development',
   port: process.env.PORT || 3000,
-  address: process.env.ADDRESS || '127.0.0.1',
+  address: process.env.NODE_ENV == 'test' ? '127.0.0.1' : process.env.IP_ADDRESS,
   mongoUri: getMongodbURI(),
   aws_config: getAWSConfig(),
 };

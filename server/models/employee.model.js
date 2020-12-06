@@ -104,19 +104,19 @@ EmployeeSchema.plugin(mongoose_fuzzy_searching, {
   fields: [
     {
       name: 'first_name',
-      minSize: 2,
+      minSize: 3,
       weight: 2,
       prefixOnly: true,
     },
     {
       name: 'last_name',
-      minSize: 2,
+      minSize: 3,
       weight: 2,
       prefixOnly: true,
     },
     {
       name: 'email',
-      minSize: 1,
+      minSize: 3,
       weight: 10,
     },
   ],
