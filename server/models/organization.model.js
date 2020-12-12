@@ -1,6 +1,7 @@
 /* eslint-disable no-invalid-this */
 /* eslint-disable max-len */
 import mongoose from 'mongoose';
+import Media from '@server/models/media.model';
 import validators from '@server/services/validators';
 import StaticStrings from '@config/StaticStrings';
 
@@ -58,9 +59,11 @@ OrgSchema.path('url').validate(async function(value) {
 
 OrgSchema.pre('deleteOne', {document: true, query: false}, async function() {
   // clean up logo
-  const media = await mongoose.models.Media.findById(this.logo);
-  if (media) {
-    await media.deleteOne();
+  if (this.logo) {
+    const media = await Media.findById(this.logo);
+    if (media) {
+      await media.deleteOne();
+    }
   }
 });
 

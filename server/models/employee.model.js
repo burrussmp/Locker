@@ -6,6 +6,7 @@ import mongoose from 'mongoose';
 // eslint-disable-next-line camelcase
 import mongoose_fuzzy_searching from 'mongoose-fuzzy-searching';
 
+import Media from '@server/models/media.model';
 import StaticStrings from '@config/StaticStrings';
 import CognitoAPI from '@server/services/Cognito.services';
 import validators from '@server/services/validators';
@@ -57,9 +58,11 @@ const EmployeeSchema = new mongoose.Schema(
 // eslint-disable-next-line max-len
 EmployeeSchema.pre('deleteOne', {document: true, query: false}, async function() {
   // clean up profile photo
-  const media = await mongoose.models.Media.findById(this.profile_photo);
-  if (media) {
-    await media.deleteOne();
+  if (this.profile_photo) {
+    const media = await Media.findById(this.profile_photo);
+    if (media) {
+      await media.deleteOne();
+    }
   }
   // clean up user pool
   try {

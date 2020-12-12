@@ -134,8 +134,8 @@ const bufferEquality = (buf1, buf2) => {
 const createProductPostAgent = (agent, data, accessToken=undefined) => {
   const path = accessToken ? `/api/products?access_token=${accessToken}` : '/api/products';
   let postAgent = agent.post(path).field(getProductConstructor(data)).attach('media', data.media);
-  for (let i = 0; i < data.all_media.length; ++i) {
-    postAgent = postAgent.attach(`all_media`, data.all_media[i]);
+  for (let i = 0; i < data.additional_media.length; ++i) {
+    postAgent = postAgent.attach(`additional_media`, data.additional_media[i]);
   }
   return postAgent;
 };

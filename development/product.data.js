@@ -8,7 +8,7 @@ const ProductData = [
     'description': 'Wear a reminder on your wrist to live in alignment with your intentions. The Intention Star Bracelet in solid 14k gold has a bright, hand-selected moonstone. Moonstone is said to enhance intuition and offer protection. 100% Recycled, 14k gold with hand-picked, ethically sourced moonstone Adjustable length: 6.5\u201d (16.5cm',
     'sizes': [],
     'tags': ['golden', 'discount'],
-    'all_media': [
+    'additional_media': [
       process.cwd() + '/test/resources/product_assets/intention_star2.jpg',
     ],
     'product_collection': 'books',
@@ -25,7 +25,7 @@ const ProductData = [
     'description': 'Women\'s Mason Basic Rib Tank by Michael Lauren. Made in Los Angeles. Shop designer tank tops for women at michaellaurenclothing.com and enjoy Free US Shipping!',
     'sizes': ['s', 'm', 'l'],
     'tags': ['tag1', 'tag2', 'tag3'],
-    'all_media': [
+    'additional_media': [
       process.cwd() + '/test/resources/product_assets/mason_core_rib_tank2.jpg',
       process.cwd() + '/test/resources/sample_vid.mp4',
     ],

@@ -55,7 +55,7 @@ const productById = async (req, res, next, id) => {
   try {
     const product = await Product.findById(id)
         .populate('media', 'key blurhash mimetype')
-        .populate('all_media', 'key blurhash mimetype')
+        .populate('additional_media', 'key blurhash mimetype')
         .exec();
     if (!product) {
       return res.status(404).json({error: ProductControllerErrors.NotFoundError});
@@ -80,7 +80,7 @@ const create = async (req, res) => {
     'uploadedByType': 'Employee',
     'fields': [
       {name: 'media', maxCount: 1, mimetypesAllowed: ['image/png', 'image/jpeg'], required: true},
-      {name: 'all_media', maxCount: 20, mimetypesAllowed: ['image/png', 'image/jpeg', 'video/mp4'], required: false},
+      {name: 'additional_media', maxCount: 20, mimetypesAllowed: ['image/png', 'image/jpeg', 'video/mp4'], required: false},
     ],
   };
   return S3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages) => {
@@ -95,9 +95,10 @@ const create = async (req, res) => {
       product_collection: req.body.product_collection,
       price: req.body.price,
       media: media._id,
-      all_media: allImages['all_media'].map((x)=>x._id),
+      additional_media: allImages['additional_media'].map((x)=>x._id),
       description: req.body.description,
       available: true,
+      approved: req.body.approved ? req.body.approved : false,
       sizes: req.body.sizes,
       tags: req.body.tags,
       meta: ProductServices.deserializeAttr(req.body.meta, 'meta'),
@@ -111,8 +112,8 @@ const create = async (req, res) => {
       try {
         const mediaDoc = await Media.findById(media._id);
         await mediaDoc.deleteOne();
-        if (allImages['all_media']) {
-          for (const media of allImages['all_media']) {
+        if (allImages['additional_media']) {
+          for (const media of allImages['additional_media']) {
             const mediaDoc = await Media.findById(media._id);
             await mediaDoc.deleteOne();
           }
@@ -174,9 +175,11 @@ const update = async (req, res) => {
     'price',
     'description',
     'available',
+    'approved',
     'tags',
     'meta',
     'sizes',
+    'last_scraped',
   ];
   const updateFields = Object.keys(req.body);
   const invalidFields = _.difference(updateFields, fieldsAllowed);
@@ -189,6 +192,13 @@ const update = async (req, res) => {
       req.body.meta = metaUpdate;
     } else {
       delete req.body.meta;
+    }
+  }
+  if (req.body.last_scraped) {
+    try {
+      req.body.last_scraped = new Date(req.body.last_scraped * 1000);
+    } catch (err) {
+      return res.status(400).json({error: `Unable to convert 'last_scraped' unix timestamp to javascript timestamp. Reason ${err.message}`});
     }
   }
   try {

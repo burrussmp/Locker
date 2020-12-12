@@ -84,9 +84,11 @@ UserSchema.path('username').validate(async function(value) {
 
 UserSchema.pre('deleteOne', {document: true, query: false}, async function() {
   // clean up profile photo
-  const media = await mongoose.models.Media.findById(this.profile_photo);
-  if (media) {
-    await media.deleteOne();
+  if (this.profile_photo) {
+    const media = await mongoose.models.Media.findById(this.profile_photo);
+    if (media) {
+      await media.deleteOne();
+    }
   }
   // clean up posts
   const posts = await mongoose.models.Post.find({postedBy: this._id, postedByType: 'User'});

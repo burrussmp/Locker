@@ -162,7 +162,7 @@ const mediaTestBasics = () => {
         const post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then((res)=>res.body);
         const postDetails = await agent.get(`/api/posts/${post._id}?access_token=${admin.access_token}`).then((res)=>res.body);
         imageKey = postDetails.content.product.media.key;
-        videoKey = postDetails.content.product.all_media[1].key;
+        videoKey = postDetails.content.product.additional_media[1].key;
       });
       after(async () => {
         await dropDatabase();

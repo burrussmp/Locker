@@ -10,6 +10,7 @@ import RBAC from '@server/models/rbac.model';
 
 import mediaCtrl from '@server/controllers/media.controller';
 
+import OrganizationServices from '@server/services/database/organization.services';
 import S3Services from '@server/services/S3.services';
 
 
@@ -135,8 +136,9 @@ const read = (req, res) => {
  * @return {Promise<Response>}
  */
 const list = async (req, res) => {
+  const query = OrganizationServices.queryBuilder(req);
   try {
-    const organizations = await Organization.find().select(
+    const organizations = await Organization.find(query).select(
         '_id updatedAt createdAt',
     );
     return res.json(organizations);

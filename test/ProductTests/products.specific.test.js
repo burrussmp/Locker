@@ -237,6 +237,14 @@ const productSpecificTest = () => {
           res.body.price.should.eql(0);
         });
       });
+      it('Update Product: Set approved to true (should fail)', async ()=>{
+        const update = {'approved': true};
+        return agent.put(`/api/products/${product._id}?access_token=${admin.access_token}`).send(update).then(async (res) => {
+          res.status.should.eql(200);
+          const product = await Product.findById(res.body._id);
+          product.approved.should.eql(true);
+        });
+      });
       it('Update Product: Price update is negative (should fail)', async ()=>{
         const update = {'price': '-0.1'};
         return agent.put(`/api/products/${product._id}?access_token=${admin.access_token}`).send(update).then(async (res) => {

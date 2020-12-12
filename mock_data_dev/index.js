@@ -21,7 +21,7 @@ require('@server/models/posts/product.post.model');
 
 (async () => {
   console.log('Dropping data base...');
-  await helper.dropDatabase();
+  await helper.dropDatabase(false);
   // console.log('Populating with users and adding their profile photos...');
   // for (let i = 0; i < Users.data.length; ++i) {
   //   const user_signup = helper.filterUser_signup(Users.data[i]); // signup

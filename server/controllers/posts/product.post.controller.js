@@ -93,7 +93,7 @@ const getProductPost = async (req, res) => {
           populate: {
             path: 'product',
             populate: {
-              path: 'media all_media',
+              path: 'media additional_media',
               select: '-_id key blurhash mimetype',
             },
           },

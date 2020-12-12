@@ -42,6 +42,10 @@ const ProductSchema = new mongoose.Schema(
         type: Boolean,
         required: ProductModelErrors.ExistsRequired,
       },
+      approved: {
+        type: Boolean,
+        default: true,
+      },
       product_collection: {
         type: String,
       },
@@ -58,7 +62,7 @@ const ProductSchema = new mongoose.Schema(
         type: [{type: String}],
         default: [],
       },
-      all_media: {
+      additional_media: {
         type: [{type: mongoose.Schema.ObjectId, ref: 'Media'}],
         default: [],
       },
@@ -113,7 +117,7 @@ ProductSchema.pre('deleteOne', {document: true, query: false}, async function() 
   if (media) {
     await media.deleteOne();
   }
-  for (const additionalMedia of this.all_media) {
+  for (const additionalMedia of this.additional_media) {
     media = await mongoose.models.Media.findById(additionalMedia); // delegate cleanup to media
     if (media) {
       await media.deleteOne();

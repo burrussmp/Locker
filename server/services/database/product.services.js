@@ -27,6 +27,12 @@ const queryBuilder = (req) => {
   if (req.query.organization) {
     query.organization = req.query.organization;
   }
+  if (req.query.url) {
+    query.url = req.query.url;
+  }
+  if (req.query.name) {
+    query.name = req.query.name;
+  }
   if (req.query.available) {
     const availableLowercase = req.query.available.toLowerCase();
     query.available = availableLowercase == 'true';

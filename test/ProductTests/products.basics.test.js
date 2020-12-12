@@ -4,6 +4,7 @@ import chaiHttp from 'chai-http';
 import {app} from '@server/server';
 import RBAC from '@server/models/rbac.model';
 import Employee from '@server/models/employee.model';
+import Product from '@server/models/product.model';
 import Organization from '@server/models/organization.model';
 import Media from '@server/models/media.model';
 import {EmployeeData} from '@development/employee.data';
@@ -54,8 +55,8 @@ const productBasicTests = () => {
         fieldData['media'] = 'some text';
         let postAgent = agent.post(`/api/products?access_token=${admin.access_token}`)
             .field(fieldData);
-        for (let i = 0; i < newProductData.all_media.length; ++i) {
-          postAgent = postAgent.attach(`all_media`, newProductData.all_media[i]);
+        for (let i = 0; i < newProductData.additional_media.length; ++i) {
+          postAgent = postAgent.attach(`additional_media`, newProductData.additional_media[i]);
         }
         return postAgent.then((res)=>{
           res.status.should.eql(400);
@@ -77,14 +78,14 @@ const productBasicTests = () => {
           res.body.error.should.include(StaticStrings.S3ServiceErrors.BadRequestWrongKey);
         });
       });
-      it('Create Product: all_media missing (should succeed because not required)', async ()=>{
-        newProductData.all_media = [];
+      it('Create Product: additional_media missing (should succeed because not required)', async ()=>{
+        newProductData.additional_media = [];
         return createProductPostAgent(agent, newProductData, admin.access_token).then((res)=>{
           res.status.should.eql(200);
         });
       });
-      it('Create Product: all_media wrong type (should fail)', async ()=>{
-        newProductData.all_media = [process.cwd() + '/test/resources/profile3.txt'];
+      it('Create Product: additional_media wrong type (should fail)', async ()=>{
+        newProductData.additional_media = [process.cwd() + '/test/resources/profile3.txt'];
         return createProductPostAgent(agent, newProductData, admin.access_token).then((res)=>{
           res.status.should.eql(422);
           res.body.error.should.include(StaticStrings.S3ServiceErrors.InvalidImageMimeType);
@@ -102,6 +103,21 @@ const productBasicTests = () => {
         return createProductPostAgent(agent, newProductData, admin.access_token).then((res)=>{
           res.status.should.eql(400);
           res.body.error.should.eql(StaticStrings.ProductModelErrors.PriceRequired);
+        });
+      });
+      it('Create Product: \'approved\' is omitted but should be false (should succeed)', async ()=>{
+        return createProductPostAgent(agent, newProductData, admin.access_token).then(async (res)=>{
+          res.status.should.eql(200);
+          const product = await Product.findById(res.body._id);
+          product.approved.should.eql(false);
+        });
+      });
+      it('Create Product: \'approved\' is true (should succeed)', async ()=>{
+        newProductData.approved = true;
+        return createProductPostAgent(agent, newProductData, admin.access_token).then(async (res)=>{
+          res.status.should.eql(200);
+          const product = await Product.findById(res.body._id);
+          product.approved.should.eql(false);
         });
       });
       it('Create Product: Price is negative (should fail)', async ()=>{
