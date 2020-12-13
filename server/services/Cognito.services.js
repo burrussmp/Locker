@@ -88,7 +88,7 @@ const generateCognitoAPI = (type) => {
       }
       jwt.verify(token, pem, function(err, payload) {
         if (err) {
-          reject(Error(`Public signature does not match ${tokenType} token`));
+          reject(Error(`Public signature does not match ${tokenType} token. Reason ${err}`));
         } else {
           resolve(decodedJwt);
         }

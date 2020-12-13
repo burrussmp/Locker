@@ -194,6 +194,8 @@ Resources:
     Type: 'AWS::Cognito::UserPoolClient'
     Properties:
       UserPoolId: !Ref DevEmployeePool
+      AccessTokenValidity: 86400
+      IdTokenValidity: 86400
       ClientName: Dev-Employee-Pool-Client
       GenerateSecret: false
       PreventUserExistenceErrors: 'ENABLED'
