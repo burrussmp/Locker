@@ -19,7 +19,8 @@
   "main": "./dist/server.generated.js",
   "scripts": {
     "test": "NODE_ENV=test mocha --timeout 30000 ./test/mochacfg.js --require @babel/register ./test/index.js",
-    "development": "nodemon",
+    "development": "NODE_ENV=development nodemon",
+    "stage": "NODE_ENV=stage node --require @babel/register ./server/server.js",
     "setup_dev": "NODE_ENV=development node --require @babel/register ./mock_data_dev/index.js",
     "build": "webpack --config webpack.config.client.production.js && webpack --mode=production --config webpack.config.server.js"
   },
