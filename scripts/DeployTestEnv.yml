@@ -39,9 +39,7 @@ Resources:
             - 'secretsmanager:ListSecretVersionIds'
           Resource: !Join 
             - ''
-            - - !GetAtt 
-                - TestSecretManager
-                - Arn
+            - - !Ref TestSecretManager
               - /*
       Groups:
         - !Ref TestGroup

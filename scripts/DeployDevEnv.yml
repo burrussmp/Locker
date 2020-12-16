@@ -39,9 +39,7 @@ Resources:
             - 'secretsmanager:ListSecretVersionIds'
           Resource: !Join 
             - ''
-            - - !GetAtt 
-                - DevSecretManager
-                - Arn
+            - - !Ref DevSecretManager
               - /*
       Groups:
         - !Ref DevGroup
