@@ -262,6 +262,11 @@ Outputs:
   DevEmployeePoolClientID:
     Value: !Ref DevEmployeePoolAppClient
     Description: The client ID for the dev env Employee user pool
+  DevSecretManagerARN:
+    Value: !Ref DevSecretManager
+    Description: The ARN of the Dev Secret Manager
+    Export:
+      Name: DevSecretManagerARN
 Metadata:
   'AWS::CloudFormation::Designer':
     3c617f1b-429a-4074-ad23-e78b584f5585:
