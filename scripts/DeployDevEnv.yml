@@ -3,6 +3,8 @@ Description: Deploy dev environment resources for locker
 Resources:
   DevUser:
     Type: 'AWS::IAM::User'
+    Properties:
+      UserName : "DevUser"
     Metadata:
       'AWS::CloudFormation::Designer':
         id: b15904b7-3757-4492-b0fc-7e68c9c02af9

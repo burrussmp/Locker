@@ -69,6 +69,7 @@
     "expo-activity-feed": "^0.9.1",
     "express": "^4.17.1",
     "express-jwt": "^6.0.0",
+    "express-winston": "^4.0.5",
     "form-data": "^3.0.0",
     "formidable": "1.2.2",
     "get-pixels": "^3.3.2",
@@ -90,6 +91,7 @@
     "request": "^2.88.2",
     "sharp": "^0.26.0",
     "util": "^0.12.3",
-    "uuid": "^8.3.0"
+    "uuid": "^8.3.0",
+    "winston": "^3.3.3"
   }
 }
