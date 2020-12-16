@@ -3,8 +3,6 @@ Description: Deploy test environment resources for locker
 Resources:
   TestUser:
     Type: 'AWS::IAM::User'
-    Properties:
-      UserName : "DevUser"
     Metadata:
       'AWS::CloudFormation::Designer':
         id: b15904b7-3757-4492-b0fc-7e68c9c02af9
@@ -37,10 +35,7 @@ Resources:
             - 'secretsmanager:GetSecretValue'
             - 'secretsmanager:DescribeSecret'
             - 'secretsmanager:ListSecretVersionIds'
-          Resource: !Join 
-            - ''
-            - - !Ref TestSecretManager
-              - /*
+          Resource: !Ref TestSecretManager
       Groups:
         - !Ref TestGroup
     Metadata:
@@ -167,8 +162,6 @@ Resources:
     Type: 'AWS::Cognito::UserPoolClient'
     Properties:
       UserPoolId: !Ref TestUserPool
-      AccessTokenValidity: 86400
-      IdTokenValidity: 86400
       ClientName: Test-User-Pool-Client
       GenerateSecret: false
       PreventUserExistenceErrors: 'ENABLED'
@@ -267,6 +260,11 @@ Outputs:
   TestEmployeePoolClientID:
     Value: !Ref TestEmployeePoolAppClient
     Description: The client ID for the test env Employee user pool
+  TestSecretManagerARN:
+    Value: !Ref TestSecretManager
+    Description: The ARN of the Test Secret Manager
+    Export:
+      Name: TestSecretManagerARN
 Metadata:
   'AWS::CloudFormation::Designer':
     3c617f1b-429a-4074-ad23-e78b584f5585:

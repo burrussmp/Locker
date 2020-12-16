@@ -16,6 +16,8 @@ import FormData from 'form-data';
 
 import RBAC from './models/rbac.model';
 
+import SecretManagerServices from '@server/services/SecretManager.services';
+
 import config from '@config/config';
 import errorHandler from './services/dbErrorHandler';
 
@@ -184,12 +186,17 @@ const setUpRBAC = async () => {
   } catch (err) {
     // console.log(errorHandler.getErrorMessage(err));
   }
-
+  if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
+    const secrets = await SecretManagerServices.getSecrets();
+    process.env.ADMIN_EMAIL = secrets['admin_email'];
+    process.env.ADMIN_PASSWORD = secrets['admin_password'];
+  }
   const admin = {
     email: process.env.ADMIN_EMAIL,
     password: process.env.ADMIN_PASSWORD,
     role_type: 'admin',
   };
+
   try {
     await fetch(`http://${config.address}:${config.port}/api/employees?access_token=${process.env.ADMIN_SECRET}`, {
       'method': 'POST',

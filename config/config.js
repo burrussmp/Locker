@@ -50,6 +50,7 @@ const getAWSConfig = () => {
       aws_user_pool_client_id: process.env.AWS_USER_POOL_CLIENT_ID_DEV,
       aws_employee_pool_id: process.env.AWS_EMPLOYEE_POOL_ID_DEV,
       aws_employee_pool_client_id: process.env.AWS_EMPLOYEE_POOL_CLIENT_ID_DEV,
+      aws_secret_manager_arn: process.env.SECRET_MANAGER_ARN_DEV,
     };
   } else if (process.env.NODE_ENV == 'test') {
     return {
@@ -61,6 +62,7 @@ const getAWSConfig = () => {
       aws_user_pool_client_id: process.env.AWS_USER_POOL_CLIENT_ID_TEST,
       aws_employee_pool_id: process.env.AWS_EMPLOYEE_POOL_ID_TEST,
       aws_employee_pool_client_id: process.env.AWS_EMPLOYEE_POOL_CLIENT_ID_TEST,
+      aws_secret_manager_arn: process.env.SECRET_MANAGER_ARN_TEST,
     };
   } else if (process.env.NODE_ENV == 'stage') {
     return {

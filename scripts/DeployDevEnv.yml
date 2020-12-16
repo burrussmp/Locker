@@ -3,8 +3,6 @@ Description: Deploy dev environment resources for locker
 Resources:
   DevUser:
     Type: 'AWS::IAM::User'
-    Properties:
-      UserName : "DevUser"
     Metadata:
       'AWS::CloudFormation::Designer':
         id: b15904b7-3757-4492-b0fc-7e68c9c02af9
@@ -37,10 +35,7 @@ Resources:
             - 'secretsmanager:GetSecretValue'
             - 'secretsmanager:DescribeSecret'
             - 'secretsmanager:ListSecretVersionIds'
-          Resource: !Join 
-            - ''
-            - - !Ref DevSecretManager
-              - /*
+          Resource: !Ref DevSecretManager
       Groups:
         - !Ref DevGroup
     Metadata:
@@ -217,8 +212,6 @@ Resources:
     Type: 'AWS::Cognito::UserPoolClient'
     Properties:
       UserPoolId: !Ref DevEmployeePool
-      AccessTokenValidity: 86400
-      IdTokenValidity: 86400
       ClientName: Dev-Employee-Pool-Client
       GenerateSecret: false
       PreventUserExistenceErrors: 'ENABLED'

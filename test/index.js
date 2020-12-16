@@ -17,5 +17,5 @@ import ProductTest from '@test/ProductTests/index';
 // describe('Comment Test', CommentTest);
 // describe('Media Test', MediaTest);
 // describe('Organization Test', OrganizationTest);
-// describe('Employee Test', EmployeeTest);
+describe('Employee Test', EmployeeTest);
 describe('Product Tests', ProductTest);
