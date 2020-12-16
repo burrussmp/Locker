@@ -25,6 +25,29 @@ Resources:
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 0e6ee7fb-5d34-42ba-b929-dd8ca4105884
+  SecretsManagerReaderPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: TestSecretsManagerReaderPolicy
+      PolicyDocument:
+        Statement:
+          Effect: Allow
+          Action:
+            - 'secretsmanager:GetResourcePolicy'
+            - 'secretsmanager:GetSecretValue'
+            - 'secretsmanager:DescribeSecret'
+            - 'secretsmanager:ListSecretVersionIds'
+          Resource: !Join 
+            - ''
+            - - !GetAtt 
+                - TestSecretManager
+                - Arn
+              - /*
+      Groups:
+        - !Ref TestGroup
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 66f200ab-f116-49a2-aba6-cd06148fec1d
   TestStorageIAMPolicy:
     Type: 'AWS::IAM::Policy'
     Properties:
@@ -209,6 +232,16 @@ Resources:
       SourceArn: !GetAtt
         - TestEmployeePool
         - Arn
+  TestSecretManager:
+    Type: 'AWS::SecretsManager::Secret'
+    Properties:
+      Name: TestEnvSecretManager
+      Description: "Secret manager for all non-resource related secrets for test environment"
+      GenerateSecretString:
+        SecretStringTemplate: '{"admin_email": "matthew.p.burruss@vanderbit.edu"}'
+        GenerateStringKey: "admin_password"
+        PasswordLength: 32
+        ExcludeCharacters: '"@/\'
 Outputs:
   Region:
     Description: The AWS Region
