@@ -248,6 +248,8 @@ Outputs:
   TestBucketName:
     Value: !Ref TestStorage
     Description: The name of the test env storage bucket
+    Export:
+      Name: TestBucketName
   TestUserPoolID:
     Value: !Ref TestUserPool
     Description: The test env User user pool ID

@@ -250,6 +250,8 @@ Outputs:
   DevBucketName:
     Value: !Ref DevStorage
     Description: The name of the dev env storage bucket
+    Export:
+      Name: DevBucketName
   DevUserPoolID:
     Value: !Ref DevUserPool
     Description: The dev env User user pool ID
