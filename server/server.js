@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 import StaticStrings from '@config/StaticStrings';
 
 // Connection URL
-mongoose.Promise = global.Promise;
+mongoose.Promise = Promise;
 // Configure DB
 mongoose.connect(config.mongoUri, {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false});
 mongoose.set('useCreateIndex', true);
@@ -20,7 +20,7 @@ mongoose.connection.on('error', () => {
 
 
 // Catch unauthorized errors
-app.use(function(err, req, res, next) {
+app.use(function(err, req, res) {
   if (err.name === 'UnauthorizedError') {
     res.status(err.status).json({'error': StaticStrings.UnauthorizedMissingTokenError});
   } else if (err) {

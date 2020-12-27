@@ -6,7 +6,7 @@
         "@server/*": ["./server/*"],
         "@development/*": ["./development/*"],
         "@test/*": ["./test/*"],
-        "@config/*": ["./config/*"],
+        "@config/*": ["./config/*"]
       }
     }
 }
