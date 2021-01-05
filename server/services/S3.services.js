@@ -49,12 +49,8 @@ const deleteMediaS3 = async (key) => {
     Bucket: config.aws_config.aws_bucket_name,
     Key: key,
   };
-  try {
-    await Media.deleteOne({key: key});
-    return s3.deleteObject(params).promise();
-  } catch (err) {
-    throw err;
-  }
+  await Media.deleteOne({key: key});
+  return s3.deleteObject(params).promise();
 };
 
 /**
@@ -125,7 +121,7 @@ const mediaFieldFilter = (mediaMeta) => {
     }
     const validMimeType = fieldMeta.mimetypesAllowed.includes(file.mimetype);
     if (!validMimeType) {
-      return next(new Error(`${StaticStrings.S3ServiceErrors.InvalidImageMimeType} ${fieldMeta.mimetypesAllowed}`), false);
+      return next(new Error(`${StaticStrings.S3ServiceErrors.InvalidImageMimeType} ${fieldMeta.mimetypesAllowed}. Received ${file.mimetype}`), false);
     } else {
       return next(null, true);
     }

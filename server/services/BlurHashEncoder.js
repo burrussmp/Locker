@@ -3,8 +3,6 @@
 
 import getPixels from 'get-pixels';
 import {encode} from 'blurhash';
-const {JSDOM} = require('jsdom');
-global.document = new JSDOM().window.document;
 
 /**
  * @desc Encode a data URI or a

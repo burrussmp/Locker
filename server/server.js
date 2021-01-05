@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import config from '@config/config';
 import app from '@server/express';
 import mongoose from 'mongoose';

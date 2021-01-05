@@ -1,9 +1,10 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable max-len */
 'use strict';
 // imports
 const AmazonCognitoIdentity = require('amazon-cognito-identity-js');
 const {v4: uuid4} = require('uuid');
-global.fetch = require('node-fetch');
+const fetch = require('node-fetch');
 
 import jwt from 'jsonwebtoken';
 import jwkToPem from 'jwk-to-pem';
@@ -51,9 +52,9 @@ const generateCognitoAPI = (type) => {
 
   // get the public key to verify JWT token signatures
   const pems = {};
-  fetch(
-      `https://cognito-idp.${UserPoolRegion}.amazonaws.com/${UserPoolConfig.UserPoolId}/.well-known/jwks.json`,
-  )
+      fetch(
+          `https://cognito-idp.${UserPoolRegion}.amazonaws.com/${UserPoolConfig.UserPoolId}/.well-known/jwks.json`,
+      )
       .then((res) => res.json())
       .then((body) => {
         const keys = body['keys'];
@@ -170,15 +171,11 @@ const generateCognitoAPI = (type) => {
    * @return {Promise<Error, String>} A promise that resolves if session is verified
    */
   const verifySession = async (session) => {
-    try {
-      const parsedSession = parseSession(session);
-      const idToken = parsedSession.idToken;
-      const accessToken = parsedSession.accessToken;
-      await verifyToken(idToken, 'id');
-      await verifyToken(accessToken, 'access');
-    } catch (err) {
-      throw err;
-    }
+    const parsedSession = parseSession(session);
+    const idToken = parsedSession.idToken;
+    const accessToken = parsedSession.accessToken;
+    await verifyToken(idToken, 'id');
+    await verifyToken(accessToken, 'access');
   };
 
 
@@ -407,7 +404,7 @@ const generateCognitoAPI = (type) => {
    */
   const getUserByEmail = (email) => {
     const params = {
-      Filter: `email=\"${email}\"`,
+      Filter: `email="${email}"`,
       Limit: 1,
       UserPoolId: UserPoolConfig.UserPoolId,
     };
@@ -430,15 +427,11 @@ const generateCognitoAPI = (type) => {
    * @return {Promise<Error, CognitoSession>} A promise that resolves if successful to a session
    */
   const getCognitoSession = async (username, password) => {
-    try {
-      const {session, newPasswordRequired} = await getAuthenticateUserAsync(username, password);
-      if (newPasswordRequired) {
-        throw Error('New password required');
-      }
-      return session;
-    } catch (err) {
-      throw err;
+    const {session, newPasswordRequired} = await getAuthenticateUserAsync(username, password);
+    if (newPasswordRequired) {
+      throw Error('New password required');
     }
+    return session;
   };
 
   /**
@@ -448,13 +441,9 @@ const generateCognitoAPI = (type) => {
    * @return {Promise<Error, CognitoSession>} A promise that resolves if successful to a session
    */
   const login = async (username, password) => {
-    try {
-      const session = await getCognitoSession(username, password);
-      verifySession(session);
-      return session;
-    } catch (err) {
-      throw err;
-    }
+    const session = await getCognitoSession(username, password);
+    verifySession(session);
+    return session;
   };
 
 
@@ -534,11 +523,7 @@ const generateCognitoAPI = (type) => {
     if (passwordError) {
       throw passwordError;
     }
-    try {
-      await verifyToken(accessToken);
-    } catch (err) {
-      throw err;
-    }
+    await verifyToken(accessToken);
     const params = {
       AccessToken: accessToken,
       PreviousPassword: oldPassword,

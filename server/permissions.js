@@ -1,15 +1,3 @@
-/* eslint-disable max-len */
-'use strict';
-/*
-* Assumptions
-    - All permissions are disallowed by default
-    - Each permission grants a privilege
-    - Certain privileges are reserved for admins (like ownership)
-    - Business logic field contains necessary business logic
-* Public Content
-    - User profile
-    - Organization profile
-*/
 import fs from 'fs';
 import fetch from 'node-fetch';
 import FormData from 'form-data';

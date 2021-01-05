@@ -106,7 +106,8 @@ const create = async (req, res) => {
       _id: user._id,
     });
   } catch (err) {
-    CognitoServices.deleteCognitoUser(parsedSession).then(()=>{
+    const congitoUser = CognitoServices.getCognitoUsername(session);
+    CognitoServices.deleteCognitoUser(congitoUser).then(()=>{
       return res.status(400).json({error: errorHandler.getErrorMessage(err)});
     }).catch((err)=>{
       return res.status(500).json({error: StaticStrings.UnknownServerError + err});
@@ -261,7 +262,7 @@ const uploadProfilePhoto = (req, res) => {
     const update = {$set: {'profile_photo': media._id}};
     try {
       const user = await User.findOneAndUpdate(query, update, {runValidators: true}); // update
-      if (user.profile_photo) {
+      if (user.profile_photo && user.profile_photo.key) {
         const media = await Media.findOne({key: req.profile.profile_photo.key});
         await media.deleteOne();
         res.status(200).json({message: StaticStrings.UploadProfilePhotoSuccess});

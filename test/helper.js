@@ -76,6 +76,7 @@ const createEmployee = async (admin, data) => {
 };
 
 const loginAdminEmployee = async () => {
+  // eslint-disable-next-line no-unused-vars
   return new Promise((resolve, reject) => {
     fetch('http://localhost:3000/auth/ent/login', {
       'method': 'POST',

@@ -216,7 +216,7 @@ const getReaction = async (req, res) => {
         'selected': {$max: {$eq: ['$reactions.postedBy', reqId]}}},
       },
     ]);
-    const reactionData = Object.assign({selected: false}, ...Object.entries({...ReactionTypes}).map(([a, b]) => ({[b]: 0})));
+    const reactionData = Object.assign({selected: false}, ...Object.entries({...ReactionTypes}).map((values) => ({[values[1]]: 0})));
     for (const reaction of reactions) {
       reactionData[reaction._id] = reaction.total;
       if (reaction.selected) reactionData.selected=reaction._id;

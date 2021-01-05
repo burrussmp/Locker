@@ -78,7 +78,7 @@ UserSchema.path('username').validate(async function(value) {
   }
   const invalidError = validators.isValidUsername(value);
   if (invalidError) {
-    throw validators.createValidationError(invalid_error);
+    throw validators.createValidationError(invalidError);
   }
 }, null);
 
