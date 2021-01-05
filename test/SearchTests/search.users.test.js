@@ -4,6 +4,7 @@ import chaiHttp from 'chai-http';
 import {app} from '@server/server';
 import {UserData} from '@development/user.data';
 import User from '@server/models/user.model';
+import RBAC from '@server/models/rbac.model';
 import {dropDatabase, createUser} from '@test/helper';
 
 chai.use(chaiHttp);

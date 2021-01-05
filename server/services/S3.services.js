@@ -106,7 +106,7 @@ const putObjectS3 = async (key, buffer, contentType, metaData = undefined) => {
  *  :file:File: The file from the multer parse
  *  :next:Function: A middleware function to call next
  *    The function throws an error if there is not metaData in regards to the field,
- *    If it is missing a 'mimestypesAllowed' attribute that tells whether or not
+ *    If it is missing a 'mimeTypesAllowed' attribute that tells whether or not
  *    the support mimetype is allowed or if the actual mimetype of the file is not
  *    supported.
  */
@@ -116,12 +116,12 @@ const mediaFieldFilter = (mediaMeta) => {
     if (!fieldMeta) {
       return next(new Error(`Server Error: Missing media meta for field ${file.fieldname}`), false);
     }
-    if (!fieldMeta.mimetypesAllowed) {
+    if (!fieldMeta.mimeTypesAllowed) {
       return next(new Error(`Server Error: Missing array of allowed mime types in media meta for field ${file.fieldname}`), false);
     }
-    const validMimeType = fieldMeta.mimetypesAllowed.includes(file.mimetype);
+    const validMimeType = fieldMeta.mimeTypesAllowed.includes(file.mimetype);
     if (!validMimeType) {
-      return next(new Error(`${StaticStrings.S3ServiceErrors.InvalidImageMimeType} ${fieldMeta.mimetypesAllowed}. Received ${file.mimetype}`), false);
+      return next(new Error(`${StaticStrings.S3ServiceErrors.InvalidImageMimeType} ${fieldMeta.mimeTypesAllowed}. Received ${file.mimetype}`), false);
     } else {
       return next(null, true);
     }

@@ -285,7 +285,7 @@ const uploadProfilePhoto = (req, res) => {
     'uploadedBy': req.params.employeeId,
     'uploadedByType': 'Employee',
     'fields': [
-      {name: 'media', maxCount: 1, mimetypesAllowed: ['image/png', 'image/jpeg'], required: true},
+      {name: 'media', maxCount: 1, mimeTypesAllowed: ['image/png', 'image/jpeg'], required: true},
     ],
   };
   S3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages) => {
@@ -340,7 +340,7 @@ const removeProfilePhoto = async (req, res) => {
 
 /**
  * @desc Change the role of an employee. The following checks are performed for this request to succeed
- *  1. The requester has a lower role level (higher auth) than the requested role and the requestee's current role
+ *  1. The requester has a lower role level (higher auth) than the requested role and the requestee current role
  *  2. The requester and the requestee are part of the same organization or the requestee is an admin
  * @param {Request} req HTTP request object
  * @param {Response} res HTTP response object

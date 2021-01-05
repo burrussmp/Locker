@@ -54,7 +54,7 @@ const employeeSpecificTest = () => {
         const newField = {'first_name': 'first_name'};
         return agent.put(`/api/employees/${employee.id}?access_token=${employee.access_token}`)
             .send(newField)
-            .then((res)=>{
+            .then(()=>{
               return agent.get(`/api/employees/${employee.id}?access_token=${employee.access_token}`)
                   .then((res)=>{
                     res.status.should.eql(200);
@@ -66,7 +66,7 @@ const employeeSpecificTest = () => {
         const newField = {'last_name': 'last_name'};
         return agent.put(`/api/employees/${employee.id}?access_token=${employee.access_token}`)
             .send(newField)
-            .then((res)=>{
+            .then(()=>{
               return agent.get(`/api/employees/${employee.id}?access_token=${employee.access_token}`)
                   .then((res)=>{
                     res.status.should.eql(200);
@@ -78,7 +78,7 @@ const employeeSpecificTest = () => {
         const newField = {'date_of_birth': new Date()};
         return agent.put(`/api/employees/${employee.id}?access_token=${employee.access_token}`)
             .send(newField)
-            .then((res)=>{
+            .then(()=>{
               return agent.get(`/api/employees/${employee.id}?access_token=${employee.access_token}`)
                   .then((res)=>{
                     res.status.should.eql(200);

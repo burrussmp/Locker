@@ -22,7 +22,7 @@ aws.config.update({
 });
 
 /**
- * @desc Generate an object that can be used to interact with a Congito User Pool
+ * @desc Generate an object that can be used to interact with a Cognito User Pool
  * @param {String} type The type of Cognito User Pool to connect to and return API interface
  *  Must be either 'User' or 'Employee'
  * @return {object} An API interface for a specific Cognito User Pool
@@ -101,7 +101,7 @@ const generateCognitoAPI = (type) => {
    * @desc Retrieves a user from Cognito
    * @param {String} cognitoUsername The UUIDv4 Cognito username
    * @param {String} password The password of the Cognito user
-   * @return {Promise<object>} a promise that resolves into an object with session key and newPasswordrequired key
+   * @return {Promise<object>} a promise that resolves into an object with session key and newPassword key
    */
   const getAuthenticateUserAsync = (cognitoUsername, password) => {
     const cognitoUser = new AmazonCognitoIdentity.CognitoUser({
@@ -155,9 +155,9 @@ const generateCognitoAPI = (type) => {
   };
 
   /**
-   * @desc Get congito username from parsed session object
+   * @desc Get cognito username from parsed session object
    * @param {CognitoUserSession} session The Cognito user session
-   * @return {String} The congito username
+   * @return {String} The cognito username
    */
   const getCognitoUsername = (session) => {
     const parsedSession = parseSession(session);
@@ -239,7 +239,7 @@ const generateCognitoAPI = (type) => {
   /**
    * @desc Update a Cognito user with admin privilege
    * @param {String} username The preferred_username of the new user
-   * @param {String} password The unencrypted password (validated by method)
+   * @param {String} password The un-encrypted password (validated by method)
    * @param {String} email An email address (validated by method)
    * @param {String} phoneNumber A valid phone number (validated by method)
    * @return {Promise<Error, String>} A promise that resolves if successful
@@ -304,7 +304,7 @@ const generateCognitoAPI = (type) => {
   /**
    * @desc Update a Cognito user with admin privilege
    * @param {String} email An email address (validated by method)
-   * @param {String} password The unencrypted password (validated by method)
+   * @param {String} password The un-encrypted password (validated by method)
    * @return {Promise<Error, String>} A promise that resolves if successful
    */
   const signUpEmployee = async (email, password) => {

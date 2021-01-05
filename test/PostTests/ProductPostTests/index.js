@@ -1,6 +1,6 @@
 'use strict';
 
-// import Basic from './product.post.basic.test';
+import Basic from './product.post.basic.test';
 import Specific from './product.post.specific.test';
 
 

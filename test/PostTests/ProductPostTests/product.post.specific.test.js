@@ -226,7 +226,7 @@ const productPostTestBasics = () => {
           updatedPost.tags.should.eql([]);
         });
       });
-      it('Update Post: Check if a user can update post (should fail because invaid permissions)', async ()=>{
+      it('Update Post: Check if a user can update post (should fail because invalid permissions)', async ()=>{
         const user = await createUser(UserData[0]);
         await Post.findByIdAndUpdate(post._id, {'postedBy': user._id});
         return agent.put(`/api/posts/${post._id}?access_token=${user.access_token}`).send(defaultUpdate).then(async (res)=>{

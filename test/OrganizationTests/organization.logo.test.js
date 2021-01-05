@@ -12,7 +12,7 @@ import {OrganizationData} from '@development/organization.data';
 import {bufferEquality, dropDatabase, createEmployee, loginAdminEmployee, createOrg} from '@test/helper';
 import StaticStrings from '@config/StaticStrings';
 import S3Services from '@server/services/S3.services';
-
+import fetch from 'node-fetch';
 chai.use(chaiHttp);
 chai.should();
 

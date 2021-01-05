@@ -3,7 +3,7 @@
 import ProfileTest from './profile.test';
 import BaseTest from './base.test';
 import AvatarTest from './avatar.test';
-import UpdatePasswordTest from './changepassword.test';
+import UpdatePasswordTest from './change.password.test';
 import FollowTest from './follow.test';
 
 const userTests = () => {

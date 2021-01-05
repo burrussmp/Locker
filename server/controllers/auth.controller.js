@@ -152,7 +152,7 @@ const requireOwnership = (req, res, next) => {
  * @param {Request} req HTTP request object
  * @param {Response} res HTTP request object
  * @param {Function} next The next middleware function to execute
- * @return {Promise<Response>} Returns 400 if invalid token else continues to next middlware
+ * @return {Promise<Response>} Returns 400 if invalid token else continues to next middleware
  */
 const checkPermissions = async (req, res, next) => {
   if (!isAdmin(req) && res.locals.permissions.length != 0) {
@@ -163,7 +163,7 @@ const checkPermissions = async (req, res, next) => {
       } else if (res.locals.cognitoPoolType === 'Employee') {
         person = await Employee.findOne({cognito_username: req.auth.cognito_username}).select('permissions organization _id');
       } else {
-        return res.status(500).json({error: `Server Error: res.locals.congitoType is not one of ${ALLOWED_COGNITO_POOL_TYPES}`});
+        return res.status(500).json({error: `Server Error: res.locals.cognitoType is not one of ${ALLOWED_COGNITO_POOL_TYPES}`});
       }
       if (!person) {
         return res.status(400).json({error: StaticStrings.TokenIsNotValid});

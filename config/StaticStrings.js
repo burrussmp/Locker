@@ -70,7 +70,7 @@ const StaticStrings = {
     LastNameRequired: 'Last name is required',
     FirstNameRequired: 'First name is required',
     EmailRequired: 'Email is required',
-    UsernameExceedLength: 'Username cannot exceed 32 characterse',
+    UsernameExceedLength: 'Username cannot exceed 32 characters',
     InvalidUsername: 'Valid alphanumeric username (underscores allowed) is required',
     PasswordTooShort: 'Password length must be > 7',
     PasswordNoNumbers: 'Password must contain at least one numeric character',
@@ -188,9 +188,9 @@ const StaticStrings = {
   RemoveProfilePhotoSuccess: 'Successfully removed profile photo',
   UpdatedPasswordSuccess: 'Successfully updated password',
   AddedFollowerSuccess: 'Following someone new!',
-  RemovedFollowerSuccess: 'Successfully unfollowed someone',
+  RemovedFollowerSuccess: 'Successfully un-followed someone',
   LikedCommentSuccess: 'Successfully liked a comment',
-  UnlikedCommentSuccess: 'Successfully unliked a comment',
+  UnlikedCommentSuccess: 'Successfully un-liked a comment',
 };
 
 export default StaticStrings;

@@ -115,7 +115,7 @@ const avatarTest = () => {
               const image = await Media.findOne({'key': user.profile_photo.key});
               image.mimetype.should.eql('image/jpeg');
               const key = image.key;
-              return agent.delete(`/api/users/${id}?access_token=${token}`).then((res)=>{
+              return agent.delete(`/api/users/${id}?access_token=${token}`).then(()=>{
                 return S3Services.fileExistsS3(key).catch((err)=>{
                   (err==null || err==undefined).should.be.false;
                   err.statusCode.should.eql(404);
@@ -142,7 +142,7 @@ const avatarTest = () => {
             });
       });
       it('User not found (should fail)', async ()=>{
-        return agent.post(`/api/users/somedummy/avatar`)
+        return agent.post(`/api/users/bad/avatar`)
             .set('Authorization', `Bearer ${accessToken0}`)
             .attach('media', process.cwd()+'/test/resources/profile1.png', 'profile_photo')
             .then((res)=>{
@@ -186,7 +186,7 @@ const avatarTest = () => {
         return agent.post(`/api/users/${id}/avatar`)
             .set('Authorization', `Bearer ${token}`)
             .attach('media', process.cwd()+'/test/resources/profile1.png', 'profile_photo')
-            .then(async (res)=>{
+            .then(async ()=>{
               const user = await User.findById({'_id': id}).populate('profile_photo', 'key').exec();
               const image = await Media.findOne({'key': user.profile_photo.key});
               const key = image.key;
@@ -217,13 +217,13 @@ const avatarTest = () => {
         return agent.post(`/api/users/${id}/avatar`)
             .set('Authorization', `Bearer ${token}`)
             .attach('media', process.cwd()+'/test/resources/profile1.png', 'profile_photo')
-            .then(async (res)=>{
+            .then(async ()=>{
               const user = await User.findById({'_id': id}).populate('profile_photo', 'key').exec();
               const image = await Media.findOne({'key': user.profile_photo.key});
               const key = image.key;
               return agent.post(`/api/users/${id2}/avatar`).set('Authorization', `Bearer ${accessToken1}`)
                   .attach('media', process.cwd()+'/test/resources/profile1.png', 'profile_photo')
-                  .then(async (res)=>{
+                  .then(async ()=>{
                     const user2 = await User.findById({'_id': id2}).populate('profile_photo', 'key').exec();
                     const image2 = await Media.findOne({'key': user2.profile_photo.key});
                     const key2 = image2.key;
@@ -293,7 +293,7 @@ const avatarTest = () => {
         });
       });
       it('User not found (should fail)', async ()=>{
-        return agent.get(`/api/users/somedummy/avatar`)
+        return agent.get(`/api/users/bad/avatar`)
             .set('Authorization', `Bearer ${accessToken0}`)
             .then((res)=>{
               res.status.should.eql(404);
@@ -377,7 +377,7 @@ const avatarTest = () => {
           res.body.length.should.eql(2);
           res.body[0].username.should.eql(UserData[0].username);
         });
-        await agent.post('/auth/login').send(loginUser).then((res) => {
+        await agent.post('/auth/login').send(loginUser).then(() => {
           const id = id0;
           token = accessToken0;
           return agent.post(`/api/users/${id}/avatar`).set('Authorization', `Bearer ${token}`).attach('media', process.cwd()+'/test/resources/profile1.png', 'profile_photo');
@@ -448,7 +448,7 @@ const avatarTest = () => {
       });
       it('User does not exists (should fail)', async ()=>{
         const mToken = token;
-        return agent.delete(`/api/users/somewrongthing/avatar`).set('Authorization', `Bearer ${mToken}`)
+        return agent.delete(`/api/users/bad/avatar`).set('Authorization', `Bearer ${mToken}`)
             .then((res)=>{
               res.status.should.eql(404);
               res.body.error.should.eql(StaticStrings.UserNotFoundError);

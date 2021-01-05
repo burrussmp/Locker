@@ -129,7 +129,7 @@ const likeReply = async (commentId, replyId, likerId) => {
  * @desc Unlike a reply
  * @param {String} commentId The ID of comment to like
  * @param {String} replyId The ID of the reply
- * @param {String} likerId The ID of the person unliking the reply
+ * @param {String} likerId The ID of the person un-liking the reply
  * @return {Promise<object>} A promise that resolves to the reply object
 */
 const unlikeReply = async (commentId, replyId, likerId) => {

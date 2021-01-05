@@ -33,7 +33,7 @@ const RBACTests = () => {
         await role.removePermission('user:crazy');
         role.hasPermission('user:crazy').should.be.false;
       });
-      it('Check if setrole works', async ()=>{
+      it('Check if setRole works', async ()=>{
         const role = await RBAC.findOne({role: 'user'});
         await role.addPermission('user:crazy');
         await role.removePermission('user:crazy');

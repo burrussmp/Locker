@@ -62,7 +62,7 @@ const employeeAvatarTest = () => {
               res.body.message.should.eql(StaticStrings.UploadProfilePhotoSuccess);
               const image = await Media.findOne({'uploadedBy': employee.id});
               const key = image.key;
-              return agent.delete(`/api/employees/${employee.id}?access_token=${employee.access_token}`).then((res)=>{
+              return agent.delete(`/api/employees/${employee.id}?access_token=${employee.access_token}`).then(()=>{
                 return S3Services.fileExistsS3(key).catch((err)=>{
                   (err==null || err==undefined).should.be.false;
                   err.statusCode.should.eql(404);
@@ -123,7 +123,7 @@ const employeeAvatarTest = () => {
       it('Check if overwrite works (upload twice). This checks if MongoDB and S3 have been cleaned. Old entry should be gone', async ()=>{
         return agent.post(`/api/employees/${employee.id}/avatar?access_token=${employee.access_token}`)
             .attach('media', EmployeeData[1].profile)
-            .then(async (res)=>{
+            .then(async ()=>{
               const image = await Media.findOne({'uploadedBy': employee.id});
               const key = image.key;
               return S3Services.fileExistsS3(key).then(()=>{

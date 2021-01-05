@@ -110,7 +110,7 @@ UserSchema.pre('deleteOne', {document: true, query: false}, async function() {
     console.log(err);
   }
 
-  // clean up comments I DONT THINK WE SHOULD DO THIS TBH
+  // clean up comments I DON'T THINK WE SHOULD DO THIS TBH
   // let comments = await mongoose.models.Comment.find({'postedBy':this._id});
   // for (let comment of comments){
   //   await comment.deleteOne();

@@ -57,7 +57,7 @@ const productPostTestBasics = () => {
         });
       });
       it('Create Product Post: Incorrect query parameter \'type\' (not implemented) (should fail)', async ()=>{
-        return agent.post(`/api/posts?access_token=${admin.access_token}&type=NotImplememted`).send(reqBody).then(async (res)=>{
+        return agent.post(`/api/posts?access_token=${admin.access_token}&type=NotImplemented`).send(reqBody).then(async (res)=>{
           res.status.should.eql(501);
           res.body.error.should.eql(StaticStrings.NotImplementedError);
         });
@@ -69,7 +69,7 @@ const productPostTestBasics = () => {
           res.body.error.should.eql(StaticStrings.PostModelErrors.MaxCaptionSizeError);
         });
       });
-      it('Create Product Post: Missing caption (should succceed)', async ()=>{
+      it('Create Product Post: Missing caption (should succeed)', async ()=>{
         delete reqBody.caption;
         return agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then(async (res)=>{
           res.status.should.eql(200);
@@ -83,7 +83,7 @@ const productPostTestBasics = () => {
         });
       });
       it('Create Product Post: Tag field is too long (should fail)', async ()=>{
-        reqBody.tags = ['taggggggggggggggggggggggggggggggggggg'];
+        reqBody.tags = ['tooLongOfATagThisShouldFailQuickly'];
         return agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then(async (res)=>{
           res.status.should.eql(400);
           res.body.error.should.eql(StaticStrings.PostModelErrors.MaxLengthTag);
@@ -96,7 +96,7 @@ const productPostTestBasics = () => {
           res.body.error.should.eql(StaticStrings.PostModelErrors.TagMustBeAlphabetical);
         });
       });
-      it('Create Product Post: Missing tags (should succceed)', async ()=>{
+      it('Create Product Post: Missing tags (should succeed)', async ()=>{
         delete reqBody.tags;
         return agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then(async (res)=>{
           res.status.should.eql(200);

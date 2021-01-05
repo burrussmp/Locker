@@ -29,7 +29,7 @@ const followTest = () => {
         user = await createUser(UserData[2]);
         id2 = user._id;
       });
-      it('Get someone else\'s follower/following (should succeed) and be empty', async ()=>{
+      it('Get someone elses follower/following (should succeed) and be empty', async ()=>{
         return agent.get(`/api/users/${id1}/follow?access_token=${token0}`)
             .then((res)=>{
               res.status.should.eql(200);
@@ -53,7 +53,7 @@ const followTest = () => {
             });
       });
       it('User does not exists (should fail)', async ()=>{
-        return agent.get(`/api/users/kjfksdjfkl/follow?access_token=${token0}`)
+        return agent.get(`/api/users/bad/follow?access_token=${token0}`)
             .then((res)=>{
               res.status.should.eql(404);
               res.body.error.should.eql(StaticStrings.UserNotFoundError);
@@ -96,9 +96,9 @@ const followTest = () => {
       });
       it('Follow twice (should be the same as once and succeed)', async ()=>{
         return agent.put(`/api/users/${id1}/follow?access_token=${token0}`)
-            .then((res)=>{
+            .then(()=>{
               return agent.put(`/api/users/${id1}/follow?access_token=${token0}`)
-                  .then((res)=>{
+                  .then(()=>{
                     return agent.get(`/api/users/${id1}/follow?access_token=${token0}`)
                         .then((res)=>{
                           res.status.should.eql(200);
@@ -123,7 +123,7 @@ const followTest = () => {
             });
       });
       it('User does not exists (should fail)', async ()=>{
-        return agent.put(`/api/users/kjfksdjfkl/follow?access_token=${token0}`)
+        return agent.put(`/api/users/bad/follow?access_token=${token0}`)
             .then((res)=>{
               res.status.should.eql(404);
               res.body.error.should.eql(StaticStrings.UserNotFoundError);
@@ -144,7 +144,7 @@ const followTest = () => {
     describe('DELETE /api/users/:userID/follow', ()=>{
       it('Follow someone else and then unfollow them (both should update)', async ()=>{
         return agent.put(`/api/users/${id1}/follow?access_token=${token0}`)
-            .then((res)=>{
+            .then(()=>{
               return agent.delete(`/api/users/${id1}/follow?access_token=${token0}`)
                   .then((res)=>{
                     res.body.message.should.eql(StaticStrings.RemovedFollowerSuccess);
@@ -168,7 +168,7 @@ const followTest = () => {
             .then((res)=>{
               res.status.should.eql(200);
               return agent.put(`/api/users/${id1}/follow?access_token=${token0}`)
-                  .then((res)=>{
+                  .then(()=>{
                     return agent.get(`/api/users/${id1}/follow?access_token=${token0}`)
                         .then((res)=>{
                           res.status.should.eql(200);
@@ -193,7 +193,7 @@ const followTest = () => {
             });
       });
       it('User does not exists (should fail)', async ()=>{
-        return agent.delete(`/api/users/kjfksdjfkl/follow?access_token=${token0}`)
+        return agent.delete(`/api/users/bad/follow?access_token=${token0}`)
             .then((res)=>{
               res.status.should.eql(404);
               res.body.error.should.eql(StaticStrings.UserNotFoundError);

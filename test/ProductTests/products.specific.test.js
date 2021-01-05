@@ -308,7 +308,7 @@ const productSpecificTest = () => {
         });
       });
       it('Update Product: Not an acceptable key (should fail)', async ()=>{
-        const update = {'organization': 'new organzation'};
+        const update = {'organization': 'new organization'};
         return agent.put(`/api/products/${product._id}?access_token=${admin.access_token}`).send(update).then(async (res) => {
           res.status.should.eql(422);
           res.body.error.should.include(StaticStrings.BadRequestInvalidFields);

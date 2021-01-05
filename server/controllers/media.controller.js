@@ -75,7 +75,7 @@ const AllDimensions = {
  * @param {Response} res HTTP response object
  * @param {Function} next The next middleware to call
  * @param {Number} key The key of the media in S3 bucket
- * @return {Promise<Response>} 404 if the media doesnt exist otherwise
+ * @return {Promise<Response>} 404 if the media doesn't exist otherwise
  * continue to next middleware
  */
 const mediaExists = (req, res, next, key) => {
@@ -84,13 +84,13 @@ const mediaExists = (req, res, next, key) => {
       .then(() => {
         return next();
       })
-      .catch((err) => {
+      .catch(() => {
         return res.status(404).json({error: ErrorMessages.MediaNotFound});
       });
 };
 
 /**
- * @desc Retrives media from S3 bucket
+ * @desc Retrieves media from S3 bucket
  * @param {Request} req HTTP request object
  * @param {Response} res HTTP response object
  * @param {Number} key The key of the media in S3 bucket
@@ -114,7 +114,7 @@ const getMediaByKey = (req, res, key) => {
 
 
 /**
- * @desc Retrives media from S3 bucket (resized)
+ * @desc Retrieves media from S3 bucket (resized)
  * @param {Request} req HTTP request object
  * @param {Response} res HTTP response object
  * @param {Number} key The key of the media in S3 bucket

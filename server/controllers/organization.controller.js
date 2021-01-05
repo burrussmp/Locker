@@ -84,7 +84,7 @@ const create = async (req, res) => {
     'uploadedBy': req.auth._id,
     'uploadedByType': 'Employee',
     'fields': [
-      {name: 'media', maxCount: 1, mimetypesAllowed: ['image/png', 'image/jpeg'], required: true},
+      {name: 'media', maxCount: 1, mimeTypesAllowed: ['image/png', 'image/jpeg'], required: true},
     ],
   };
   return S3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages) => {
@@ -187,7 +187,7 @@ const updateLogo = async (req, res) => {
     'uploadedBy': req.auth._id,
     'uploadedByType': 'Employee',
     'fields': [
-      {name: 'media', maxCount: 1, mimetypesAllowed: ['image/png', 'image/jpeg'], required: true},
+      {name: 'media', maxCount: 1, mimeTypesAllowed: ['image/png', 'image/jpeg'], required: true},
     ],
   };
   S3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages)=>{ // upload to s3
@@ -205,7 +205,7 @@ const updateLogo = async (req, res) => {
       res.status(200).json({logo_key: req.organization.logo.key});
     } catch (err) {
       try {
-        const image = await findById(media._id);
+        const image = await Media.findById(media._id);
         await image.deleteOne(); // delete the new one
         res.status(500).json({error: StaticStrings.UnknownServerError + `\nS3 Cleaned.\nOriginal error ${err.message}.`});
       } catch (err2) {

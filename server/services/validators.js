@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 /* eslint-disable max-len */
 'use strict';
 import mongoose from 'mongoose';

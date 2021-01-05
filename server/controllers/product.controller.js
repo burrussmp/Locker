@@ -79,8 +79,8 @@ const create = async (req, res) => {
     'uploadedBy': req.auth._id,
     'uploadedByType': 'Employee',
     'fields': [
-      {name: 'media', maxCount: 1, mimetypesAllowed: ['image/png', 'image/jpeg'], required: true},
-      {name: 'additional_media', maxCount: 20, mimetypesAllowed: ['image/png', 'image/jpeg', 'video/mp4'], required: false},
+      {name: 'media', maxCount: 1, mimeTypesAllowed: ['image/png', 'image/jpeg'], required: true},
+      {name: 'additional_media', maxCount: 20, mimeTypesAllowed: ['image/png', 'image/jpeg', 'video/mp4'], required: false},
     ],
   };
   return S3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages) => {

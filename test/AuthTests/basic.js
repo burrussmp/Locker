@@ -120,7 +120,7 @@ const authTests = () => {
     it('Correct username but no matching', (done) => {
       const user = UserData[0];
       const loginUser = {
-        login: 'somecrazyusername',
+        login: 'badname',
         password: user.password,
       };
       chai.request(app)

@@ -122,12 +122,12 @@ const profileTest = () => {
         id1 = user._id;
         accessToken1 = user.access_token;
         return agent.put(`/api/users/${id1}`)
-            .send({'username': 'new_username', 'first_name': 'new_firstname'})
+            .send({'username': 'new_username', 'first_name': 'new_first_name'})
             .set('Authorization', `Bearer ${accessToken1}`)
             .then((res)=>{
               res.status.should.eql(200);
               res.body.username.should.eql('new_username');
-              res.body.first_name.should.eql('new_firstname');
+              res.body.first_name.should.eql('new_first_name');
             });
       });
       it('/PUT w/ same username (should fail)', async ()=>{
@@ -214,7 +214,7 @@ const profileTest = () => {
           'first_name': 'test',
           'last_name': 'test',
           'username': 'test',
-          'gender': 'fdafas',
+          'gender': 'invalid',
           'date_of_birth': new Date(2006, 6, 18, 18, 7),
           'about': 'test',
         };
@@ -233,7 +233,7 @@ const profileTest = () => {
           'username': 'test',
           'date_of_birth': new Date(2006, 6, 18, 18, 7),
           'about': 'test',
-          'password': 'MWAHAHAH',
+          'password': 'bad',
 
         };
         return agent.put(`/api/users/${id1}`)

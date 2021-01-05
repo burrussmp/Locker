@@ -75,17 +75,17 @@ const userByID = async (req, res, next, id) => {
 const create = async (req, res) => {
   // eslint-disable-next-line camelcase
   const {username, password, email, phone_number} = req.body;
-  let session; let congitoUser;
+  let session; let cognitoUser;
   try {
     session = await CognitoServices.signup(username, password, email, phone_number);
   } catch (err) {
     return res.status(400).json({error: errorHandler.getErrorMessage(err)});
   }
   try {
-    congitoUser = CognitoServices.getCognitoUsername(session);
+    cognitoUser = CognitoServices.getCognitoUsername(session);
     const UserRole = await RBAC.findOne({'role': 'user'});
     const newUser = {
-      cognito_username: congitoUser,
+      cognito_username: cognitoUser,
       username: username,
       first_name: req.body.first_name,
       last_name: req.body.last_name,
@@ -107,8 +107,8 @@ const create = async (req, res) => {
       _id: user._id,
     });
   } catch (err) {
-    const congitoUser = CognitoServices.getCognitoUsername(session);
-    CognitoServices.deleteCognitoUser(congitoUser).then(()=>{
+    const cognitoUser = CognitoServices.getCognitoUsername(session);
+    CognitoServices.deleteCognitoUser(cognitoUser).then(()=>{
       return res.status(400).json({error: errorHandler.getErrorMessage(err)});
     }).catch((err)=>{
       return res.status(500).json({error: StaticStrings.UnknownServerError + err});
@@ -255,7 +255,7 @@ const uploadProfilePhoto = (req, res) => {
     'uploadedBy': req.params.userId,
     'uploadedByType': 'User',
     'fields': [
-      {name: 'media', maxCount: 1, mimetypesAllowed: ['image/png', 'image/jpeg'], required: true},
+      {name: 'media', maxCount: 1, mimeTypesAllowed: ['image/png', 'image/jpeg'], required: true},
     ],
   };
   S3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages)=>{ // upload to s3
@@ -379,7 +379,7 @@ const Unfollow = async (req, res) => {
       try {
         await User.findOneAndUpdate({'_id': myID}, {$pull: {following: theirID}}); // update our account
       } catch (err) {
-        await User.findOneAndUpdate({'_id': theirID}, {$addToSet: {followers: myID}}); // if updating our's failed, reset theirs
+        await User.findOneAndUpdate({'_id': theirID}, {$addToSet: {followers: myID}}); // if updating ours failed, reset theirs
         return res.status(500).json({error: err.message});
       }
       return res.status(200).json({message: StaticStrings.RemovedFollowerSuccess}); // else all succeeded and we are good
