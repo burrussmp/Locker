@@ -19,12 +19,17 @@ mongoose.connection.on('error', () => {
 
 
 // Catch unauthorized errors
-app.use(function(err, req, res) {
+// eslint-disable-next-line no-unused-vars
+app.use(function(err, req, res, next) {
   if (err.name === 'UnauthorizedError') {
     res.status(err.status).json({'error': StaticStrings.UnauthorizedMissingTokenError});
   } else if (err) {
     res.status(400).json({'error': err.message});
   }
+});
+
+app.use(function(req, res) {
+  res.status(404).json({"error": "404"})
 });
 
 // Listen

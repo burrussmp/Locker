@@ -8,7 +8,8 @@ import User from '@server/models/user.model';
 import RBAC from '@server/models/rbac.model';
 import Media from '@server/models/media.model';
 
-import mediaController from './media.controller';
+import authController from '@server/controllers/auth.controller';
+import mediaController from '@server/controllers/media.controller';
 
 import S3Services from '@server/services/S3.services';
 import CognitoAPI from '@server/services/Cognito.services';
@@ -215,13 +216,14 @@ const changePassword = async (req, res) => {
     return res.status(400).json({error: StaticStrings.UserModelErrors.PasswordUpdateSame});
   }
   try {
-    await CognitoServices.changePassword(req.query.access_token, req.body.old_password, req.body.password);
+    await CognitoServices.changePassword(authController.retrieveAccessToken(req), req.body.old_password, req.body.password);
     return res.status(200).json({message: StaticStrings.UpdatedPasswordSuccess});
   } catch (err) {
     const errMessage = errorHandler.getErrorMessage(err);
     if (errMessage == 'Incorrect username or password.') {
       res.status(400).json({error: StaticStrings.UserModelErrors.PasswordUpdateIncorrectError});
     } else {
+      console.log(err);
       return res.status(400).json({error: errMessage});
     }
   }
