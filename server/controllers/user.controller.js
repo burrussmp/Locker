@@ -222,7 +222,6 @@ const changePassword = async (req, res) => {
     if (errMessage == 'Incorrect username or password.') {
       res.status(400).json({error: StaticStrings.UserModelErrors.PasswordUpdateIncorrectError});
     } else {
-      console.log(err);
       return res.status(400).json({error: errMessage});
     }
   }

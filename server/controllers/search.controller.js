@@ -7,7 +7,7 @@ import User from '@server/models/user.model';
  * @param {Response} res : HTTP Response object
  */
 const searchUsers = (req, res) => {
-  const search = req.body.search ? req.body.search : '\'\'';
+  const search = req.body.search ? req.body.search : "''";
   User.fuzzySearch(search, async (err, docs) => {
     if (err) {
       return res.status(500).json({error: err});

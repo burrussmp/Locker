@@ -59,7 +59,6 @@ const getComment = async (req, res) => {
     ]);
     return res.status(200).json(comment[0]);
   } catch (err) {
-    console.log(err);
     return res.status(500).json({error: errorHandler.getErrorMessage(err)});
   }
 };

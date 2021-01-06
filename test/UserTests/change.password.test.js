@@ -140,7 +140,7 @@ const changePasswordTest = () => {
             .send({
               'old_password': UserData[0].password,
               'password': invalidPassword,
-              'username': 'Changethis',
+              'username': 'ChangeThis',
             })
             .then((res)=>{
               res.status.should.eql(422);
