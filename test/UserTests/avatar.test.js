@@ -345,7 +345,7 @@ const avatarTest = () => {
                             }).then((res)=>res.blob())
                                 .then(async (res)=>{
                                   const buffer = await res.arrayBuffer();
-                                  return fs.readFile(process.cwd()+defaultProfilePhoto).then((data)=>{
+                                  return fs.readFile(constants.DEFAULT_PROFILE_PHOTO).then((data)=>{
                                     bufferEquality(data, buffer).should.be.true;
                                   });
                                 });
