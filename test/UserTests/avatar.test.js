@@ -11,12 +11,11 @@ import RBAC from '@server/models/rbac.model';
 import Media from '@server/models/media.model';
 import StaticStrings from '@config/StaticStrings';
 import S3Services from '@server/services/S3.services';
+import constants from '@config/constants';
 
 // Configure chai
 chai.use(chaiHttp);
 chai.should();
-
-const defaultProfilePhoto = '/client/assets/images/profile-pic.png';
 
 const avatarTest = () => {
   describe('Profile Photo', ()=>{
@@ -274,7 +273,7 @@ const avatarTest = () => {
         }).then((res)=>res.blob())
             .then(async (res)=>{
               const buffer = await res.arrayBuffer();
-              return fs.readFile(process.cwd()+defaultProfilePhoto).then((data)=>{
+              return fs.readFile(constants.DEFAULT_PROFILE_PHOTO).then((data)=>{
                 bufferEquality(data, buffer).should.be.true;
               });
             });

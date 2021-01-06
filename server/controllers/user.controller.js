@@ -16,10 +16,9 @@ import CognitoAPI from '@server/services/Cognito.services';
 
 import errorHandler from '@server/services/dbErrorHandler';
 import StaticStrings from '@config/StaticStrings';
+import constants from '@config/constants';
 
 const CognitoServices = CognitoAPI.UserCognitoPool;
-
-const DefaultProfilePhoto = process.cwd() + '/client/assets/images/profile-pic.png';
 
 /**
   * @desc Filter user for data
@@ -240,7 +239,7 @@ const getProfilePhoto = (req, res) => {
     res.locals.key = req.profile.profile_photo.key;
     return mediaController.getMedia(req, res);
   } else {
-    return fs.createReadStream(DefaultProfilePhoto).pipe(res);
+    return fs.createReadStream(constants.DEFAULT_PROFILE_PHOTO).pipe(res);
   }
 };
 
