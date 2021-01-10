@@ -33,7 +33,7 @@ const productPostTestBasics = () => {
         newProductData.organization = anyOrg._id.toString();
         const product = await createProductPostAgent(agent, newProductData, admin.access_token).then((res)=>res.body);
         const reqBody = {product: product._id};
-        post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then((res)=>res.body);
+        post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=Product`).send(reqBody).then((res)=>res.body);
       });
       it('Get Posts: Execute (should succeed)', async ()=>{
         return agent.get(`/api/posts/${post._id}?access_token=${admin.access_token}`).then(async (res)=>{
@@ -91,7 +91,7 @@ const productPostTestBasics = () => {
         newProductData.organization = anyOrg._id.toString();
         const product = await createProductPostAgent(agent, newProductData, admin.access_token).then((res)=>res.body);
         const reqBody = {product: product._id};
-        post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then((res)=>res.body);
+        post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=Product`).send(reqBody).then((res)=>res.body);
       });
       it('Delete Post: Execute (should succeed)', async ()=>{
         return agent.delete(`/api/posts/${post._id}?access_token=${admin.access_token}`).then(async (res)=>{
@@ -152,7 +152,7 @@ const productPostTestBasics = () => {
         newProductData.organization = anyOrg._id.toString();
         const product = await createProductPostAgent(agent, newProductData, admin.access_token).then((res)=>res.body);
         const reqBody = {product: product._id};
-        post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then((res)=>res.body);
+        post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=Product`).send(reqBody).then((res)=>res.body);
         defaultUpdate = {'tags': ['tag', 'tag']};
       });
       it('Update Post: Execute (should succeed)', async ()=>{

@@ -2,7 +2,6 @@
 'use strict';
 
 // imports
-import ProductPost from '@server/models/posts/product.post.model';
 import Product from '@server/models/product.model';
 import Post from '@server/models/post.model';
 
@@ -41,17 +40,10 @@ const createProductPost = async (req, res) => {
   } catch (err) {
     return res.status(400).json({err: err.message});
   }
-  let productPost;
-  try {
-    productPost = new ProductPost({product: req.body.product});
-    productPost = await productPost.save();
-  } catch (err) {
-    return res.status(400).json({error: errorHandler.getErrorMessage(err)});
-  }
   try {
     const postData = {
-      contentType: 'ProductPost',
-      content: productPost._id,
+      contentType: 'Product',
+      content: req.body.product,
       postedBy: req.auth._id,
       postedByType: res.locals.cognitoPoolType,
       caption: req.body.caption,
@@ -61,12 +53,7 @@ const createProductPost = async (req, res) => {
     newPost = await newPost.save();
     return res.status(200).json({'_id': newPost._id});
   } catch (err) {
-    try {
-      await productPost.deleteOne();
       res.status(400).json({error: errorHandler.getErrorMessage(err)});
-    } catch (err2) {
-      res.status(500).json({error: StaticStrings.UnknownServerError + `.\nUnable to delete product post because ${err2.message}.\nOriginal error ${err.message}.`});
-    }
   }
 };
 

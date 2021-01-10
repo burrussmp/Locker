@@ -63,7 +63,7 @@ const CreateProductPost = async (data, token) => {
   form.append('caption', data.caption);
   form.append('tags', data.tags);
   const res = await fetch(
-      `${SERVER}/api/posts?type=ProductPost&access_token=${token}`,
+      `${SERVER}/api/posts?type=Product&access_token=${token}`,
       {
         method: 'POST',
         body: form,

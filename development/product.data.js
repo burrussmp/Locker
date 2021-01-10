@@ -32,14 +32,14 @@ const ProductData = [
     'product_collection': 'tanks',
     'meta': {},
   }, {
-    type: 'ProductPost',
+    type: 'Product',
     price: 99.99,
     caption: 'The third and final product',
     tags: [],
   },
 ];
 
-const getProductConstructor = (productData) => {
+const getProductPostConstructor = (productData) => {
   return {
     name: productData.name,
     url: productData.url,
@@ -55,5 +55,5 @@ const getProductConstructor = (productData) => {
 
 export {
   ProductData,
-  getProductConstructor,
+  getProductPostConstructor,
 };

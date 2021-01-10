@@ -2,15 +2,15 @@
 
 // should be valid organization
 const PostData = [{
-  type: 'ProductPost',
+  type: 'Product',
   caption: 'Check out the new product!',
   tags: ['cool', 'new', 'fancy', 'taggy'],
 }, {
-  type: 'ProductPost',
+  type: 'Product',
   caption: 'This is the other product',
   tags: ['tag', 'tag', 'tag', 'tag'],
 }, {
-  type: 'ProductPost',
+  type: 'Product',
   caption: 'The third and final product',
   tags: [],
 }];

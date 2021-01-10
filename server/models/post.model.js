@@ -39,7 +39,7 @@ const PostSchema = new mongoose.Schema({
     trim: true,
     required: StaticStrings.PostModelErrors.TypeRequired,
     enum: {
-      values: ['ProductPost'],
+      values: ['Product'],
       message: StaticStrings.PostModelErrors.IncorrectType,
     },
   },

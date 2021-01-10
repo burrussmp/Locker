@@ -33,7 +33,7 @@ const replySpecific = () => {
         newProductData.organization = anyOrg._id.toString();
         const product = await createProductPostAgent(agent, newProductData, admin.access_token).then((res)=>res.body);
         const reqBody = {product: product._id};
-        const post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then((res)=>res.body);
+        const post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=Product`).send(reqBody).then((res)=>res.body);
         comment = await agent.post(`/api/${post._id}/comments?access_token=${admin.access_token}`).send(CommentData[0]).then((res)=>res.body);
         reply = await agent.post(`/api/comments/${comment._id}/replies?access_token=${admin.access_token}`).send({text: 'test'}).then((res)=>res.body);
       });
@@ -99,7 +99,7 @@ const replySpecific = () => {
         newProductData.organization = anyOrg._id.toString();
         const product = await createProductPostAgent(agent, newProductData, admin.access_token).then((res)=>res.body);
         const reqBody = {product: product._id};
-        const post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then((res)=>res.body);
+        const post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=Product`).send(reqBody).then((res)=>res.body);
         comment = await agent.post(`/api/${post._id}/comments?access_token=${admin.access_token}`).send(CommentData[0]).then((res)=>res.body);
         reply = await agent.post(`/api/comments/${comment._id}/replies?access_token=${admin.access_token}`).send({text: 'test'}).then((res)=>res.body);
       });
@@ -179,7 +179,7 @@ const replySpecific = () => {
       newProductData.organization = anyOrg._id.toString();
       const product = await createProductPostAgent(agent, newProductData, admin.access_token).then((res)=>res.body);
       const reqBody = {product: product._id};
-      const post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then((res)=>res.body);
+      const post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=Product`).send(reqBody).then((res)=>res.body);
       comment = await agent.post(`/api/${post._id}/comments?access_token=${admin.access_token}`).send(CommentData[0]).then((res)=>res.body);
       reply = await agent.post(`/api/comments/${comment._id}/replies?access_token=${admin.access_token}`).send({text: 'test'}).then((res)=>res.body);
     });
@@ -276,7 +276,7 @@ const replySpecific = () => {
       newProductData.organization = anyOrg._id.toString();
       const product = await createProductPostAgent(agent, newProductData, admin.access_token).then((res)=>res.body);
       const reqBody = {product: product._id};
-      const post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then((res)=>res.body);
+      const post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=Product`).send(reqBody).then((res)=>res.body);
       comment = await agent.post(`/api/${post._id}/comments?access_token=${admin.access_token}`).send(CommentData[0]).then((res)=>res.body);
       reply = await agent.post(`/api/comments/${comment._id}/replies?access_token=${admin.access_token}`).send({text: 'test'}).then((res)=>res.body);
       await agent.put(`/api/comments/${comment._id}/replies/${reply._id}/likes?access_token=${admin.access_token}`).then();

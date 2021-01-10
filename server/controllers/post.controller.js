@@ -56,11 +56,11 @@ const listPosts = async (req, res) => {
   try {
     const query = PostServices.queryBuilder(req);
     
-    if (query.type == 'ProductPost' && query.productID) {
+    if (query.type == 'Product' && query.productID) {
       req.params.postId = query.productID;
       return ProductPostController.getProductPost(req, res);
     }
-    
+
     const posts = await Post.find(query, null, {limit: 100}).select('_id createdAt');
     return res.status(200).json(posts);
   } catch (err) {
@@ -76,7 +76,7 @@ const listPosts = async (req, res) => {
  */
 const createPost = async (req, res) => {
   const type = req.query.type;
-  if (type == 'ProductPost') {
+  if (type == 'Product') {
     return ProductPostController.createProductPost(req, res);
   } else {
     return res.status(501).json({error: StaticStrings.NotImplementedError});
@@ -91,7 +91,7 @@ const createPost = async (req, res) => {
  */
 const getPost = async (req, res) => {
   try {
-    if (req.post.contentType == 'ProductPost') {
+    if (req.post.contentType == 'Product') {
       return ProductPostController.getProductPost(req, res);
     } else {
       return res.status(501).json({error: StaticStrings.NotImplementedError});
@@ -109,7 +109,7 @@ const getPost = async (req, res) => {
  */
 const editPost = async (req, res) => {
   try {
-    if (req.post.contentType == 'ProductPost') {
+    if (req.post.contentType == 'Product') {
       return ProductPostController.editProductPost(req, res);
     } else {
       return res.status(501).json({error: StaticStrings.NotImplementedError});

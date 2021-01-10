@@ -159,7 +159,7 @@ const mediaTestBasics = () => {
         newProductData.organization = anyOrg._id.toString();
         const product = await createProductPostAgent(agent, newProductData, admin.access_token).then((res)=>res.body);
         const reqBody = {product: product._id};
-        const post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then((res)=>res.body);
+        const post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=Product`).send(reqBody).then((res)=>res.body);
         const postDetails = await agent.get(`/api/posts/${post._id}?access_token=${admin.access_token}`).then((res)=>res.body);
         imageKey = postDetails.content.product.media.key;
         videoKey = postDetails.content.product.additional_media[1].key;

@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
  /**
  * @api {get} /api/posts List All Posts
  * @apiDescription Retrieve a list of all the posts IDs
@@ -28,7 +29,7 @@
  */
 
  /**
-  * @api {post} /api/posts?type=ProductPost Create Product Post
+  * @api {post} /api/posts?type=Product Create Product Post
   * @apiDescription Create a new product post
   * @apiName PostApiPosts
   * @apiGroup Post
@@ -63,7 +64,7 @@
  * @apiUse LoginError
  * @apiPermission PostRead
  * @apiUse PermissionError
- * @apiSuccess  (200) {String}      type        The type of post (e.g. "ProductPost")
+ * @apiSuccess  (200) {String}      type        The type of post (e.g. ")
  * @apiSuccess  (200) {Object}      content     The content of the post (varies based on type)
  * @apiSuccess  (200) {String}      caption     The ID of the newly created post
  * @apiSuccess  (200) {String[]}    tags        The ID of the newly created post
@@ -76,7 +77,7 @@
         "caption": "Check out the new shoe!",
         "tags": ["shoe", "designer"],
         "_id": "5f4155c1284bd74c053c2ffe",
-        "type": "ProductPost",
+        "type": ",
         "content": {
             "price": 99.99,
             "media": {

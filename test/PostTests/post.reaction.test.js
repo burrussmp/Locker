@@ -36,7 +36,7 @@ const reactionTest = () => {
         newProductData.organization = anyOrg._id.toString();
         const product = await createProductPostAgent(agent, newProductData, admin.access_token).then((res)=>res.body);
         const reqBody = {product: product._id};
-        post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then((res)=>res.body);
+        post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=Product`).send(reqBody).then((res)=>res.body);
       });
       it('Add Reaction: Execute and see if all reactions succeed', async ()=>{
         for (const reaction of ReactionTypes) {
@@ -103,7 +103,7 @@ const reactionTest = () => {
         newProductData.organization = anyOrg._id.toString();
         const product = await createProductPostAgent(agent, newProductData, admin.access_token).then((res)=>res.body);
         const reqBody = {product: product._id};
-        post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then((res)=>res.body);
+        post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=Product`).send(reqBody).then((res)=>res.body);
       });
       it('Get Reactions: Execute and and see if selected is false at start', async ()=>{
         return agent.get(`/api/posts/${post._id}/reaction?access_token=${admin.access_token}`).then(async (res)=>{
@@ -150,7 +150,7 @@ const reactionTest = () => {
         newProductData.organization = anyOrg._id.toString();
         const product = await createProductPostAgent(agent, newProductData, admin.access_token).then((res)=>res.body);
         const reqBody = {product: product._id};
-        post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then((res)=>res.body);
+        post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=Product`).send(reqBody).then((res)=>res.body);
         await agent.put(`/api/posts/${post._id}/reaction?access_token=${admin.access_token}`).send({reaction: ReactionTypes[0]}).then();
       });
       it('Delete Reaction: Execute should succeed', async ()=>{

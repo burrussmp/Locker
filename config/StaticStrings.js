@@ -163,9 +163,6 @@ const StaticStrings = {
     PriceNotNonnegative: 'The price must be non-negative',
     MaximumNumberOfTags: 'Too many tags provided (maximum is 7)',
     NoReactionToDelete: 'You have not reacted, so there is no reaction to delete',
-    ProductPostErrors: {
-      ProductRequired: 'Must link product post to product',
-    },
     CreateMissingType: 'Missing \'type\' in request body',
 
   },

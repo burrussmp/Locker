@@ -13,7 +13,7 @@ import FormData from 'form-data';
 import fetch from 'node-fetch';
 import fs from 'fs';
 
-import {getProductConstructor} from '@development/product.data';
+import {getProductPostConstructor} from '@development/product.data';
 
 
 const createUser = async (data) => {
@@ -134,7 +134,7 @@ const bufferEquality = (buf1, buf2) => {
 
 const createProductPostAgent = (agent, data, accessToken=undefined) => {
   const path = accessToken ? `/api/products?access_token=${accessToken}` : '/api/products';
-  let postAgent = agent.post(path).field(getProductConstructor(data)).attach('media', data.media);
+  let postAgent = agent.post(path).field(getProductPostConstructor(data)).attach('media', data.media);
   for (let i = 0; i < data.additional_media.length; ++i) {
     postAgent = postAgent.attach(`additional_media`, data.additional_media[i]);
   }

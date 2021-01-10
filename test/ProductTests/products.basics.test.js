@@ -9,7 +9,7 @@ import Organization from '@server/models/organization.model';
 import Media from '@server/models/media.model';
 import {EmployeeData} from '@development/employee.data';
 import {OrganizationData} from '@development/organization.data';
-import {ProductData, getProductConstructor} from '@development/product.data';
+import {ProductData, getProductPostConstructor} from '@development/product.data';
 import {dropDatabase, createEmployee, loginAdminEmployee, createOrg, createProductPostAgent} from '@test/helper';
 import StaticStrings from '@config/StaticStrings';
 import S3Services from '@server/services/S3.services';
@@ -51,7 +51,7 @@ const productBasicTests = () => {
         });
       });
       it('Create Product: Media field is just some text (should fail)', async ()=>{
-        const fieldData = getProductConstructor(newProductData);
+        const fieldData = getProductPostConstructor(newProductData);
         fieldData['media'] = 'some text';
         let postAgent = agent.post(`/api/products?access_token=${admin.access_token}`)
             .field(fieldData);

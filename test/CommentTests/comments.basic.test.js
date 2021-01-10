@@ -33,7 +33,7 @@ const commentsTest = () => {
         newProductData.organization = anyOrg._id.toString();
         const product = await createProductPostAgent(agent, newProductData, admin.access_token).then((res)=>res.body);
         const reqBody = {product: product._id};
-        post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then((res)=>res.body);
+        post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=Product`).send(reqBody).then((res)=>res.body);
         defaultComment = CommentData[0];
       });
       after(async ()=>{
@@ -110,7 +110,7 @@ const commentsTest = () => {
         newProductData.organization = anyOrg._id.toString();
         product = await createProductPostAgent(agent, newProductData, admin.access_token).then((res)=>res.body);
         const reqBody = {product: product._id};
-        post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then((res)=>res.body);
+        post = await agent.post(`/api/posts?access_token=${admin.access_token}&type=Product`).send(reqBody).then((res)=>res.body);
         comment = await agent.post(`/api/${post._id}/comments?access_token=${admin.access_token}`).send(CommentData[0]).then((res)=>res.body);
       });
       after(async ()=>{
@@ -131,7 +131,7 @@ const commentsTest = () => {
       });
       it('Get Comments: No comments, should be empty (should succeed)', async ()=>{
         const reqBody = {product: product._id};
-        const post2 = await agent.post(`/api/posts?access_token=${admin.access_token}&type=ProductPost`).send(reqBody).then((res)=>res.body);
+        const post2 = await agent.post(`/api/posts?access_token=${admin.access_token}&type=Product`).send(reqBody).then((res)=>res.body);
         return agent.get(`/api/${post2._id}/comments?access_token=${admin.access_token}`)
             .then(async (res)=>{
               res.status.should.eql(200);

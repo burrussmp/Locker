@@ -1,7 +1,7 @@
 
 import Organization from '@server/models/organization.model';
 import {ProductData} from '@development/product.data';
-import {dropDatabase, loginAdminEmployee, getProductConstructor} from '@test/helper';
+import {dropDatabase, loginAdminEmployee} from '@test/helper';
 import fetch from 'node-fetch';
 import FormData from 'form-data';
 import fs from 'fs';
@@ -30,7 +30,6 @@ import '@server/server';
     for (let i = 0; i < newProductData.additional_media.length; ++i) {
         form.append('additional_media', fs.createReadStream(newProductData.additional_media[i]));
     }
-    getProductConstructor(data);
     const product = await fetch( `http://${config.address}:${config.port}/api/products?access_token=${admin.access_token}`, {
         method: 'POST',
         body: form,
@@ -39,7 +38,7 @@ import '@server/server';
     console.log(`Created product with id ${product._id}`);
 
     // create a product post with the product
-    const post = await fetch(`http://${config.address}:${config.port}/api/posts?access_token=${admin.access_token}&type=ProductPost`, {
+    const post = await fetch(`http://${config.address}:${config.port}/api/posts?access_token=${admin.access_token}&type=Product`, {
       method: 'POST',
       body: JSON.stringify({
         product: product._id,

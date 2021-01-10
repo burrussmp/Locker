@@ -18,7 +18,7 @@
   "homepage": "https://github.com/burrussmp/Locker.git",
   "main": "./dist/server.generated.js",
   "scripts": {
-    "test": "sudo mongod --dbpath data/db --quiet & NODE_ENV=test mocha --timeout 30000 ./test/mochacfg.js --require @babel/register ./test/index.js && sudo mongod --dbpath data/db --shutdown",
+    "test": "sudo mongod --dbpath data/db --quiet & NODE_ENV=test mocha --timeout 50000 ./test/mochacfg.js --require @babel/register ./test/index.js && sudo mongod --dbpath data/db --shutdown",
     "mock": "sudo mongod --dbpath data/db --quiet & NODE_ENV=test node --require @babel/register ./test/mock.js && sudo mongod --dbpath data/db --shutdown",
     "development": "NODE_ENV=development node --require @babel/register ./server/server.js",
     "stage": "NODE_ENV=stage node --require @babel/register ./server/server.js",
