@@ -11,6 +11,9 @@ const queryBuilder = (req) => {
   if (req.query.type) {
     query.contentType = req.query.type;
   }
+  if (req.query.productID) {
+    query.name = req.query.productID;
+  }
   return query;
 };
 

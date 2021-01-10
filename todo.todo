@@ -1,15 +1,3 @@
-
-Short term
------------------------------------------------------------------
-1.
-
-Medium term
------------------------------------------------------------------
-- Figure out clean up process. When a user and employee is deleted, we probably
-want to have an account recovery process where the data isn't actually deleted. We
-definitely don't want to have an employees posts deleted.
-
-Long term
------------------------------------------------------------------
-Setup CI/CD for repository to automatically launch into AWS cloud
-Automate deployment and cleanup of AWS resources for test, dev, and prod
+1. Add unit tests for querying posts by ProductID and type
+2. Maybe turn off ability to create a ProductPost and just have it done automatically
+3. Add visibility to product post and product

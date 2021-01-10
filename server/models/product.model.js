@@ -46,6 +46,10 @@ const ProductSchema = new mongoose.Schema(
         type: Boolean,
         default: true,
       },
+      visibility: {
+        type: Boolean,
+        default: true,
+      },
       product_collection: {
         type: String,
       },

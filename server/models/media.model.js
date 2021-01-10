@@ -67,8 +67,7 @@ MediaSchema.pre('deleteOne', {document: true, query: false}, async function() {
       });
   if (this.resized_keys && this.resized_keys.length != 0) {
     for (let i = 0; i < this.resized_keys.length; ++i) {
-      const resizedKey = this.resized_keys[i];
-      S3Services.deleteMediaS3(resizedKey)
+      S3Services.deleteMediaS3(this.resized_keys[i])
           .catch((err) => {
             console.log(err);
           });

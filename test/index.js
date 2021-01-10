@@ -11,11 +11,11 @@ import {dropDatabase} from '@test/helper';
 
 
 dropDatabase();
-describe('Auth Tests', AuthTest);
-describe('User Tests', UserTest);
+// describe('Auth Tests', AuthTest);
+// describe('User Tests', UserTest);
 describe('Post Test', PostTest);
-describe('Comment Test', CommentTest);
-describe('Media Test', MediaTest);
-describe('Organization Test', OrganizationTest);
-describe('Employee Test', EmployeeTest);
+// describe('Comment Test', CommentTest);
+// describe('Media Test', MediaTest);
+// describe('Organization Test', OrganizationTest);
+// describe('Employee Test', EmployeeTest);
 describe('Product Tests', ProductTest);

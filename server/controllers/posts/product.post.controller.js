@@ -65,7 +65,7 @@ const createProductPost = async (req, res) => {
       await productPost.deleteOne();
       res.status(400).json({error: errorHandler.getErrorMessage(err)});
     } catch (err2) {
-      res.status(500).json({error: StaticStrings.UnknownServerError + `.\nUnable to deletee product post because ${err2.message}.\nOriginal error ${err.message}.`});
+      res.status(500).json({error: StaticStrings.UnknownServerError + `.\nUnable to delete product post because ${err2.message}.\nOriginal error ${err.message}.`});
     }
   }
 };

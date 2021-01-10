@@ -261,8 +261,8 @@ const uploadProfilePhoto = (req, res) => {
     const query = {'_id': req.params.userId}; // at this point we have uploaded to S3 and just need to clean up
     const update = {$set: {'profile_photo': media._id}};
     try {
-      const user = await User.findOneAndUpdate(query, update, {runValidators: true}); // update
-      if (user.profile_photo && user.profile_photo.key) {
+      await User.findOneAndUpdate(query, update, {runValidators: true}); // update
+      if (req.profile.profile_photo && req.profile.profile_photo.key) {
         const media = await Media.findOne({key: req.profile.profile_photo.key});
         await media.deleteOne();
         res.status(200).json({message: StaticStrings.UploadProfilePhotoSuccess});

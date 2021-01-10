@@ -55,6 +55,12 @@ const postByID = async (req, res, next, id) => {
 const listPosts = async (req, res) => {
   try {
     const query = PostServices.queryBuilder(req);
+    
+    if (query.type == 'ProductPost' && query.productID) {
+      req.params.postId = query.productID;
+      return ProductPostController.getProductPost(req, res);
+    }
+    
     const posts = await Post.find(query, null, {limit: 100}).select('_id createdAt');
     return res.status(200).json(posts);
   } catch (err) {
