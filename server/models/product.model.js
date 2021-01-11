@@ -46,7 +46,7 @@ const ProductSchema = new mongoose.Schema(
         type: Boolean,
         default: true,
       },
-      visibility: {
+      visible: {
         type: Boolean,
         default: true,
       },

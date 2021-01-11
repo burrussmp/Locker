@@ -7,18 +7,44 @@ import Post from '@server/models/post.model';
 
 import StaticStrings from '@config/StaticStrings';
 import errorHandler from '@server/services/dbErrorHandler';
+import dbErrorHandler from '@server/services/dbErrorHandler';
 
 /**
- * @desc Fetches all (or specified) product posts posts
- * @param {String | undefined} postId If defined, retrieve specific post else retrieve all posts
- * @return {Promise<Response>} Returns a single post or list of posts
+ * @desc Filter a product post
+ * @param {object} productPost The product post to filter
+ */
+const filterProductPost = (productPost) => {
+  productPost.content.__v = undefined;
+  return productPost;
+}
+
+/**
+ * @desc Fetch a product post by the product ID.
+ * @param {Request} req HTTP request object
+ * @param {Response} res HTTP response object
+ * @param {string} productID The product ID
+ * @return {Promise<Response>} Returns the created post
 */
-const fetchPosts = async (postId=undefined) => {
-  if (postId) {
-    return Post.findById(postId);
-  } else {
-    return Post.find().select('_id createdAt');
+const fetchbyProductID = async (req, res, productID) => {
+  let post;
+  try {
+    post = await Post.findOne({content: productID})
+    .select('contentType content caption tags postedBy postedByType createdAt updatedAt')
+    .populate({
+      path: 'content',
+      populate: {
+          path: 'media additional_media',
+          select: '-_id key blurhash mimetype',
+      },
+    })
+    .exec();
+  } catch (err) {
+    return res.status(400).json({error: dbErrorHandler.getErrorMessage(err)});
   }
+  if (!post) {
+    return res.status(404).json({error: `Post unable to be find with query 'product=${productID}'`});
+  }
+  return res.status(200).json(filterProductPost(post)); 
 };
 
 
@@ -66,27 +92,17 @@ const createProductPost = async (req, res) => {
 */
 const getProductPost = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.postId).select('contentType caption tags postedBy postedByType createdAt updatedAt')
-        .populate({
-          path: 'postedBy',
-          select: 'profile_photo',
-          populate: {
-            path: 'profile_photo',
-            select: '-_id key mimetype blurhash',
-          },
-        })
-        .populate({
-          path: 'content',
-          populate: {
-            path: 'product',
-            populate: {
-              path: 'media additional_media',
-              select: '-_id key blurhash mimetype',
-            },
-          },
-        })
-        .exec();
-    return res.status(200).json(post);
+    const post = await Post.findById(req.params.postId)
+      .select('contentType content caption tags postedBy postedByType createdAt updatedAt')
+      .populate({
+        path: 'content',
+        populate: {
+            path: 'media additional_media',
+            select: '-_id key blurhash mimetype',
+        },
+      })
+      .exec();
+    return res.status(200).json(filterProductPost(post));
   } catch (err) {
     return res.status(500).json({
       error: StaticStrings.UnknownServerError + '\nReason: ' + err.message,
@@ -116,7 +132,7 @@ const editProductPost = async (req, res) => {
 
 export default {
   createProductPost,
-  fetchPosts,
+  fetchbyProductID,
   getProductPost,
   editProductPost,
 };

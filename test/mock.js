@@ -30,20 +30,29 @@ import '@server/server';
     for (let i = 0; i < newProductData.additional_media.length; ++i) {
         form.append('additional_media', fs.createReadStream(newProductData.additional_media[i]));
     }
-    const product = await fetch( `http://${config.address}:${config.port}/api/products?access_token=${admin.access_token}`, {
+    for ( let key in newProductData ) {
+      if (Array.isArray(newProductData[key])) {
+        for (let item in newProductData[key]) {
+          form.append(`${key}[]`, newProductData[key][item]);
+        }
+      } else {
+        newProductData[key] = typeof newProductData[key] == 'object' ?  JSON.stringify(newProductData[key]) : newProductData[key];
+        form.append(key, newProductData[key]);
+      }
+    }
+    const product = await fetch(`http://${config.address}:${config.port}/api/products?access_token=${admin.access_token}`, {
         method: 'POST',
         body: form,
     }).then(res=>res.json());
-    console.log(product);
     console.log(`Created product with id ${product._id}`);
 
     // create a product post with the product
     const post = await fetch(`http://${config.address}:${config.port}/api/posts?access_token=${admin.access_token}&type=Product`, {
       method: 'POST',
+      headers: {"Content-Type": "application/json"},
       body: JSON.stringify({
         product: product._id,
         caption: newProductData.caption,
-        tags: newProductData.tags,
       }),
     }).then(res=>res.json())
     console.log(`Created post with id ${post._id}`);

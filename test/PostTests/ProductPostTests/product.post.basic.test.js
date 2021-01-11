@@ -153,13 +153,14 @@ const productPostTestBasics = () => {
     describe('GET \'/api/posts\'', ()=>{
       let admin;
       const agent = chai.request.agent(app);
+      let product;
       beforeEach(async ()=>{
         await dropDatabase();
         admin = await loginAdminEmployee();
         const anyOrg = await Organization.findOne();
         const newProductData = JSON.parse(JSON.stringify(ProductData[0]));
         newProductData.organization = anyOrg._id.toString();
-        const product = await createProductPostAgent(agent, newProductData, admin.access_token).then((res)=>res.body);
+        product = await createProductPostAgent(agent, newProductData, admin.access_token).then((res)=>res.body);
         const reqBody = {product: product._id};
         await agent.post(`/api/posts?access_token=${admin.access_token}&type=Product`).send(reqBody).then((res)=>res.body);
       });
@@ -187,6 +188,22 @@ const productPostTestBasics = () => {
         return agent.get(`/api/posts?access_token=${admin.access_token}&type=NotImplememted`).then(async (res)=>{
           res.status.should.eql(200);
           res.body.length.should.eql(0);
+        });
+      });
+      it('List Posts: Query parameter "product" invalid (should return 400)', async ()=>{
+        return agent.get(`/api/posts?access_token=${admin.access_token}&product=1234567`).then(async (res)=>{
+          res.status.should.eql(400);
+        });
+      });
+      it('List Posts: Query parameter "product" not found (should return 404)', async ()=>{
+        return agent.get(`/api/posts?access_token=${admin.access_token}&product=${admin.id}`).then(async (res)=>{
+          res.status.should.eql(404);
+        });
+      });
+      it('List Posts: Query parameter "product" found. Should return 200 with product info', async ()=>{
+        return agent.get(`/api/posts?access_token=${admin.access_token}&product=${product._id.toString()}`).then(async (res)=>{
+          res.status.should.eql(200);
+          res.body.content._id.should.eql(product._id.toString());
         });
       });
       it('List Posts: Correct query parameter \'type=Product\' (should succeed and return 1)', async ()=>{
