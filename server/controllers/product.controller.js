@@ -74,6 +74,12 @@ const productById = async (req, res, next, id) => {
  * @return {Promise<Response>}
  */
 const create = async (req, res) => {
+
+  // Can only create on behalf of your organization
+  if (req.auth.level != 0 && req.auth.organization.toString() != req.body.organization.toString()) {
+    return res.status(401).json({error: StaticStrings.EmployeeControllerErrors.RequireAdminOrRequesterInOrg});
+  }
+  
   const mediaMeta = {
     'type': 'Product',
     'uploadedBy': req.auth._id,
@@ -85,9 +91,6 @@ const create = async (req, res) => {
   };
   return S3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages) => {
     const media = allImages['media'][0];
-    if (req.auth.level != 0 && req.auth.organization.toString() != req.body.organization.toString()) {
-      return res.status(401).json({error: StaticStrings.EmployeeControllerErrors.RequireAdminOrRequesterInOrg});
-    }
     const productData = {
       name: req.body.name,
       url: req.body.url,
@@ -144,7 +147,7 @@ const read = (req, res) => {
 };
 
 /**
- * @desc List off products (max = 100) with optional queries.
+ * @desc List off products with optional queries.
  * @param {Request} req HTTP request object
  * @param {Response} res HTTP response object
  * @return {Promise<Response>}

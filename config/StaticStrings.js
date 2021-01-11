@@ -133,6 +133,14 @@ const StaticStrings = {
     OrganizationRequired: 'Must provide a validation organization ID',
     URLAlreadyExists: 'The provided URL already exists for a product',
   },
+  CollectionModelErrors: {
+    NameRequired: "Must provide a name for the collection",
+    OrganizationRequired: "Must provide an organization for the collection",
+  },
+  CollectionControllerErrors: {
+    NotFoundError: "Collection not found",
+    
+  },
   ProductControllerErrors: {
     NotFoundError: 'Product not found',
   },
@@ -164,7 +172,6 @@ const StaticStrings = {
     MaximumNumberOfTags: 'Too many tags provided (maximum is 7)',
     NoReactionToDelete: 'You have not reacted, so there is no reaction to delete',
     CreateMissingType: 'Missing \'type\' in request body',
-
   },
   MediaControllerErrors: {
     MediaNotFound: 'Error requested media not found',

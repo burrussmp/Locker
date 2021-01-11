@@ -16,6 +16,7 @@ import searchRoutes from '@server/routes/search.routes';
 import organizationRoutes from '@server/routes/organization.routes';
 import employeeRoutes from '@server/routes/employee.routes';
 import productRoutes from '@server/routes/product.routes';
+import collectionRoutes from '@server/routes/collection.routes';
 
 // modules for server side rendering
 const app = express();
@@ -42,6 +43,7 @@ app.use('/', searchRoutes);
 app.use('/', organizationRoutes);
 app.use('/', employeeRoutes);
 app.use('/', productRoutes);
+app.use('/', collectionRoutes);
 
 
 export default app;

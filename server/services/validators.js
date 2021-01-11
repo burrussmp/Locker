@@ -1,6 +1,8 @@
 /* eslint-disable no-useless-escape */
 /* eslint-disable max-len */
 'use strict';
+import _ from 'lodash';
+
 import mongoose from 'mongoose';
 import StaticStrings from '@config/StaticStrings';
 
@@ -81,10 +83,28 @@ const createValidationError = (message) => {
   return validatorError;
 };
 
+/**
+ * @desc Validate update fields in API call
+ * @param {Response} req HTTP Response
+ * @param {Request} res HTTP Request
+ * @param {Array} allowedFields An array of strings indicating which fields in request body
+ * @param {Function} next Call the next middleware function after validating
+ * are allowed.
+ */
+const validateUpdateFields = (req, res, allowedFields, next) => {
+  const updateFields = Object.keys(req.body);
+  const invalidFields = _.difference(updateFields, allowedFields);
+  if (invalidFields.length != 0) {
+    return res.status(422).json({error: `${StaticStrings.BadRequestInvalidFields} ${invalidFields}`});
+  }
+  next(req, res)
+}
+
 export default {
   isValidEmail,
   isValidPhoneNumber,
   isValidUsername,
   isValidPassword,
   createValidationError,
+  validateUpdateFields,
 };

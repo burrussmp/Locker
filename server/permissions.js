@@ -64,6 +64,14 @@ const ProductPermissions = {
   EditContent: 'product:edit',
 };
 
+// all permissions associated with a Product
+const CollectionPermissions = {
+  Create: 'collection:create',
+  Delete: 'collection:delete',
+  Read: 'collection:read',
+  EditContent: 'collection:edit',
+};
+
 const extend = (...arrayOfPermissions) => {
   const allPermissions = [].concat(...arrayOfPermissions);
   return [...new Set(allPermissions)];
@@ -84,6 +92,7 @@ const getPermissionArray = (type) => {
     PostPermissions.Read,
     PostPermissions.Interact,
     ProductPermissions.Read,
+    CollectionPermissions.Read,
   ]);
   permissions['employee'] = extend([
     UserPermissions.Read,
@@ -98,6 +107,10 @@ const getPermissionArray = (type) => {
     ProductPermissions.EditContent,
     EmployeePermissions.EditContent,
     EmployeePermissions.Read,
+    CollectionPermissions.Read,
+    CollectionPermissions.Create,
+    CollectionPermissions.EditContent,
+    CollectionPermissions.Delete,
   ]);
   permissions['supervisor'] = extend(permissions['employee'], [
     EmployeePermissions.Create,
@@ -228,6 +241,7 @@ export default {
   CommentPermissions,
   EmployeePermissions,
   ProductPermissions,
+  CollectionPermissions,
   setUpRBAC,
   getPermissionArray,
 };
