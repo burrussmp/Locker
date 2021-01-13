@@ -7,15 +7,18 @@ import MediaTest from '@test/MediaTests/index';
 import OrganizationTest from '@test/OrganizationTests/index';
 import EmployeeTest from '@test/EmployeeTests/index';
 import ProductTest from '@test/ProductTests/index';
+import CollectionTest from '@test/CollectionTests/index';
+
 import {dropDatabase} from '@test/helper';
 
 
-dropDatabase();
+// dropDatabase();
 // describe('Auth Tests', AuthTest);
 // describe('User Tests', UserTest);
-describe('Post Test', PostTest);
+// describe('Post Test', PostTest);
 // describe('Comment Test', CommentTest);
 // describe('Media Test', MediaTest);
 // describe('Organization Test', OrganizationTest);
 // describe('Employee Test', EmployeeTest);
 // describe('Product Tests', ProductTest);
+describe ('CollectionTests', CollectionTest);

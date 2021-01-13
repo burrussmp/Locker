@@ -75,7 +75,7 @@ const productBasicTests = () => {
         postAgent = postAgent.attach('404', process.cwd() + '/test/resources/profile3.txt');
         return postAgent.then((res)=>{
           res.status.should.eql(400);
-          res.body.error.should.include(StaticStrings.S3ServiceErrors.BadRequestWrongKey);
+          res.body.error.should.include(StaticStrings.S3ServiceErrors.BadRequestUnexpectedField);
         });
       });
       it('Create Product: additional_media missing (should succeed because not required)', async ()=>{
@@ -197,7 +197,7 @@ const productBasicTests = () => {
           res.status.should.eql(200);
         });
       });
-      it('Create Product: Add product to organization you are not a part, but supervisor (should succeed)', async ()=>{
+      it('Create Product: Add product to organization you are not a part, but supervisor (should fail)', async ()=>{
         const otherOrg = await createOrg(admin.access_token, OrganizationData[0]);
         const supervisor = await createEmployee(admin, EmployeeData[0]);
         newProductData.organization = otherOrg._id.toString();

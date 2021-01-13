@@ -144,7 +144,7 @@ const uploadFilesToS3 = (req, res, mediaMeta, next) => {
   const upload = multerUpload.fields(mediaMeta.fields);
   upload(req, res, async function(err) {
     if (err instanceof multer.MulterError) {
-      return res.status(400).send({error: StaticStrings.S3ServiceErrors.BadRequestWrongKey});
+      return res.status(400).send({error: StaticStrings.S3ServiceErrors.BadRequestUnexpectedField});
     } else if (err) {
       return res.status(422).send({error: err.message});
     }

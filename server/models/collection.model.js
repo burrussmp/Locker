@@ -1,6 +1,7 @@
 /* eslint-disable no-invalid-this */
 /* eslint-disable max-len */
 import mongoose from 'mongoose';
+import validators from '@server/services/validators';
 import StaticStrings from '@config/StaticStrings';
 
 const CollectionModelErrors = StaticStrings.CollectionModelErrors;
@@ -11,6 +12,7 @@ const CollectionSchema = new mongoose.Schema(
         type: String,
         required: CollectionModelErrors.NameRequired,
         trim: true,
+        maxlength: [24, CollectionModelErrors.NameExceededLength],
       },
       organization: {
         type: mongoose.Schema.ObjectId,
@@ -28,6 +30,7 @@ const CollectionSchema = new mongoose.Schema(
       description: {
         type: String,
         trim: true,
+        maxlength: [200, CollectionModelErrors.DescriptionExceededLength],
       },
       visible: {
         type: Boolean,
@@ -41,10 +44,16 @@ const CollectionSchema = new mongoose.Schema(
       timestamps: {
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
-      },
-      index: true,
+      }
     },
 );
+
+CollectionSchema.path('organization').validate(async function(value) {
+  const org = await mongoose.models.Organization.findById(value);
+  if (!org) {
+    throw validators.createValidationError(StaticStrings.OrganizationControllerErrors.NotFoundError);
+  }
+}, null);
 
 CollectionSchema.pre('findOneAndUpdate', async function() {
   // sanitize
@@ -57,16 +66,20 @@ CollectionSchema.pre('findOneAndUpdate', async function() {
       delete update[key];
     }
   }
+
+  this._hero = doc.hero;
+
   this.setUpdate(update);
 });
 
-CollectionSchema.post('findOneAndUpdate', function(doc) {
-    if (doc.hero) {
-        mongoose.models.Media.findById(doc.hero).then((media) =>{
-            media.deleteOne().catch((err) => {
-                console.log(`Error: Unable to remove old hero image in update. Reason ${err}`);
-            })
-        })
+CollectionSchema.post('findOneAndUpdate', async function() {
+    if (this._hero) {
+      try {
+        const media = await mongoose.models.Media.findById(this._hero);
+        await media.deleteOne();
+      } catch (err) {
+        console.log(`Error: Unable to delete old hero for collection. Reason ${err}`);
+      }
     }
   });
 

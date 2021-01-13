@@ -71,10 +71,7 @@ const collectionByID = async (req, res, next, id) => {
  * @return {Promise<Response>}
  */
 const create = async (req, res) => {
-  // can only create a collection on behalf of the organization that you are a part of.
-  if (req.auth.level != 0 && req.auth.organization.toString() != req.body.organization.toString()) {
-    return res.status(401).json({error: StaticStrings.EmployeeControllerErrors.RequireAdminOrRequesterInOrg});
-  }
+
   const mediaMeta = {
     'type': 'Collection',
     'uploadedBy': req.auth._id,
@@ -84,21 +81,30 @@ const create = async (req, res) => {
     ],
   };
   return S3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages) => {
+
     const collectionData = {
       name: req.body.name,
       organization: req.body.organization,
-      hero: allImages['hero'][0]._id,
+      hero: allImages['hero'].length != 0 ? allImages['hero'][0]._id : undefined,
       product_list: req.body.product_list,
       description: req.body.description,
       visible: true,
       tags: req.body.tags,
     };
     try {
-      const newCollection = await (new Collection(collectionData)).save();
+      const newCollection = new Collection(collectionData);
+
+      if (req.auth.level != 0 && req.body.organization && req.auth.organization.toString() != req.body.organization) {
+        throw StaticStrings.EmployeeControllerErrors.RequireAdminOrRequesterInOrg;
+      }
+      
+      await newCollection.save();
       return res.status(200).json({'_id': newCollection._id});
     } catch (err) {
       try {
-        await (await Media.findById(allImages['hero'][0]._id)).deleteOne();
+        if (allImages['hero'].length != 0){
+          await (await Media.findById(allImages['hero'][0]._id)).deleteOne();
+        }
         return res.status(400).json({error: errorHandler.getErrorMessage(err)});
       } catch (err2) {
         const errMessage = `Server Error: Unable to create collection because ${err.message} and failed to clean s3 because ${err2.message}`;
@@ -133,9 +139,8 @@ const read = (req, res) => {
 const list = async (req, res) => {
   const query = CollectionServices.queryBuilder(req);
   try {
-    const products = await Collection.find(query, null)
-        .select('_id updatedAt createdAt');
-    return res.json(products);
+    const collections = await Collection.find(query, null).select('_id updatedAt createdAt');
+    return res.json(collections);
   } catch (err) {
     return res.status(500).json({
       error: errorHandler.getErrorMessage(err),

@@ -3,6 +3,7 @@
 
 
 import User from '@server/models/user.model';
+import Collection from '@server/models/collection.model';
 import Employee from '@server/models/employee.model';
 import Organization from '@server/models/organization.model';
 import Product from '@server/models/product.model';
@@ -75,6 +76,29 @@ const createEmployee = async (admin, data) => {
   });
 };
 
+const createProduct = async (ProductData, accessToken) => {
+    // create a product
+    const form = FormData();
+    form.append('media', fs.createReadStream(ProductData.media));
+    for (let i = 0; i < ProductData.additional_media.length; ++i) {
+        form.append('additional_media', fs.createReadStream(ProductData.additional_media[i]));
+    }
+    for ( let key in ProductData ) {
+      if (Array.isArray(ProductData[key])) {
+        for (let item in ProductData[key]) {
+          form.append(`${key}[]`, ProductData[key][item]);
+        }
+      } else {
+        ProductData[key] = typeof ProductData[key] == 'object' ?  JSON.stringify(ProductData[key]) : ProductData[key];
+        form.append(key, ProductData[key]);
+      }
+    }
+    return await fetch(`http://localhost:3000/api/products?access_token=${accessToken}`, {
+        method: 'POST',
+        body: form,
+    }).then(res=>res.json());
+};
+
 const loginAdminEmployee = async () => {
   // eslint-disable-next-line no-unused-vars
   return new Promise((resolve, reject) => {
@@ -113,7 +137,7 @@ const getAccessToken = async (data) => {
 };
 
 const dropDatabase = async () => {
-  for (const model of [User, Employee, Post, Organization, Product, RBAC]) {
+  for (const model of [User, Employee, Post, Organization, Product, RBAC, Collection]) {
     const cursor = model.find().cursor();
     for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
       await doc.deleteOne();
@@ -151,4 +175,5 @@ export {
   createOrg,
   addEmployeeToOrg,
   createProductPostAgent,
+  createProduct,
 };

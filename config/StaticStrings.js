@@ -29,7 +29,7 @@ const StaticStrings = {
   },
   S3ServiceErrors: {
     InvalidImageMimeType: 'Invalid Mimetype: The following are allowed:',
-    BadRequestWrongKey: 'Bad request: Form has unexpected field.',
+    BadRequestUnexpectedField: 'Bad request: Form has unexpected field.',
     UploadServerError: 'ServerError: Unable to upload file',
     DeleteServerError: 'ServerError: Unable to delete file',
     RetrieveServerError: 'ServerError: Unable to send file, but it exists in S3',
@@ -136,10 +136,12 @@ const StaticStrings = {
   CollectionModelErrors: {
     NameRequired: "Must provide a name for the collection",
     OrganizationRequired: "Must provide an organization for the collection",
+    NameExceededLength: "The name of the collection is too long",
+    DescriptionExceededLength: "The description of the collection is too long",
   },
   CollectionControllerErrors: {
     NotFoundError: "Collection not found",
-    
+
   },
   ProductControllerErrors: {
     NotFoundError: 'Product not found',

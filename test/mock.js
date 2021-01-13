@@ -1,10 +1,8 @@
 
 import Organization from '@server/models/organization.model';
 import {ProductData} from '@development/product.data';
-import {dropDatabase, loginAdminEmployee} from '@test/helper';
+import {createProduct ,dropDatabase, loginAdminEmployee} from '@test/helper';
 import fetch from 'node-fetch';
-import FormData from 'form-data';
-import fs from 'fs';
 import config from '@config/config';
 
 import '@server/server';
@@ -25,25 +23,8 @@ import '@server/server';
     // create a product
     const newProductData = JSON.parse(JSON.stringify(ProductData[0]));
     newProductData.organization = anyOrg._id.toString();
-    const form = FormData();
-    form.append('media', fs.createReadStream(newProductData.media));
-    for (let i = 0; i < newProductData.additional_media.length; ++i) {
-        form.append('additional_media', fs.createReadStream(newProductData.additional_media[i]));
-    }
-    for ( let key in newProductData ) {
-      if (Array.isArray(newProductData[key])) {
-        for (let item in newProductData[key]) {
-          form.append(`${key}[]`, newProductData[key][item]);
-        }
-      } else {
-        newProductData[key] = typeof newProductData[key] == 'object' ?  JSON.stringify(newProductData[key]) : newProductData[key];
-        form.append(key, newProductData[key]);
-      }
-    }
-    const product = await fetch(`http://${config.address}:${config.port}/api/products?access_token=${admin.access_token}`, {
-        method: 'POST',
-        body: form,
-    }).then(res=>res.json());
+
+    const product = await createProduct(newProductData, admin.access_token);
     console.log(`Created product with id ${product._id}`);
 
     // create a product post with the product
