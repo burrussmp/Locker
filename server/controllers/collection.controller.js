@@ -81,7 +81,6 @@ const create = async (req, res) => {
     ],
   };
   return S3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages) => {
-
     const collectionData = {
       name: req.body.name,
       organization: req.body.organization,
@@ -153,7 +152,7 @@ const list = async (req, res) => {
  * @return {Promise<Response>}
  */
 const update = async (req, res) => {
-  return validators.validateUpdateFields(req, res, ['name', 'description', 'product_list', 'tags', 'visible'], (req, res) => {
+  return validators.validateUpdateFields(req, res, ['name', 'description', 'product_list', 'tags', 'visible'], async (req, res) => {
     const mediaMeta = {
       'type': 'Collection',
       'uploadedBy': req.auth._id,

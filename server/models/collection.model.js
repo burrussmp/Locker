@@ -55,6 +55,16 @@ CollectionSchema.path('organization').validate(async function(value) {
   }
 }, null);
 
+CollectionSchema.path('product_list').validate(async function(productList) {
+  for (let productId of productList) {
+    const product = await mongoose.models.Product.findById(productId);
+    if (!product) {
+      const err = `${StaticStrings.ProductControllerErrors.NotFoundError}: Product ID ${productId} in list ${productList}`;
+      throw validators.createValidationError(err);
+    }
+  }
+}, null);
+
 CollectionSchema.pre('findOneAndUpdate', async function() {
   // sanitize
   const update = await this.getUpdate();

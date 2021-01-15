@@ -10,9 +10,9 @@ import Organization from '@server/models/organization.model';
 import Media from '@server/models/media.model';
 import {EmployeeData} from '@development/employee.data';
 import {OrganizationData} from '@development/organization.data';
-import {ProductData, getProductPostConstructor} from '@development/product.data';
+import {ProductData} from '@development/product.data';
 import { CollectionData, getCollectionConstructor } from '@development/collection.data';
-import {createProduct, dropDatabase, createEmployee, loginAdminEmployee, createOrg, createProductPostAgent} from '@test/helper';
+import {createProduct, createCollection, dropDatabase, createEmployee, loginAdminEmployee, createOrg, createProductPostAgent} from '@test/helper';
 import StaticStrings from '@config/StaticStrings';
 import S3Services from '@server/services/S3.services';
 
@@ -25,7 +25,7 @@ const createProductList = async (organizationID, accessToken, numProducts = 1) =
     let newProductData = JSON.parse(JSON.stringify(ProductData[i]));
     newProductData.organization = organizationID;
     productList.push(
-      await createProduct(newProductData, accessToken)
+      (await createProduct(newProductData, accessToken))._id
     )
   }
   return productList;
@@ -191,6 +191,25 @@ const collectionBasicsTest = () => {
               res.status.should.eql(200);
             });
       });
+    it('Create Collection: Product list contains product that doesn\'t exist', async ()=>{
+      newCollectionData.product_list.push(admin.id)
+      return agent.post(`${url}?access_token=${admin.access_token}`)
+          .attach('hero', newCollectionData.hero)
+          .field(getCollectionConstructor(newCollectionData))
+          .then((res)=>{
+            res.status.should.eql(400);
+            res.body.error.should.include(StaticStrings.ProductControllerErrors.NotFoundError);
+          });
+    });
+    it('Create Collection: Product list contains product is invalid ID', async ()=>{
+      newCollectionData.product_list.push('404')
+      return agent.post(`${url}?access_token=${admin.access_token}`)
+          .attach('hero', newCollectionData.hero)
+          .field(getCollectionConstructor(newCollectionData))
+          .then((res)=>{
+            res.status.should.eql(400);
+          });
+    });
       it('Create Collection: Properly cleans up Media and S3 if hero provided and save fails', async ()=>{
         const numMedia = await Media.countDocuments();
         const s3MediaCount = await S3Services.listObjectsS3();
@@ -253,52 +272,65 @@ const collectionBasicsTest = () => {
             });
       });
     });
-    // describe('GET /api/products`', ()=>{
-    //   const agent = chai.request.agent(app);
-    //   let admin; let anyOrg; let newProductData;
-    //   beforeEach(async ()=>{
-    //     await dropDatabase();
-    //     admin = await loginAdminEmployee();
-    //     anyOrg = await Organization.findOne();
-    //     newProductData = JSON.parse(JSON.stringify(ProductData[0]));
-    //     newProductData.organization = anyOrg._id.toString();
-    //     await createProductPostAgent(agent, newProductData, admin.access_token).then();
-    //   });
-    //   it('List Products: Not logged in (should succeed)', async ()=>{
-    //     return agent.get(`/api/products`).then(async (res) => {
-    //       res.status.should.eql(200);
-    //       res.body.length.should.eql(1);
-    //     });
-    //   });
-    //   it('List Products: Logged in (should succeed)', async ()=>{
-    //     return agent.get(`/api/products?access_token=${admin.access_token}`).then(async (res) => {
-    //       res.status.should.eql(200);
-    //       res.body.length.should.eql(1);
-    //     });
-    //   });
-    //   it('List Products: Query an organization (should succeed)', async ()=>{
-    //     const otherOrg = await createOrg(admin.access_token, OrganizationData[0]);
-    //     const query = `organization=${otherOrg._id.toString()}`;
-    //     return agent.get(`/api/products?access_token=${admin.access_token}&${query}`).then(async (res) => {
-    //       res.status.should.eql(200);
-    //       res.body.length.should.eql(0);
-    //     });
-    //   });
-    //   it('List Products: Query available false (should succeed)', async ()=>{
-    //     const query = `available=false`;
-    //     return agent.get(`/api/products?access_token=${admin.access_token}&${query}`).then(async (res) => {
-    //       res.status.should.eql(200);
-    //       res.body.length.should.eql(0);
-    //     });
-    //   });
-    //   it('List Products: Query available true (should succeed)', async ()=>{
-    //     const query = `available=true`;
-    //     return agent.get(`/api/products?access_token=${admin.access_token}&${query}`).then(async (res) => {
-    //       res.status.should.eql(200);
-    //       res.body.length.should.eql(1);
-    //     });
-    //   });
-    // });
+    describe('GET /api/collections`', ()=>{
+      const url = '/api/collections'
+      const agent = chai.request.agent(app);
+      let admin; let collection; let newCollectionData;
+      before(async ()=>{
+        await dropDatabase();
+        admin = await loginAdminEmployee();
+        const anyOrg = await Organization.findOne();
+        const productList = await createProductList(anyOrg._id.toString(), admin.access_token, 1);
+        newCollectionData = JSON.parse(JSON.stringify(CollectionData[0]));
+        newCollectionData.organization = anyOrg._id.toString();
+        newCollectionData.product_list = productList;
+        collection = await createCollection(newCollectionData, admin.access_token);
+      });
+      after(async () => {
+        await dropDatabase();
+      })
+      it('List Collections: Success', async ()=>{
+        return agent.get(`${url}?access_token=${admin.access_token}`).then(async (res) => {
+          res.status.should.eql(200);
+          res.body.length.should.eql(1);
+          res.body[0]._id.should.equal(collection._id);
+        });
+      });
+      it('List Collections: Not logged in (should succeed)', async ()=>{
+        return agent.get(`${url}`).then(async (res) => {
+          res.status.should.eql(200);
+          res.body.length.should.eql(1);
+        });
+      });
+      it('List Collections: Logged in (should succeed)', async ()=>{
+        return agent.get(`${url}?access_token=${admin.access_token}`).then(async (res) => {
+          res.status.should.eql(200);
+          res.body.length.should.eql(1);
+        });
+      });
+      it('List Collections: Query an organization (should succeed)', async ()=>{
+        const otherOrg = await createOrg(admin.access_token, OrganizationData[0]);
+        const query = `organization=${otherOrg._id.toString()}`;
+        return agent.get(`${url}?access_token=${admin.access_token}&${query}`).then(async (res) => {
+          res.status.should.eql(200);
+          res.body.length.should.eql(0);
+        });
+      });
+      it('List Collections: Query by name not found (should succeed)', async ()=>{
+        const query = `name=404`;
+        return agent.get(`${url}?access_token=${admin.access_token}&${query}`).then(async (res) => {
+          res.status.should.eql(200);
+          res.body.length.should.eql(0);
+        });
+      });
+      it('List Collections: Query by name and found (should succeed)', async ()=>{
+        const query = `name=${newCollectionData.name}`;
+        return agent.get(`${url}?access_token=${admin.access_token}&${query}`).then(async (res) => {
+          res.status.should.eql(200);
+          res.body.length.should.eql(1);
+        });
+      });
+    });
   });
 };
 

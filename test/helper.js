@@ -15,7 +15,7 @@ import fetch from 'node-fetch';
 import fs from 'fs';
 
 import {getProductPostConstructor} from '@development/product.data';
-
+import {getCollectionConstructor} from '@development/collection.data';
 
 const createUser = async (data) => {
   return fetch('http://localhost:3000/api/users', {
@@ -76,27 +76,46 @@ const createEmployee = async (admin, data) => {
   });
 };
 
-const createProduct = async (ProductData, accessToken) => {
+const createProduct = async (productData, accessToken) => {
     // create a product
     const form = FormData();
-    form.append('media', fs.createReadStream(ProductData.media));
-    for (let i = 0; i < ProductData.additional_media.length; ++i) {
-        form.append('additional_media', fs.createReadStream(ProductData.additional_media[i]));
+    form.append('media', fs.createReadStream(productData.media));
+    for (let i = 0; i < productData.additional_media.length; ++i) {
+        form.append('additional_media', fs.createReadStream(productData.additional_media[i]));
     }
-    for ( let key in ProductData ) {
-      if (Array.isArray(ProductData[key])) {
-        for (let item in ProductData[key]) {
-          form.append(`${key}[]`, ProductData[key][item]);
+    for ( let key in productData ) {
+      if (Array.isArray(productData[key])) {
+        for (let item in productData[key]) {
+          form.append(`${key}[]`, productData[key][item]);
         }
       } else {
-        ProductData[key] = typeof ProductData[key] == 'object' ?  JSON.stringify(ProductData[key]) : ProductData[key];
-        form.append(key, ProductData[key]);
+        productData[key] = typeof productData[key] == 'object' ?  JSON.stringify(productData[key]) : productData[key];
+        form.append(key, productData[key]);
       }
     }
     return await fetch(`http://localhost:3000/api/products?access_token=${accessToken}`, {
         method: 'POST',
         body: form,
     }).then(res=>res.json());
+};
+
+const createCollection = async (collectionData, accessToken) => {
+  const form = FormData();
+  form.append('hero', fs.createReadStream(collectionData.hero));
+  for ( let key in getCollectionConstructor(collectionData) ) {
+    if (Array.isArray(collectionData[key])) {
+      for (let item in collectionData[key]) {
+        form.append(`${key}[]`, collectionData[key][item]);
+      }
+    } else {
+      collectionData[key] = typeof collectionData[key] == 'object' ?  JSON.stringify(collectionData[key]) : collectionData[key];
+      form.append(key, collectionData[key]);
+    }
+  }
+  return await fetch(`http://localhost:3000/api/collections?access_token=${accessToken}`, {
+      method: 'POST',
+      body: form,
+  }).then(res=>res.json());
 };
 
 const loginAdminEmployee = async () => {
@@ -176,4 +195,5 @@ export {
   addEmployeeToOrg,
   createProductPostAgent,
   createProduct,
+  createCollection,
 };

@@ -20,9 +20,10 @@ const CollectionData = [
 const getCollectionConstructor = (newCollectionData) => {
     let field = {
         name: newCollectionData.name,
+        organization: newCollectionData.organization,
+        'product_list[]': newCollectionData.product_list,
         description: newCollectionData.description,
         tags: newCollectionData.tags,
-        organization: newCollectionData.organization
     };
     return pickBy(field, v => v !== undefined);
 }
