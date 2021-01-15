@@ -1,13 +1,12 @@
 /* eslint-disable max-len */
 'use strict';
 // imports
-import _ from 'lodash';
-
 import Media from '@server/models/media.model';
 import Product from '@server/models/product.model';
 
 import S3Services from '@server/services/S3.services';
 import ProductServices from '@server/services/database/product.services';
+import validators from '@server/services/validators';
 
 import errorHandler from '@server/services/dbErrorHandler';
 import StaticStrings from '@config/StaticStrings';
@@ -75,11 +74,6 @@ const productById = async (req, res, next, id) => {
  */
 const create = async (req, res) => {
 
-  // Can only create on behalf of your organization
-  if (req.auth.level != 0 && req.auth.organization.toString() != req.body.organization.toString()) {
-    return res.status(401).json({error: StaticStrings.EmployeeControllerErrors.RequireAdminOrRequesterInOrg});
-  }
-  
   const mediaMeta = {
     'type': 'Product',
     'uploadedBy': req.auth._id,
@@ -109,12 +103,14 @@ const create = async (req, res) => {
     };
     try {
       const newProduct = new Product(productData);
+      if (req.auth.level != 0 && req.body.organization && req.body.organization && req.auth.organization.toString() != req.body.organization) {
+        return res.status(401).json({error: StaticStrings.EmployeeControllerErrors.RequireAdminOrRequesterInOrg});
+      }
       await newProduct.save();
       return res.status(200).json({'_id': newProduct._id});
     } catch (err) {
       try {
-        const mediaDoc = await Media.findById(media._id);
-        await mediaDoc.deleteOne();
+        await (await Media.findById(media._id)).deleteOne();
         if (allImages['additional_media']) {
           for (const media of allImages['additional_media']) {
             const mediaDoc = await Media.findById(media._id);
@@ -172,46 +168,32 @@ const list = async (req, res) => {
  * @return {Promise<Response>}
  */
 const update = async (req, res) => {
-  const fieldsAllowed = [
-    'name',
-    'url',
-    'price',
-    'description',
-    'available',
-    'approved',
-    'tags',
-    'meta',
-    'sizes',
-    'last_scraped',
-  ];
-  const updateFields = Object.keys(req.body);
-  const invalidFields = _.difference(updateFields, fieldsAllowed);
-  if (invalidFields.length != 0) {
-    return res.status(422).json({error: `${StaticStrings.BadRequestInvalidFields} ${invalidFields}`});
-  }
-  if (req.body.meta) {
-    const metaUpdate = ProductServices.deserializeAttr(req.body.meta, 'meta');
-    if (metaUpdate) {
-      req.body.meta = metaUpdate;
-    } else {
-      delete req.body.meta;
+  return validators.validateUpdateFields(req, res,
+    ['name', 'url', 'price', 'description', 'available', 'approved', 'tags', 'meta', 'sizes', 'last_scraped'], async (req, res) => {
+    if (req.body.meta) {
+      const metaUpdate = ProductServices.deserializeAttr(req.body.meta, 'meta');
+      if (metaUpdate) {
+        req.body.meta = metaUpdate;
+      } else {
+        delete req.body.meta;
+      }
     }
-  }
-  if (req.body.last_scraped) {
+    if (req.body.last_scraped) {
+      try {
+        req.body.last_scraped = new Date(req.body.last_scraped * 1000);
+      } catch (err) {
+        return res.status(400).json({error: `Unable to convert 'last_scraped' unix timestamp to javascript timestamp. Reason ${err.message}`});
+      }
+    }
     try {
-      req.body.last_scraped = new Date(req.body.last_scraped * 1000);
+      const product = await Product.findOneAndUpdate({'_id': req.params.productId}, req.body, {new: true, runValidators: true});
+      if (!product) return res.status(500).json({error: StaticStrings.UnknownServerError}); // possibly unable to fetch
+      return res.status(200).json(filterProduct(product));
     } catch (err) {
-      return res.status(400).json({error: `Unable to convert 'last_scraped' unix timestamp to javascript timestamp. Reason ${err.message}`});
+      const errMessage = errorHandler.getErrorMessage(err);
+      return res.status(400).json({error: errMessage ? errMessage : err.message});
     }
-  }
-  try {
-    const product = await Product.findOneAndUpdate({'_id': req.params.productId}, req.body, {new: true, runValidators: true});
-    if (!product) return res.status(500).json({error: StaticStrings.UnknownServerError}); // possibly unable to fetch
-    return res.status(200).json(filterProduct(product));
-  } catch (err) {
-    const errMessage = errorHandler.getErrorMessage(err);
-    return res.status(400).json({error: errMessage ? errMessage : err.message});
-  }
+  });
 };
 
 /**

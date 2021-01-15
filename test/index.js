@@ -20,5 +20,5 @@ import {dropDatabase} from '@test/helper';
 // describe('Media Test', MediaTest);
 // describe('Organization Test', OrganizationTest);
 // describe('Employee Test', EmployeeTest);
-// describe('Product Tests', ProductTest);
-describe ('CollectionTests', CollectionTest);
+describe('Product Tests', ProductTest);
+// describe ('CollectionTests', CollectionTest);

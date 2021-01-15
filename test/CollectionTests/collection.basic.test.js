@@ -191,8 +191,9 @@ const collectionBasicsTest = () => {
               res.status.should.eql(200);
             });
       });
-      it('Create Collection: Properly cleans up image if hero provided and save fails', async ()=>{
+      it('Create Collection: Properly cleans up Media and S3 if hero provided and save fails', async ()=>{
         const numMedia = await Media.countDocuments();
+        const s3MediaCount = await S3Services.listObjectsS3();
         newCollectionData.organization = admin.id;
         return agent.post(`${url}?access_token=${admin.access_token}`)
             .attach('hero', newCollectionData.hero)
@@ -200,7 +201,9 @@ const collectionBasicsTest = () => {
             .then(async (res)=>{
               res.status.should.eql(400);
               const numMediaNow = await Media.countDocuments();
+              const s3MediaCountNow = await S3Services.listObjectsS3();
               numMediaNow.should.eql(numMedia);
+              s3MediaCount.Contents.length.should.eql(s3MediaCountNow.Contents.length);
             });
       });
       it('Create Collection: Properly fails if failed save and hero not provided', async ()=>{
@@ -245,7 +248,7 @@ const collectionBasicsTest = () => {
             .attach('hero', newCollectionData.hero)
             .field(getCollectionConstructor(newCollectionData))
             .then(async (res)=>{
-              res.status.should.eql(400);
+              res.status.should.eql(401);
               res.body.error.should.eql(StaticStrings.EmployeeControllerErrors.RequireAdminOrRequesterInOrg)
             });
       });

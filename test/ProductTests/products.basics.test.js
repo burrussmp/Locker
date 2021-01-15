@@ -29,6 +29,11 @@ const productBasicTests = () => {
         newProductData = JSON.parse(JSON.stringify(ProductData[0]));
         newProductData.organization = anyOrg._id.toString();
       });
+      it('Create Product: Success (should)', async ()=>{
+        return createProductPostAgent(agent, newProductData, admin.access_token).then((res)=>{
+          res.status.should.eql(200);
+        });
+      });
       it('Create Product: Not logged in (should fail)', async ()=>{
         return createProductPostAgent(agent, newProductData).then((res)=>{
           res.status.should.eql(401);
@@ -166,7 +171,7 @@ const productBasicTests = () => {
           res.body.error.should.eql(StaticStrings.OrganizationControllerErrors.NotFoundError);
         });
       });
-      it('Create Product: Check if media and s3 successfully cleaned when saving product fails', async ()=>{
+      it('Create Product: Check if Media and s3 successfully cleaned when saving product fails', async ()=>{
         const numMedia = await Media.countDocuments();
         const s3MediaCount = await S3Services.listObjectsS3();
         newProductData.url = '';
@@ -207,52 +212,52 @@ const productBasicTests = () => {
         });
       });
     });
-    describe('GET /api/products`', ()=>{
-      const agent = chai.request.agent(app);
-      let admin; let anyOrg; let newProductData;
-      beforeEach(async ()=>{
-        await dropDatabase();
-        admin = await loginAdminEmployee();
-        anyOrg = await Organization.findOne();
-        newProductData = JSON.parse(JSON.stringify(ProductData[0]));
-        newProductData.organization = anyOrg._id.toString();
-        await createProductPostAgent(agent, newProductData, admin.access_token).then();
-      });
-      it('List Products: Not logged in (should succeed)', async ()=>{
-        return agent.get(`/api/products`).then(async (res) => {
-          res.status.should.eql(200);
-          res.body.length.should.eql(1);
-        });
-      });
-      it('List Products: Logged in (should succeed)', async ()=>{
-        return agent.get(`/api/products?access_token=${admin.access_token}`).then(async (res) => {
-          res.status.should.eql(200);
-          res.body.length.should.eql(1);
-        });
-      });
-      it('List Products: Query an organization (should succeed)', async ()=>{
-        const otherOrg = await createOrg(admin.access_token, OrganizationData[0]);
-        const query = `organization=${otherOrg._id.toString()}`;
-        return agent.get(`/api/products?access_token=${admin.access_token}&${query}`).then(async (res) => {
-          res.status.should.eql(200);
-          res.body.length.should.eql(0);
-        });
-      });
-      it('List Products: Query available false (should succeed)', async ()=>{
-        const query = `available=false`;
-        return agent.get(`/api/products?access_token=${admin.access_token}&${query}`).then(async (res) => {
-          res.status.should.eql(200);
-          res.body.length.should.eql(0);
-        });
-      });
-      it('List Products: Query available true (should succeed)', async ()=>{
-        const query = `available=true`;
-        return agent.get(`/api/products?access_token=${admin.access_token}&${query}`).then(async (res) => {
-          res.status.should.eql(200);
-          res.body.length.should.eql(1);
-        });
-      });
-    });
+    // describe('GET /api/products`', ()=>{
+    //   const agent = chai.request.agent(app);
+    //   let admin; let anyOrg; let newProductData;
+    //   beforeEach(async ()=>{
+    //     await dropDatabase();
+    //     admin = await loginAdminEmployee();
+    //     anyOrg = await Organization.findOne();
+    //     newProductData = JSON.parse(JSON.stringify(ProductData[0]));
+    //     newProductData.organization = anyOrg._id.toString();
+    //     await createProductPostAgent(agent, newProductData, admin.access_token).then();
+    //   });
+    //   it('List Products: Not logged in (should succeed)', async ()=>{
+    //     return agent.get(`/api/products`).then(async (res) => {
+    //       res.status.should.eql(200);
+    //       res.body.length.should.eql(1);
+    //     });
+    //   });
+    //   it('List Products: Logged in (should succeed)', async ()=>{
+    //     return agent.get(`/api/products?access_token=${admin.access_token}`).then(async (res) => {
+    //       res.status.should.eql(200);
+    //       res.body.length.should.eql(1);
+    //     });
+    //   });
+    //   it('List Products: Query an organization (should succeed)', async ()=>{
+    //     const otherOrg = await createOrg(admin.access_token, OrganizationData[0]);
+    //     const query = `organization=${otherOrg._id.toString()}`;
+    //     return agent.get(`/api/products?access_token=${admin.access_token}&${query}`).then(async (res) => {
+    //       res.status.should.eql(200);
+    //       res.body.length.should.eql(0);
+    //     });
+    //   });
+    //   it('List Products: Query available false (should succeed)', async ()=>{
+    //     const query = `available=false`;
+    //     return agent.get(`/api/products?access_token=${admin.access_token}&${query}`).then(async (res) => {
+    //       res.status.should.eql(200);
+    //       res.body.length.should.eql(0);
+    //     });
+    //   });
+    //   it('List Products: Query available true (should succeed)', async ()=>{
+    //     const query = `available=true`;
+    //     return agent.get(`/api/products?access_token=${admin.access_token}&${query}`).then(async (res) => {
+    //       res.status.should.eql(200);
+    //       res.body.length.should.eql(1);
+    //     });
+    //   });
+    // });
   });
 };
 

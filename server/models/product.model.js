@@ -112,7 +112,24 @@ ProductSchema.pre('findOneAndUpdate', async function() {
       delete update[key];
     }
   }
+
+  this._media = doc.media;
+  this._additional_media = doc.additional_media;
+
   this.setUpdate(update);
+});
+
+ProductSchema.post('findOneAndUpdate', async function() {
+  const allMedia = [this._media, ...this._additional_media];
+  for (let media in allMedia) {
+    if (media) {
+      try {
+        await (await mongoose.models.Media.findById(media)).deleteOne();
+      } catch (err) {
+        console.log(`Error: Unable to delete old hero for collection. Reason ${err}`);
+      }
+    }
+  }
 });
 
 ProductSchema.pre('deleteOne', {document: true, query: false}, async function() {

@@ -93,11 +93,9 @@ const create = async (req, res) => {
     };
     try {
       const newCollection = new Collection(collectionData);
-
       if (req.auth.level != 0 && req.body.organization && req.auth.organization.toString() != req.body.organization) {
-        throw StaticStrings.EmployeeControllerErrors.RequireAdminOrRequesterInOrg;
+        return res.status(401).json({error: StaticStrings.EmployeeControllerErrors.RequireAdminOrRequesterInOrg});
       }
-      
       await newCollection.save();
       return res.status(200).json({'_id': newCollection._id});
     } catch (err) {
@@ -178,7 +176,6 @@ const update = async (req, res) => {
       }
     });
   })
-
 };
 
 /**
