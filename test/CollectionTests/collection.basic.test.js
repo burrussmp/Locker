@@ -33,12 +33,10 @@ const createProductList = async (organizationID, accessToken, numProducts = 1) =
 
 
 const collectionBasicsTest = () => {
-  describe('Basics Test', ()=>{
-    describe('POST /api/collections`', ()=>{
-
+  describe('Collection Basics Test', ()=>{
+    const url = '/api/collections';
+    describe(`POST ${url}`, ()=>{
       const agent = chai.request.agent(app);
-      const url = '/api/collections';
-
       let admin; let anyOrg;
       let employee;
       let newCollectionData;
@@ -55,7 +53,7 @@ const collectionBasicsTest = () => {
         anyOrg = await Organization.findOne();
         newCollectionData = JSON.parse(JSON.stringify(CollectionData[0]));
         newCollectionData.organization = anyOrg._id.toString();
-        newCollectionData.product_list = productList;
+        newCollectionData.product_list = [...productList];
       })
       it('Create Collection: Success', async ()=>{
         return agent.post(`${url}?access_token=${admin.access_token}`)
@@ -272,8 +270,7 @@ const collectionBasicsTest = () => {
             });
       });
     });
-    describe('GET /api/collections`', ()=>{
-      const url = '/api/collections'
+    describe(`GET ${url}`, ()=>{
       const agent = chai.request.agent(app);
       let admin; let collection; let newCollectionData;
       before(async ()=>{

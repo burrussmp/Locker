@@ -102,14 +102,16 @@ const createProduct = async (productData, accessToken) => {
 const createCollection = async (collectionData, accessToken) => {
   const form = FormData();
   form.append('hero', fs.createReadStream(collectionData.hero));
-  for ( let key in getCollectionConstructor(collectionData) ) {
-    if (Array.isArray(collectionData[key])) {
-      for (let item in collectionData[key]) {
-        form.append(`${key}[]`, collectionData[key][item]);
+
+  const fields = getCollectionConstructor(collectionData);
+  for ( let key in fields ) {
+    if (Array.isArray(fields[key])) {
+      for (let item in fields[key]) {
+        form.append(`${key}[]`, fields[key][item]);
       }
     } else {
-      collectionData[key] = typeof collectionData[key] == 'object' ?  JSON.stringify(collectionData[key]) : collectionData[key];
-      form.append(key, collectionData[key]);
+      fields[key] = typeof fields[key] == 'object' ?  JSON.stringify(fields[key]) : fields[key];
+      form.append(key, fields[key]);
     }
   }
   return await fetch(`http://localhost:3000/api/collections?access_token=${accessToken}`, {

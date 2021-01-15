@@ -2,3 +2,5 @@
 1a. Cover unit test if the post doesn't exist
 2. Add visibility to product post and product
 3. Update all update fields using the validator in validators.js
+4. Whenever an ID is part of a field, add a validator on the path that ensures
+that the ID exists
