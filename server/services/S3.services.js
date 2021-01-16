@@ -156,7 +156,7 @@ const uploadFilesToS3 = (req, res, mediaMeta, next) => {
     }
     for (const fieldMeta of mediaMeta.fields) {
       allMedia[fieldMeta.name] = [];
-      if (req.files[fieldMeta.name]) {
+      if (req.files && req.files[fieldMeta.name]) {
         for (const file of req.files[fieldMeta.name]) {
           let blurhash = undefined;
           try {

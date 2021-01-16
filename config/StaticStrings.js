@@ -35,7 +35,6 @@ const StaticStrings = {
     RetrieveServerError: 'ServerError: Unable to send file, but it exists in S3',
     BadMediaUploadSuccessfulDelete: 'ServerError: Unable to upload media but clean up S3 worked.',
     BadRequestMissingFile: 'Missing file to upload',
-    InvalidMediaMimeType: 'The media being uploaded must be a video or image',
   },
   UserControllerErrors: {
     BadUploadSuccessfulDelete: 'ServerError: Unable to update profile picture but clean up S3 worked.',

@@ -26,10 +26,11 @@ const CognitoServices = CognitoAPI.UserCognitoPool;
   * @return {Object} The user document with certain private fields removed
 */
 const filterUser = (user) => {
-  user.permissions = undefined;
-  user.gender = undefined;
-  user.__v = undefined;
-  return user;
+  const newUser = JSON.parse(JSON.stringify(user));
+  newUser.permissions = undefined;
+  newUser.gender = undefined;
+  newUser.__v = undefined;
+  return newUser;
 };
 
 /**

@@ -1,5 +1,7 @@
+/* eslint-disable no-shadow */
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable max-len */
-'use strict';
+
 // imports
 
 import Collection from '@server/models/collection.model';
@@ -12,7 +14,7 @@ import S3Services from '@server/services/S3.services';
 import errorHandler from '@server/services/dbErrorHandler';
 import StaticStrings from '@config/StaticStrings';
 
-const CollectionControllerErrors = StaticStrings.CollectionControllerErrors;
+const { CollectionControllerErrors } = StaticStrings;
 
 /**
  * @desc Filter a collection  return public information
@@ -20,8 +22,9 @@ const CollectionControllerErrors = StaticStrings.CollectionControllerErrors;
  * @return {object} A filtered organization
  */
 const filterCollection = (collection) => {
-  collection.__v = undefined;
-  return collection;
+  const filteredCollection = JSON.parse(JSON.stringify(collection));
+  filteredCollection.__v = undefined;
+  return filteredCollection;
 };
 
 /**
@@ -34,11 +37,10 @@ const filterCollection = (collection) => {
  * not have admin privilege
  */
 const enforceSameOrganization = async (req, res, next) => {
-  if (req.auth.level != 0 && req.collection.organization.toString() != req.auth.organization.toString()) {
-    return res.status(401).json({error: StaticStrings.EmployeeControllerErrors.RequireAdminOrRequesterInOrg});
-  } else {
-    next();
+  if (req.auth.level !== 0 && req.collection.organization.toString() !== req.auth.organization.toString()) {
+    return res.status(401).json({ error: StaticStrings.EmployeeControllerErrors.RequireAdminOrRequesterInOrg });
   }
+  return next();
 };
 
 /**
@@ -52,15 +54,15 @@ const enforceSameOrganization = async (req, res, next) => {
 const collectionByID = async (req, res, next, id) => {
   try {
     const collection = await Collection.findById(id)
-        .populate('hero', 'key blurhash mimetype')
-        .exec();
+      .populate('hero', 'key blurhash mimetype')
+      .exec();
     if (!collection) {
-      return res.status(404).json({error: CollectionControllerErrors.NotFoundError});
+      return res.status(404).json({ error: CollectionControllerErrors.NotFoundError });
     }
     req.collection = collection;
-    next();
+    return next();
   } catch (err) {
-    return res.status(404).json({error: CollectionControllerErrors.NotFoundError});
+    return res.status(404).json({ error: CollectionControllerErrors.NotFoundError });
   }
 };
 
@@ -71,20 +73,21 @@ const collectionByID = async (req, res, next, id) => {
  * @return {Promise<Response>}
  */
 const create = async (req, res) => {
-
   const mediaMeta = {
-    'type': 'Collection',
-    'uploadedBy': req.auth._id,
-    'uploadedByType': 'Employee',
-    'fields': [
-      {name: 'hero', maxCount: 1, mimeTypesAllowed: ['image/png', 'image/jpeg'], required: false},
+    type: 'Collection',
+    uploadedBy: req.auth._id,
+    uploadedByType: 'Employee',
+    fields: [
+      {
+        name: 'hero', maxCount: 1, mimeTypesAllowed: ['image/png', 'image/jpeg'], required: false,
+      },
     ],
   };
   return S3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages) => {
     const collectionData = {
       name: req.body.name,
       organization: req.body.organization,
-      hero: allImages['hero'].length != 0 ? allImages['hero'][0]._id : undefined,
+      hero: allImages.hero.length !== 0 ? allImages.hero[0]._id : undefined,
       product_list: req.body.product_list,
       description: req.body.description,
       visible: true,
@@ -92,20 +95,20 @@ const create = async (req, res) => {
     };
     try {
       const newCollection = new Collection(collectionData);
-      if (req.auth.level != 0 && req.body.organization && req.auth.organization.toString() != req.body.organization) {
-        return res.status(401).json({error: StaticStrings.EmployeeControllerErrors.RequireAdminOrRequesterInOrg});
+      if (req.auth.level !== 0 && req.body.organization && req.auth.organization.toString() !== req.body.organization) {
+        return res.status(401).json({ error: StaticStrings.EmployeeControllerErrors.RequireAdminOrRequesterInOrg });
       }
       await newCollection.save();
-      return res.status(200).json({'_id': newCollection._id});
+      return res.status(200).json({ _id: newCollection._id });
     } catch (err) {
       try {
-        if (allImages['hero'].length != 0){
-          await (await Media.findById(allImages['hero'][0]._id)).deleteOne();
+        if (allImages.hero.length !== 0) {
+          await (await Media.findById(allImages.hero[0]._id)).deleteOne();
         }
-        return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+        return res.status(400).json({ error: errorHandler.getErrorMessage(err) });
       } catch (err2) {
         const errMessage = `Server Error: Unable to create collection because ${err.message} and failed to clean s3 because ${err2.message}`;
-        return res.status(500).json({error: errMessage});
+        return res.status(500).json({ error: errMessage });
       }
     }
   });
@@ -151,31 +154,41 @@ const list = async (req, res) => {
  * @param {Response} res HTTP response object
  * @return {Promise<Response>}
  */
-const update = async (req, res) => {
-  return validators.validateUpdateFields(req, res, ['name', 'description', 'product_list', 'tags', 'visible'], async (req, res) => {
-    const mediaMeta = {
-      'type': 'Collection',
-      'uploadedBy': req.auth._id,
-      'uploadedByType': 'Employee',
-      'fields': [
-        {name: 'hero', maxCount: 1, mimeTypesAllowed: ['image/png', 'image/jpeg'], required: false},
-      ],
-    };
-    return S3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages) => {
-      if (allImages['hero']) {
-         req.body.hero = allImages['hero'][0]._id;
+const update = async (req, res) => validators.validateUpdateFields(req, res, ['name', 'description', 'product_list', 'tags', 'visible'], async (req, res) => {
+  const mediaMeta = {
+    type: 'Collection',
+    uploadedBy: req.auth._id,
+    uploadedByType: 'Employee',
+    fields: [
+      {
+        name: 'hero', maxCount: 1, mimeTypesAllowed: ['image/png', 'image/jpeg'], required: false,
+      },
+    ],
+  };
+  return S3Services.uploadFilesToS3(req, res, mediaMeta, async (req, res, allImages) => {
+    if (allImages.hero.length !== 0) {
+      req.body.hero = allImages.hero[0]._id;
+    }
+    try {
+      const collection = await Collection.findOneAndUpdate({ _id: req.params.collectionId }, req.body, { new: true, runValidators: true });
+      if (!collection) return res.status(500).json({ error: StaticStrings.UnknownServerError }); // possibly unable to fetch
+      return res.status(200).json(filterCollection(collection));
+    } catch (err) {
+      if (allImages.hero.length !== 0) {
+        try {
+          await (await Media.findById(allImages.hero[0]._id)).deleteOne();
+        } catch (err2) {
+          return res.status(500).json({
+            error: `${StaticStrings.UnknownServerError}: Error updating collection and unable to remove
+            image that was created due to ${err2}. Original error ${err}.`,
+          });
+        }
       }
-      try {
-        const collection = await Collection.findOneAndUpdate({'_id': req.params.collectionId}, req.body, {new: true, runValidators: true});
-        if (!collection) return res.status(500).json({error: StaticStrings.UnknownServerError}); // possibly unable to fetch
-        return res.status(200).json(filterCollection(collection));
-      } catch (err) {
-        const errMessage = errorHandler.getErrorMessage(err);
-        return res.status(400).json({error: errMessage ? errMessage : err.message});
-      }
-    });
-  })
-};
+      const errMessage = errorHandler.getErrorMessage(err);
+      return res.status(400).json({ error: errMessage || err.message });
+    }
+  });
+});
 
 /**
  * @desc Delete a collection
@@ -188,10 +201,9 @@ const remove = async (req, res) => {
     const deletedCollection = await req.collection.deleteOne();
     return res.json(deletedCollection);
   } catch (err) {
-    return res.status(500).json({error: errorHandler.getErrorMessage(err)});
+    return res.status(500).json({ error: errorHandler.getErrorMessage(err) });
   }
 };
-
 
 export default {
   list,

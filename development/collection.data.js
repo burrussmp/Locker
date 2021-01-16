@@ -21,7 +21,7 @@ const getCollectionConstructor = (newCollectionData) => {
     let field = {
         name: newCollectionData.name,
         organization: newCollectionData.organization,
-        'product_list[]': newCollectionData.product_list,
+        product_list: newCollectionData.product_list,
         description: newCollectionData.description,
         tags: newCollectionData.tags,
     };
