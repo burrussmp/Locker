@@ -11,10 +11,10 @@ import Media from '@server/models/media.model';
 import authController from './auth.controller';
 import mediaController from './media.controller';
 
-import S3Services from '@server/services/S3.services';
-import CognitoAPI from '@server/services/Cognito.services';
+import S3Services from '@server/services/s3';
+import CognitoAPI from '@server/services/cognito';
 
-import errorHandler from '@server/services/dbErrorHandler';
+import ErrorHandler from '@server/services/error.handler';
 import StaticStrings from '@config/StaticStrings';
 import constants from '@config/constants';
 
@@ -77,7 +77,7 @@ const create = async (req, res) => {
   try {
     session = await CognitoServices.signup(email, password);
   } catch (err) {
-    return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+    return res.status(400).json({error: ErrorHandler.getErrorMessage(err)});
   }
   try {
     cognitoUsername = CognitoServices.getCognitoUsername(session);
@@ -128,7 +128,7 @@ const create = async (req, res) => {
     });
   } catch (err) {
     CognitoServices.deleteCognitoUser(cognitoUsername).then(() => {
-      return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+      return res.status(400).json({error: ErrorHandler.getErrorMessage(err)});
     }).catch((err) => {
       return res.status(500).json({error: StaticStrings.UnknownServerError + err});
     });
@@ -156,7 +156,7 @@ const list = async (req, res) => {
     const employees = await Employee.find().select('_id email updatedAt createdAt');
     return res.json(employees);
   } catch (err) {
-    return res.status(500).json({error: errorHandler.getErrorMessage(err)});
+    return res.status(500).json({error: ErrorHandler.getErrorMessage(err)});
   }
 };
 
@@ -187,7 +187,7 @@ const update = async (req, res) => {
         req.body);
     return res.status(200).json(filterEmployee(employee));
   } catch (err) {
-    return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+    return res.status(400).json({error: ErrorHandler.getErrorMessage(err)});
   }
 };
 
@@ -213,7 +213,7 @@ const remove = async (req, res) => {
     const deletedEmployee = await req.profile.deleteOne();
     return res.json(deletedEmployee);
   } catch (err) {
-    return res.status(500).json({error: errorHandler.getErrorMessage(err)});
+    return res.status(500).json({error: ErrorHandler.getErrorMessage(err)});
   }
 };
 
@@ -248,7 +248,7 @@ const changePassword = async (req, res) => {
         req.body.password);
     return res.status(200).json({message: StaticStrings.UpdatedPasswordSuccess});
   } catch (err) {
-    const errMessage = errorHandler.getErrorMessage(err);
+    const errMessage = ErrorHandler.getErrorMessage(err);
     if (errMessage == 'Incorrect username or password.') {
       res.status(400).json({error: Errors.PasswordUpdateIncorrectError});
     } else {

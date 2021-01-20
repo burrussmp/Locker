@@ -8,10 +8,10 @@ import multer from 'multer';
 
 import Media from '@server/models/media.model';
 
-import BlurHashEncoder from '@server/services/BlurHashEncoder';
+import BlurHashEncoder from '@server/services/blur.hash.encoder';
 
 import config from '@config/config';
-import errorHandler from './dbErrorHandler';
+import ErrorHandler from './error.handler';
 import StaticStrings from '@config/StaticStrings';
 
 
@@ -195,7 +195,7 @@ const uploadFilesToS3 = (req, res, mediaMeta, next) => {
               await deleteMediaS3(newMedia.key);
               res.status(400).json({error: StaticStrings.S3ServiceErrors.BadMediaUploadSuccessfulDelete + err.message});
             } catch (err2) {
-              res.status(500).json({error: err.message + ' and ' + errorHandler.getErrorMessage(err2)});
+              res.status(500).json({error: err.message + ' and ' + ErrorHandler.getErrorMessage(err2)});
             }
           }
         }

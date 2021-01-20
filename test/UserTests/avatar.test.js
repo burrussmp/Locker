@@ -10,7 +10,7 @@ import User from '@server/models/user.model';
 import RBAC from '@server/models/rbac.model';
 import Media from '@server/models/media.model';
 import StaticStrings from '@config/StaticStrings';
-import S3Services from '@server/services/S3.services';
+import S3Services from '@server/services/s3';
 import constants from '@config/constants';
 
 // Configure chai

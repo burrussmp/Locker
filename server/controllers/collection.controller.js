@@ -7,11 +7,11 @@
 import Collection from '@server/models/collection.model';
 import Media from '@server/models/media.model';
 
-import validators from '@server/services/validators';
+import Validator from '@server/services/validator';
 import CollectionServices from '@server/services/database/collection.services';
-import S3Services from '@server/services/S3.services';
+import S3Services from '@server/services/s3';
 
-import errorHandler from '@server/services/dbErrorHandler';
+import ErrorHandler from '@server/services/error.handler';
 import StaticStrings from '@config/StaticStrings';
 
 const { CollectionControllerErrors } = StaticStrings;
@@ -105,7 +105,7 @@ const create = async (req, res) => {
         if (allImages.hero.length !== 0) {
           await (await Media.findById(allImages.hero[0]._id)).deleteOne();
         }
-        return res.status(400).json({ error: errorHandler.getErrorMessage(err) });
+        return res.status(400).json({ error: ErrorHandler.getErrorMessage(err) });
       } catch (err2) {
         const errMessage = `Server Error: Unable to create collection because ${err.message} and failed to clean s3 because ${err2.message}`;
         return res.status(500).json({ error: errMessage });
@@ -125,7 +125,7 @@ const read = (req, res) => {
     return res.status(200).json(filterCollection(req.collection));
   } catch (err) {
     return res.status(500).json({
-      error: errorHandler.getErrorMessage(err),
+      error: ErrorHandler.getErrorMessage(err),
     });
   }
 };
@@ -139,11 +139,11 @@ const read = (req, res) => {
 const list = async (req, res) => {
   const query = CollectionServices.queryBuilder(req);
   try {
-    const collections = await Collection.find(query, null).select('_id updatedAt createdAt');
+    const collections = await Collection.find(query, null).select('_id createdAt');
     return res.json(collections);
   } catch (err) {
     return res.status(500).json({
-      error: errorHandler.getErrorMessage(err),
+      error: ErrorHandler.getErrorMessage(err),
     });
   }
 };
@@ -154,7 +154,7 @@ const list = async (req, res) => {
  * @param {Response} res HTTP response object
  * @return {Promise<Response>}
  */
-const update = async (req, res) => validators.validateUpdateFields(req, res, ['name', 'description', 'product_list', 'tags', 'visible'], async (req, res) => {
+const update = async (req, res) => Validator.validateUpdateFields(req, res, ['name', 'description', 'product_list', 'tags', 'visible'], async (req, res) => {
   const mediaMeta = {
     type: 'Collection',
     uploadedBy: req.auth._id,
@@ -184,7 +184,7 @@ const update = async (req, res) => validators.validateUpdateFields(req, res, ['n
           });
         }
       }
-      const errMessage = errorHandler.getErrorMessage(err);
+      const errMessage = ErrorHandler.getErrorMessage(err);
       return res.status(400).json({ error: errMessage || err.message });
     }
   });
@@ -201,7 +201,7 @@ const remove = async (req, res) => {
     const deletedCollection = await req.collection.deleteOne();
     return res.json(deletedCollection);
   } catch (err) {
-    return res.status(500).json({ error: errorHandler.getErrorMessage(err) });
+    return res.status(500).json({ error: ErrorHandler.getErrorMessage(err) });
   }
 };
 

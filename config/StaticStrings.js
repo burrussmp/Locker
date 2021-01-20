@@ -20,6 +20,29 @@ const StaticStrings = {
     ConfirmPasswordMissingFields: 'Bad Request: Missing required fields',
     UserNotFoundWithEmail: 'Sorry, this email is not associated with an account.',
   },
+  LockerModelErrors: {
+    UserRequired: "A user is required",
+    NameExceededLength: "The name of the locker has exceeded the max length of 24",
+  },
+  LockerProductControllerErrors: {
+    NotFoundError: "Locker product not found",
+  },
+  LockerControllerErrors: {
+    NotFoundError: "Locker not found",
+    LockerAlreadyExistsForUser: "Locker already exists for user.",
+    ProductAlreadyInLocker: "Product already in locker",
+    AddedProductToLocker: "Successfully added product to locker.",
+  },
+  LockerCollectionControllerErrors: {
+    NotFoundError: "Locker collection not found", 
+  },
+  LockerCollectionModelErrors: {
+    LockerRequired: "A locker is required",
+    NameRequired: "A name is required",
+    NameExceededLength: "The name of the locker collection has exceeded the max length of 24",
+    DescriptionExceededLength: "The locker collection description cannot exceed 200 characters",
+    MissingProduct: "Missing 'product' in request body."
+  },
   LoginErrors: {
     MissingLogin: 'Missing username, phone number, or email',
     MissingPassword: 'Missing password',

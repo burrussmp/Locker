@@ -90,13 +90,9 @@ const PostSchema = new mongoose.Schema({
 
 // cleanup
 PostSchema.pre('deleteOne', {document: true, query: false}, async function() {
-  const content = await mongoose.model(this.contentType).findById(this.content); // delegate cleaning to the post
-  if (content) {
-    await content.deleteOne();
     for (const comment of this.comments) {
       await mongoose.model('Comment').findByIdAndDelete(comment._id);
     }
-  }
 });
 
 export default mongoose.model('Post', PostSchema);

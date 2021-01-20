@@ -2,7 +2,7 @@
 /* eslint-disable no-invalid-this */
 import mongoose from 'mongoose';
 import authCtrl from '@server/controllers/auth.controller';
-import S3Services from '@server/services/S3.services';
+import S3Services from '@server/services/s3';
 import StaticStrings from '@config/StaticStrings';
 
 const MediaSchema = new mongoose.Schema({

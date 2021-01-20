@@ -9,6 +9,6 @@ const router = express.Router();
 router.param('key', mediaController.mediaExists);
 
 router.route('/api/media/:key')
-    .get(authCtrl.authorize([]), mediaController.getMedia);
+  .get(authCtrl.authorize([]), mediaController.getMedia);
 
 export default router;

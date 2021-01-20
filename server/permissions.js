@@ -4,10 +4,10 @@ import FormData from 'form-data';
 
 import RBAC from './models/rbac.model';
 
-import SecretManagerServices from '@server/services/SecretManager.services';
+import SecretManagerServices from '@server/services/secret.manager';
 
 import config from '@config/config';
-import errorHandler from './services/dbErrorHandler';
+import ErrorHandler from './services/error.handler';
 
 // all permissions associated with Post collection
 const PostPermissions = {
@@ -64,13 +64,21 @@ const ProductPermissions = {
   EditContent: 'product:edit',
 };
 
-// all permissions associated with a Product
+// all permissions associated with a Collection
 const CollectionPermissions = {
   Create: 'collection:create',
   Delete: 'collection:delete',
   Read: 'collection:read',
   EditContent: 'collection:edit',
 };
+
+// all permissions associated with a Locker
+const LockerPermissions = {
+  Create: 'locker:create',
+  Delete: 'locker:delete',
+  Read: 'locker:read',
+  EditContent: 'locker:edit',
+}
 
 const extend = (...arrayOfPermissions) => {
   const allPermissions = [].concat(...arrayOfPermissions);
@@ -93,6 +101,9 @@ const getPermissionArray = (type) => {
     PostPermissions.Interact,
     ProductPermissions.Read,
     CollectionPermissions.Read,
+    LockerPermissions.Create,
+    LockerPermissions.Read,
+    LockerPermissions.EditContent,
   ]);
   permissions['employee'] = extend([
     UserPermissions.Read,
@@ -111,6 +122,7 @@ const getPermissionArray = (type) => {
     CollectionPermissions.Create,
     CollectionPermissions.EditContent,
     CollectionPermissions.Delete,
+    LockerPermissions.Read,
   ]);
   permissions['supervisor'] = extend(permissions['employee'], [
     EmployeePermissions.Create,
@@ -125,6 +137,7 @@ const getPermissionArray = (type) => {
   permissions['admin'] = extend(permissions['user'], permissions['supervisor'], [
     OrganizationPermissions.Create,
     OrganizationPermissions.Delete,
+    LockerPermissions.Delete,
   ]);
   return permissions[type];
 };
@@ -138,7 +151,7 @@ const setUpRBAC = async () => {
   try {
     await (new RBAC(UserRole)).save();
   } catch (err) {
-    // console.log(errorHandler.getErrorMessage(err));
+    // console.log(ErrorHandler.getErrorMessage(err));
   }
 
   const adminRole = {
@@ -150,7 +163,7 @@ const setUpRBAC = async () => {
   try {
     await (new RBAC(adminRole)).save();
   } catch (err) {
-    // console.log(errorHandler.getErrorMessage(err));
+    // console.log(ErrorHandler.getErrorMessage(err));
   }
 
   const supervisorRole = {
@@ -162,7 +175,7 @@ const setUpRBAC = async () => {
   try {
     await (new RBAC(supervisorRole)).save();
   } catch (err) {
-    // console.log(errorHandler.getErrorMessage(err));
+    // console.log(ErrorHandler.getErrorMessage(err));
   }
 
   const employeeRole = {
@@ -173,7 +186,7 @@ const setUpRBAC = async () => {
   try {
     await (new RBAC(employeeRole)).save();
   } catch (err) {
-    // console.log(errorHandler.getErrorMessage(err));
+    // console.log(ErrorHandler.getErrorMessage(err));
   }
 
   const NARole = {
@@ -185,7 +198,7 @@ const setUpRBAC = async () => {
   try {
     await (new RBAC(NARole)).save();
   } catch (err) {
-    // console.log(errorHandler.getErrorMessage(err));
+    // console.log(ErrorHandler.getErrorMessage(err));
   }
   if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
     const secrets = await SecretManagerServices.getSecrets();
@@ -230,7 +243,7 @@ const setUpRBAC = async () => {
       });
     });
   } catch (err) {
-    console.log(errorHandler.getErrorMessage(err));
+    console.log(ErrorHandler.getErrorMessage(err));
   }
 };
 
@@ -242,6 +255,7 @@ export default {
   EmployeePermissions,
   ProductPermissions,
   CollectionPermissions,
+  LockerPermissions,
   setUpRBAC,
   getPermissionArray,
 };

@@ -6,8 +6,7 @@ import Product from '@server/models/product.model';
 import Post from '@server/models/post.model';
 
 import StaticStrings from '@config/StaticStrings';
-import errorHandler from '@server/services/dbErrorHandler';
-import dbErrorHandler from '@server/services/dbErrorHandler';
+import ErrorHandler from '@server/services/error.handler';
 
 /**
  * @desc Filter a product post
@@ -39,7 +38,7 @@ const fetchbyProductID = async (req, res, productID) => {
     })
     .exec();
   } catch (err) {
-    return res.status(400).json({error: dbErrorHandler.getErrorMessage(err)});
+    return res.status(400).json({error: error.handler.getErrorMessage(err)});
   }
   if (!post) {
     return res.status(404).json({error: `Post unable to be find with query 'product=${productID}'`});
@@ -79,7 +78,7 @@ const createProductPost = async (req, res) => {
     newPost = await newPost.save();
     return res.status(200).json({'_id': newPost._id});
   } catch (err) {
-      res.status(400).json({error: errorHandler.getErrorMessage(err)});
+      res.status(400).json({error: ErrorHandler.getErrorMessage(err)});
   }
 };
 
@@ -125,7 +124,7 @@ const editProductPost = async (req, res) => {
     const post = await Post.findByIdAndUpdate(req.params.postId, update, {runValidators: true, new: true});
     return res.status(200).json({'_id': post._id});
   } catch (err) {
-    return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+    return res.status(400).json({error: ErrorHandler.getErrorMessage(err)});
   }
 };
 

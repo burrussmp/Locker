@@ -1,7 +1,7 @@
 /* eslint-disable no-invalid-this */
 /* eslint-disable max-len */
 import mongoose from 'mongoose';
-import validators from '@server/services/validators';
+import Validator from '@server/services/validator';
 import StaticStrings from '@config/StaticStrings';
 
 const CollectionModelErrors = StaticStrings.CollectionModelErrors;
@@ -51,7 +51,7 @@ const CollectionSchema = new mongoose.Schema(
 CollectionSchema.path('organization').validate(async function(value) {
   const org = await mongoose.models.Organization.findById(value);
   if (!org) {
-    throw validators.createValidationError(StaticStrings.OrganizationControllerErrors.NotFoundError);
+    throw Validator.createValidationError(StaticStrings.OrganizationControllerErrors.NotFoundError);
   }
 }, null);
 
@@ -60,7 +60,7 @@ CollectionSchema.path('product_list').validate(async function(productList) {
     const product = await mongoose.models.Product.findById(productId);
     if (!product) {
       const err = `${StaticStrings.ProductControllerErrors.NotFoundError}: Product ID ${productId} in list ${productList}`;
-      throw validators.createValidationError(err);
+      throw Validator.createValidationError(err);
     }
   }
 }, null);

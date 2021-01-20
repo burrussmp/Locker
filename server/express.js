@@ -18,6 +18,8 @@ import employeeRoutes from '@server/routes/employee.routes';
 import productRoutes from '@server/routes/product.routes';
 import collectionRoutes from '@server/routes/collection.routes';
 
+import lockerRoutes from '@server/routes/locker/locker.routes';
+
 // modules for server side rendering
 const app = express();
 // parse body params and attache them to req.body
@@ -44,6 +46,6 @@ app.use('/', organizationRoutes);
 app.use('/', employeeRoutes);
 app.use('/', productRoutes);
 app.use('/', collectionRoutes);
-
+app.use('/', lockerRoutes);
 
 export default app;

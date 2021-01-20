@@ -13,7 +13,7 @@ import ProductPostController from './posts/product.post.controller';
 import PostServices from '@server/services/database/post.services';
 
 import StaticStrings from '@config/StaticStrings';
-import errorHandler from '@server/services/dbErrorHandler';
+import ErrorHandler from '@server/services/error.handler';
 
 
 const ReactionTypes = mongoose.models.Post.schema.tree.reactions[0].tree.type.enum.values;
@@ -61,7 +61,7 @@ const listPosts = async (req, res) => {
     const posts = await Post.find(query, null, {limit: 100}).select('_id createdAt');
     return res.status(200).json(posts);
   } catch (err) {
-    return res.status(500).json({error: errorHandler.getErrorMessage(err)});
+    return res.status(500).json({error: ErrorHandler.getErrorMessage(err)});
   }
 };
 
@@ -167,7 +167,7 @@ const listPostComments = async (req, res) => {
     const comments = await Post.aggregate(pipeline).exec();
     return res.status(200).json(comments);
   } catch (err) {
-    return res.status(500).json({error: errorHandler.getErrorMessage(err)});
+    return res.status(500).json({error: ErrorHandler.getErrorMessage(err)});
   }
 };
 
@@ -193,10 +193,10 @@ const createPostComment = async (req, res) => {
           {runValidators: true});
       return res.status(200).json({'_id': newComment._id});
     } catch (err) {
-      return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+      return res.status(400).json({error: ErrorHandler.getErrorMessage(err)});
     }
   } catch (err) {
-    return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+    return res.status(400).json({error: ErrorHandler.getErrorMessage(err)});
   }
 };
 
@@ -226,7 +226,7 @@ const getReaction = async (req, res) => {
     }
     return res.status(200).json(reactionData);
   } catch (err) {
-    return res.status(500).json({error: errorHandler.getErrorMessage(err)});
+    return res.status(500).json({error: ErrorHandler.getErrorMessage(err)});
   }
 };
 
@@ -255,7 +255,7 @@ const changeReaction = async (req, res) => {
       return res.status(200).send({'_id': post._id});
     }
   } catch (err) {
-    return res.status(500).json({error: errorHandler.getErrorMessage(err)});
+    return res.status(500).json({error: ErrorHandler.getErrorMessage(err)});
   }
 };
 
@@ -278,7 +278,7 @@ const removeReaction = async (req, res) => {
       return res.status(404).send({error: StaticStrings.PostModelErrors.NoReactionToDelete});
     }
   } catch (err) {
-    return res.status(500).json({error: errorHandler.getErrorMessage(err)});
+    return res.status(500).json({error: ErrorHandler.getErrorMessage(err)});
   }
 };
 

@@ -5,6 +5,7 @@
 import User from '@server/models/user.model';
 import Collection from '@server/models/collection.model';
 import Employee from '@server/models/employee.model';
+import Locker from '@server/models/locker/locker.model';
 import Organization from '@server/models/organization.model';
 import Product from '@server/models/product.model';
 import Post from '@server/models/post.model';
@@ -36,6 +37,13 @@ const createOrg = async (adminAccessToken, orgData) => {
   return fetch(`http://localhost:3000/api/organizations?access_token=${adminAccessToken}`, {
     method: 'POST',
     body: form,
+  }).then((res) => res.json());
+};
+
+const createLocker = async (adminAccessToken, lockerData) => {
+  return fetch(`http://localhost:3000/api/lockers?access_token=${adminAccessToken}`, {
+    method: 'POST',
+    body: JSON.stringify(lockerData),
   }).then((res) => res.json());
 };
 
@@ -76,7 +84,16 @@ const createEmployee = async (admin, data) => {
   });
 };
 
-const createProduct = async (productData, accessToken) => {
+const createProduct = async (productData, accessToken = undefined) => {
+    if (!accessToken) {
+      const admin = await loginAdminEmployee();
+      accessToken = admin.access_token;
+
+      const anyOrg = await Organization.findOne();
+      
+      productData = JSON.parse(JSON.stringify(productData));
+      productData.organization = anyOrg._id.toString();
+    }
     // create a product
     const form = FormData();
     form.append('media', fs.createReadStream(productData.media));
@@ -158,7 +175,7 @@ const getAccessToken = async (data) => {
 };
 
 const dropDatabase = async () => {
-  for (const model of [User, Employee, Post, Organization, Product, RBAC, Collection]) {
+  for (const model of [User, Employee, Locker, Post, Organization, Product, RBAC, Collection]) {
     const cursor = model.find().cursor();
     for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
       await doc.deleteOne();
@@ -198,4 +215,5 @@ export {
   createProductPostAgent,
   createProduct,
   createCollection,
+  createLocker,
 };

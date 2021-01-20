@@ -11,10 +11,10 @@ import RBAC from '@server/models/rbac.model';
 import mediaCtrl from '@server/controllers/media.controller';
 
 import OrganizationServices from '@server/services/database/organization.services';
-import S3Services from '@server/services/S3.services';
+import S3Services from '@server/services/s3';
 
 
-import errorHandler from '@server/services/dbErrorHandler';
+import ErrorHandler from '@server/services/error.handler';
 import StaticStrings from '@config/StaticStrings';
 
 const OrganizationControllerErrors = StaticStrings.OrganizationControllerErrors;
@@ -104,7 +104,7 @@ const create = async (req, res) => {
       try {
         const mediaDoc = await Media.findById(media._id);
         await mediaDoc.deleteOne();
-        return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+        return res.status(400).json({error: ErrorHandler.getErrorMessage(err)});
       } catch (err2) {
         const errMessage = `Server Error: Unable to create organization because ${err.message} and failed to clean s3 because ${err2.message}`;
         return res.status(500).json({error: errMessage});
@@ -124,7 +124,7 @@ const read = (req, res) => {
     return res.status(200).json(filterOrganization(req.organization));
   } catch (err) {
     return res.status(500).json({
-      error: errorHandler.getErrorMessage(err),
+      error: ErrorHandler.getErrorMessage(err),
     });
   }
 };
@@ -144,7 +144,7 @@ const list = async (req, res) => {
     return res.json(organizations);
   } catch (err) {
     return res.status(500).json({
-      error: errorHandler.getErrorMessage(err),
+      error: ErrorHandler.getErrorMessage(err),
     });
   }
 };
@@ -171,7 +171,7 @@ const update = async (req, res) => {
     if (!organization) return res.status(500).json({error: StaticStrings.UnknownServerError}); // possibly unable to fetch
     return res.status(200).json(filterOrganization(organization));
   } catch (err) {
-    return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+    return res.status(400).json({error: ErrorHandler.getErrorMessage(err)});
   }
 };
 
@@ -243,7 +243,7 @@ const remove = async (req, res) => {
     return res.json(deletedOrganization);
   } catch (err) {
     return res.status(500).json({
-      error: errorHandler.getErrorMessage(err),
+      error: ErrorHandler.getErrorMessage(err),
     });
   }
 };

@@ -6,8 +6,8 @@ import User from '@server/models/user.model';
 import Employee from '@server/models/employee.model';
 import RBAC from '@server/models/rbac.model';
 
-import CognitoAPI from '@server/services/Cognito.services';
-import errorHandler from '@server/services/dbErrorHandler';
+import CognitoAPI from '@server/services/cognito';
+import ErrorHandler from '@server/services/error.handler';
 
 import StaticStrings from '@config/StaticStrings';
 import config from '@config/config';
@@ -102,7 +102,7 @@ const login = async (req, res) => {
         _id: person._id,
       });
     }).catch((err) => {
-      return res.status('401').json({error: errorHandler.getErrorMessage(err)});
+      return res.status('401').json({error: ErrorHandler.getErrorMessage(err)});
     });
   } catch (err) {
     return res.status('500').json({error: StaticStrings.LoginErrors.ServerError});

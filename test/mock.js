@@ -1,7 +1,8 @@
 
 import Organization from '@server/models/organization.model';
 import {ProductData} from '@development/product.data';
-import {createProduct ,dropDatabase, loginAdminEmployee} from '@test/helper';
+import {CollectionData} from '@development/collection.data';
+import {createProduct, createCollection, dropDatabase, loginAdminEmployee} from '@test/helper';
 import fetch from 'node-fetch';
 import config from '@config/config';
 
@@ -37,4 +38,12 @@ import '@server/server';
       }),
     }).then(res=>res.json())
     console.log(`Created post with id ${post._id}`);
+
+    // create collection
+    const newCollectionData = JSON.parse(JSON.stringify(CollectionData[0]));
+    newCollectionData.organization = anyOrg._id.toString();
+    newCollectionData.product_list = [product._id];
+    const collection = await createCollection(newCollectionData, admin.access_token);
+    console.log(`Created collection with id ${collection._id}`);
+
 })();

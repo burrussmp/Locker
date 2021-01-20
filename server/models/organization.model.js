@@ -2,7 +2,7 @@
 /* eslint-disable max-len */
 import mongoose from 'mongoose';
 import Media from '@server/models/media.model';
-import validators from '@server/services/validators';
+import Validator from '@server/services/validator';
 import StaticStrings from '@config/StaticStrings';
 
 const OrganizationModelErrors = StaticStrings.OrganizationModelErrors;
@@ -45,7 +45,7 @@ OrgSchema.path('name').validate(async function(value) {
   const count = await mongoose.models.Organization.countDocuments({name: value});
   const isUnique = this ? count == 0 || !this.isModified('name') : count == 0;
   if (!isUnique) {
-    throw validators.createValidationError(OrganizationModelErrors.NameAlreadyExists);
+    throw Validator.createValidationError(OrganizationModelErrors.NameAlreadyExists);
   }
 }, null);
 
@@ -53,7 +53,7 @@ OrgSchema.path('url').validate(async function(value) {
   const count = await mongoose.models.Organization.countDocuments({url: value});
   const isUnique = this ? count == 0 || !this.isModified('url') : count == 0;
   if (!isUnique) {
-    throw validators.createValidationError(OrganizationModelErrors.URLAlreadyExists);
+    throw Validator.createValidationError(OrganizationModelErrors.URLAlreadyExists);
   }
 }, null);
 

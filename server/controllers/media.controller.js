@@ -6,7 +6,7 @@ import Sharp from 'sharp';
 
 import Media from '@server/models/media.model';
 
-import S3Services from '@server/services/S3.services';
+import S3Services from '@server/services/s3';
 
 import StaticStrings from '@config/StaticStrings';
 

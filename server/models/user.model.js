@@ -6,8 +6,8 @@ import mongoose from 'mongoose';
 // eslint-disable-next-line camelcase
 import mongoose_fuzzy_searching from 'mongoose-fuzzy-searching';
 
-import CognitoAPI from '@server/services/Cognito.services';
-import validators from '@server/services/validators';
+import CognitoAPI from '@server/services/cognito';
+import Validator from '@server/services/validator';
 import StaticStrings from '@config/StaticStrings';
 
 
@@ -74,11 +74,11 @@ UserSchema.path('username').validate(async function(value) {
   const count = await mongoose.models.User.countDocuments({username: value});
   const isUnique = this ? count == 0 || !this.isModified('username') : count == 0;
   if (!isUnique) {
-    throw validators.createValidationError(StaticStrings.UserModelErrors.UsernameAlreadyExists);
+    throw Validator.createValidationError(StaticStrings.UserModelErrors.UsernameAlreadyExists);
   }
-  const invalidError = validators.isValidUsername(value);
+  const invalidError = Validator.isValidUsername(value);
   if (invalidError) {
-    throw validators.createValidationError(invalidError);
+    throw Validator.createValidationError(invalidError);
   }
 }, null);
 
@@ -103,6 +103,13 @@ UserSchema.pre('deleteOne', {document: true, query: false}, async function() {
         {$pull: {followers: this._id}},
     );
   }
+
+  // clean up locker
+  const locker = await mongoose.models.Locker.findOne({user: this._id});
+  if (locker) {
+    await locker.deleteOne();
+  }
+
   // clean up user pool
   try {
     await CognitoServices.deleteCognitoUser(this.cognito_username);
@@ -117,6 +124,11 @@ UserSchema.pre('deleteOne', {document: true, query: false}, async function() {
   // }
 },
 );
+
+UserSchema.post('save', async function() {
+  const locker = new mongoose.models.Locker({user: this._id});
+  await locker.save()
+});
 
 UserSchema.pre('findOneAndUpdate', async function() {
   // sanitize

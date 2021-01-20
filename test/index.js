@@ -8,6 +8,8 @@ import OrganizationTest from '@test/OrganizationTests/index';
 import EmployeeTest from '@test/EmployeeTests/index';
 import ProductTest from '@test/ProductTests/index';
 import CollectionTest from '@test/CollectionTests/index';
+import LockerTest from '@test/LockerTests/index';
+
 
 import {dropDatabase} from '@test/helper';
 
@@ -21,4 +23,5 @@ import {dropDatabase} from '@test/helper';
 // describe('Organization Test', OrganizationTest);
 // describe('Employee Test', EmployeeTest);
 // describe('Product Tests', ProductTest);
-describe ('CollectionTests', CollectionTest);
+// describe ('CollectionTests', CollectionTest);
+describe('Locker Test', LockerTest)

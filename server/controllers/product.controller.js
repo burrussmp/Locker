@@ -4,11 +4,11 @@
 import Media from '@server/models/media.model';
 import Product from '@server/models/product.model';
 
-import S3Services from '@server/services/S3.services';
+import S3Services from '@server/services/s3';
 import ProductServices from '@server/services/database/product.services';
-import validators from '@server/services/validators';
+import Validator from '@server/services/validator';
 
-import errorHandler from '@server/services/dbErrorHandler';
+import ErrorHandler from '@server/services/error.handler';
 import StaticStrings from '@config/StaticStrings';
 
 const ProductControllerErrors = StaticStrings.ProductControllerErrors;
@@ -117,7 +117,7 @@ const create = async (req, res) => {
             await mediaDoc.deleteOne();
           }
         }
-        return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+        return res.status(400).json({error: ErrorHandler.getErrorMessage(err)});
       } catch (err2) {
         const errMessage = `Server Error: Unable to create product because ${err.message} and failed to clean s3 because ${err2.message}`;
         return res.status(500).json({error: errMessage});
@@ -137,7 +137,7 @@ const read = (req, res) => {
     return res.status(200).json(filterProduct(req.product));
   } catch (err) {
     return res.status(500).json({
-      error: errorHandler.getErrorMessage(err),
+      error: ErrorHandler.getErrorMessage(err),
     });
   }
 };
@@ -156,7 +156,7 @@ const list = async (req, res) => {
     return res.json(products);
   } catch (err) {
     return res.status(500).json({
-      error: errorHandler.getErrorMessage(err),
+      error: ErrorHandler.getErrorMessage(err),
     });
   }
 };
@@ -168,7 +168,7 @@ const list = async (req, res) => {
  * @return {Promise<Response>}
  */
 const update = async (req, res) => {
-  return validators.validateUpdateFields(req, res,
+  return Validator.validateUpdateFields(req, res,
     ['name', 'url', 'price', 'description', 'available', 'approved', 'tags', 'meta', 'sizes', 'last_scraped'], async (req, res) => {
     if (req.body.meta) {
       const metaUpdate = ProductServices.deserializeAttr(req.body.meta, 'meta');
@@ -190,7 +190,7 @@ const update = async (req, res) => {
       if (!product) return res.status(500).json({error: StaticStrings.UnknownServerError}); // possibly unable to fetch
       return res.status(200).json(filterProduct(product));
     } catch (err) {
-      const errMessage = errorHandler.getErrorMessage(err);
+      const errMessage = ErrorHandler.getErrorMessage(err);
       return res.status(400).json({error: errMessage ? errMessage : err.message});
     }
   });
@@ -207,7 +207,7 @@ const remove = async (req, res) => {
     const deletedProduct = await req.product.deleteOne();
     return res.json(deletedProduct);
   } catch (err) {
-    return res.status(500).json({error: errorHandler.getErrorMessage(err)});
+    return res.status(500).json({error: ErrorHandler.getErrorMessage(err)});
   }
 };
 

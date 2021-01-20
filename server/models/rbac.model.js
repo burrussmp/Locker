@@ -4,7 +4,8 @@
 import mongoose from 'mongoose';
 import _ from 'lodash';
 
-import validators from '@server/services/validators';
+import Utils from '@server/services/utils';
+import Validator from '@server/services/validator';
 import StaticStrings from '@config/StaticStrings';
 
 const RBACModelErrors = StaticStrings.RBACModelErrors;
@@ -39,27 +40,20 @@ RBACSchema.method('hasPermission', function(permissions) {
 });
 
 RBACSchema.method('addPermission', function(permission) {
-  let permissionSet = new Set(this.permissions);
-  permissionSet = permissionSet.add(permission);
-  this.permissions = Array.from(permissionSet);
+  this.permissions = Utils.addArrayAsSet(this.permissions, permission);
   return this.save();
 });
 
 RBACSchema.method('removePermission', function(permission) {
-  const permissionSet = new Set(this.permissions);
-  if (!permissionSet.delete(permission)) {
-    console.log('ERROR: Unable to remove permission.');
-  } else {
-    this.permissions = Array.from(permissionSet);
-    return this.save();
-  }
+  this.permissions = Utils.removeArrayAsSet(this.permissions, permission);
+  return this.save();
 });
 
 RBACSchema.path('role').validate(async function(value) {
   const count = await mongoose.models.RBAC.countDocuments({role: value});
   const isUnique = this ? count == 0 || !this.isModified('role') : count == 0;
   if (!isUnique) {
-    throw validators.createValidationError(RBACModelErrors.RoleAlreadyExists);
+    throw Validator.createValidationError(RBACModelErrors.RoleAlreadyExists);
   }
 }, null);
 

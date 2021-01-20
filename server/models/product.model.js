@@ -1,7 +1,7 @@
 /* eslint-disable no-invalid-this */
 /* eslint-disable max-len */
 import mongoose from 'mongoose';
-import validators from '@server/services/validators';
+import Validator from '@server/services/validator';
 import StaticStrings from '@config/StaticStrings';
 
 const ProductModelErrors = StaticStrings.ProductModelErrors;
@@ -90,14 +90,14 @@ ProductSchema.path('url').validate(async function(value) {
   const count = await mongoose.models.Product.countDocuments({url: value});
   const isUnique = this ? count == 0 || !this.isModified('url') : count == 0;
   if (!isUnique) {
-    throw validators.createValidationError(ProductModelErrors.URLAlreadyExists);
+    throw Validator.createValidationError(ProductModelErrors.URLAlreadyExists);
   }
 }, null);
 
 ProductSchema.path('organization').validate(async function(value) {
   const org = await mongoose.models.Organization.findById(value);
   if (!org) {
-    throw validators.createValidationError(StaticStrings.OrganizationControllerErrors.NotFoundError);
+    throw Validator.createValidationError(StaticStrings.OrganizationControllerErrors.NotFoundError);
   }
 }, null);
 

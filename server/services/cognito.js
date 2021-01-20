@@ -11,7 +11,7 @@ import jwkToPem from 'jwk-to-pem';
 import aws from 'aws-sdk';
 
 import config from '@config/config';
-import validators from '@server/services/validators';
+import Validator from '@server/services/validator';
 import StaticStrings from '@config/StaticStrings';
 
 // Configure AWS
@@ -211,7 +211,7 @@ const generateCognitoAPI = (type) => {
       if (cognitoCanUpdate.includes(keys[i])) {
         if (keys[i] == 'username') {
           keys[i] = 'preferred_username';
-          const usernameError = validators.isValidUsername(values[i]);
+          const usernameError = Validator.isValidUsername(values[i]);
           if (usernameError) {
             throw usernameError;
           }
@@ -250,11 +250,11 @@ const generateCognitoAPI = (type) => {
     } else if (!phoneNumber) {
       throw StaticStrings.UserModelErrors.PhoneNumberRequired;
     }
-    const passwordError = validators.isValidPassword(password);
+    const passwordError = Validator.isValidPassword(password);
     if (passwordError) {
       throw passwordError;
     }
-    const usernameError = validators.isValidUsername(username);
+    const usernameError = Validator.isValidUsername(username);
     if (usernameError) {
       throw usernameError;
     }
@@ -311,7 +311,7 @@ const generateCognitoAPI = (type) => {
     if (!email) {
       throw StaticStrings.UserModelErrors.EmailRequired;
     }
-    const passwordError = validators.isValidPassword(password);
+    const passwordError = Validator.isValidPassword(password);
     if (passwordError) {
       throw passwordError;
     }
@@ -519,7 +519,7 @@ const generateCognitoAPI = (type) => {
    * changed
    */
   const changePassword = async (accessToken, oldPassword, newPassword) => {
-    const passwordError = validators.isValidPassword(newPassword);
+    const passwordError = Validator.isValidPassword(newPassword);
     if (passwordError) {
       throw passwordError;
     }

@@ -8,8 +8,8 @@ import mongoose_fuzzy_searching from 'mongoose-fuzzy-searching';
 
 import Media from '@server/models/media.model';
 import StaticStrings from '@config/StaticStrings';
-import CognitoAPI from '@server/services/Cognito.services';
-import validators from '@server/services/validators';
+import CognitoAPI from '@server/services/cognito';
+import Validator from '@server/services/validator';
 
 const CognitoServices = CognitoAPI.EmployeeCognitoPool;
 
@@ -77,7 +77,7 @@ EmployeeSchema.path('email').validate(async function(value) {
   const count = await mongoose.models.Employee.countDocuments({email: value});
   const isUnique = this ? count == 0 || !this.isModified('email') : count == 0;
   if (!isUnique) {
-    throw validators.createValidationError(
+    throw Validator.createValidationError(
         EmployeeModelErrors.EmailAlreadyExists);
   }
 }, null);

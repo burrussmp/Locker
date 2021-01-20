@@ -9,7 +9,7 @@ import Media from '@server/models/media.model';
 import User from '@server/models/user.model';
 import Organization from '@server/models/organization.model';
 
-import S3Services from '@server/services/S3.services';
+import S3Services from '@server/services/s3';
 import StaticStrings from '@config/StaticStrings';
 
 

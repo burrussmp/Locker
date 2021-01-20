@@ -7,7 +7,7 @@ import Comment from '@server/models/comment.model';
 import CommentServices from '@server/services/database/comments.services';
 
 import StaticStrings from '@config/StaticStrings';
-import errorHandler from '@server/services/dbErrorHandler';
+import ErrorHandler from '@server/services/error.handler';
 
 
 /**
@@ -59,7 +59,7 @@ const getComment = async (req, res) => {
     ]);
     return res.status(200).json(comment[0]);
   } catch (err) {
-    return res.status(500).json({error: errorHandler.getErrorMessage(err)});
+    return res.status(500).json({error: ErrorHandler.getErrorMessage(err)});
   }
 };
 
@@ -76,7 +76,7 @@ const deleteComment = async (req, res) => {
     await comment.deleteOne();
     return res.status(200).json({'_id': comment._id});
   } catch (err) {
-    return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+    return res.status(400).json({error: ErrorHandler.getErrorMessage(err)});
   }
 };
 
@@ -159,7 +159,7 @@ const createReply = async (req, res) => {
     const newReply = await CommentServices.addReply(req.params.commentId, reply);
     return res.status(200).json({'_id': newReply._id});
   } catch (err) {
-    return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+    return res.status(400).json({error: ErrorHandler.getErrorMessage(err)});
   }
 };
 
@@ -183,12 +183,12 @@ const editReply = async (req, res) => {
         },
     );
   } catch (err) {
-    if (errorHandler.getErrorMessage(err).includes(StaticStrings.CommentModelErrors.ReplyTextRequired)) {
+    if (ErrorHandler.getErrorMessage(err).includes(StaticStrings.CommentModelErrors.ReplyTextRequired)) {
       return res.status(400).json({error: StaticStrings.CommentModelErrors.ReplyTextRequired});
-    } else if (errorHandler.getErrorMessage(err).includes(StaticStrings.CommentModelErrors.MaxCommentSizeError)) {
+    } else if (ErrorHandler.getErrorMessage(err).includes(StaticStrings.CommentModelErrors.MaxCommentSizeError)) {
       return res.status(400).json({error: StaticStrings.CommentModelErrors.MaxCommentSizeError});
     } else {
-      return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+      return res.status(400).json({error: ErrorHandler.getErrorMessage(err)});
     }
   }
 };
@@ -204,12 +204,12 @@ const deleteReply = async (req, res) => {
     const reply = await CommentServices.deleteReply(req.params.commentId, req.params.replyId);
     return res.status(200).json({'_id': reply._id});
   } catch (err) {
-    if (errorHandler.getErrorMessage(err).includes(StaticStrings.CommentModelErrors.ReplyTextRequired)) {
+    if (ErrorHandler.getErrorMessage(err).includes(StaticStrings.CommentModelErrors.ReplyTextRequired)) {
       return res.status(400).json({error: StaticStrings.CommentModelErrors.ReplyTextRequired});
-    } else if (errorHandler.getErrorMessage(err).includes(StaticStrings.CommentModelErrors.MaxCommentSizeError)) {
+    } else if (ErrorHandler.getErrorMessage(err).includes(StaticStrings.CommentModelErrors.MaxCommentSizeError)) {
       return res.status(400).json({error: StaticStrings.CommentModelErrors.MaxCommentSizeError});
     } else {
-      return res.status(400).json({error: errorHandler.getErrorMessage(err)});
+      return res.status(400).json({error: ErrorHandler.getErrorMessage(err)});
     }
   }
 };
@@ -226,7 +226,7 @@ const likeReply = async (req, res) => {
     const reply = await CommentServices.likeReply(req.params.commentId, req.params.replyId, req.auth._id);
     return res.status(200).json({_id: reply._id});
   } catch (err) {
-    return res.status(500).json({error: errorHandler.getErrorMessage(err)});
+    return res.status(500).json({error: ErrorHandler.getErrorMessage(err)});
   }
 };
 
@@ -241,7 +241,7 @@ const unlikeReply = async (req, res) => {
     const reply = await CommentServices.unlikeReply(req.params.commentId, req.params.replyId, req.auth._id);
     return res.status(200).json({_id: reply._id});
   } catch (err) {
-    return res.status(500).json({error: errorHandler.getErrorMessage(err)});
+    return res.status(500).json({error: ErrorHandler.getErrorMessage(err)});
   }
 };
 
@@ -256,7 +256,7 @@ const likeComment = async (req, res) => {
     await CommentServices.likeComment(req.params.commentId, req.auth._id);
     return res.status(200).json({_id: req.params.commentId});
   } catch (err) {
-    return res.status(500).json({error: errorHandler.getErrorMessage(err)});
+    return res.status(500).json({error: ErrorHandler.getErrorMessage(err)});
   }
 };
 
@@ -272,7 +272,7 @@ const unlikeComment = async (req, res) => {
     await CommentServices.unlikeComment(req.params.commentId, req.auth._id);
     return res.status(200).json({_id: req.params.commentId});
   } catch (err) {
-    return res.status(500).json({error: errorHandler.getErrorMessage(err)});
+    return res.status(500).json({error: ErrorHandler.getErrorMessage(err)});
   }
 };
 

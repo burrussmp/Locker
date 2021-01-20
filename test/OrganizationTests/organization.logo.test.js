@@ -11,7 +11,7 @@ import {EmployeeData, getEmployeeConstructor} from '@development/employee.data';
 import {OrganizationData} from '@development/organization.data';
 import {bufferEquality, dropDatabase, createEmployee, loginAdminEmployee, createOrg} from '@test/helper';
 import StaticStrings from '@config/StaticStrings';
-import S3Services from '@server/services/S3.services';
+import S3Services from '@server/services/s3';
 import fetch from 'node-fetch';
 chai.use(chaiHttp);
 chai.should();

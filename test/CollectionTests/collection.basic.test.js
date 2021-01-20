@@ -16,7 +16,7 @@ import {
   createProduct, createCollection, dropDatabase, createEmployee, loginAdminEmployee, createOrg,
 } from '@test/helper';
 import StaticStrings from '@config/StaticStrings';
-import S3Services from '@server/services/S3.services';
+import S3Services from '@server/services/s3';
 
 chai.use(chaiHttp);
 chai.should();
