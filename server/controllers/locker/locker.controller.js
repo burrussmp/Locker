@@ -5,7 +5,7 @@
 // imports
 
 import Locker from '@server/models/locker/locker.model';
-import LockerProduct from '@server/models/locker/product.model';
+import LockerProduct from '@server/models/locker/lockerproduct.model';
 import Product from '@server/models/product.model';
 
 import Validator from '@server/services/validator';
@@ -38,7 +38,7 @@ const filterLocker = (locker) => {
 const lockerById = async (req, res, next, id) => {
     try {
         const locker = await Locker.findById(id)
-            .populate('all_products')
+            .populate('products')
             .exec();
         if (!locker) {
             return res.status(404).json({ error: LockerControllerErrors.NotFoundError });
@@ -160,7 +160,7 @@ const filterProductList = (req, allProducts) => {
  */
 const getProducts = async (req, res) => {
     try {
-        const productList = filterProductList(req, req.locker.all_products);
+        const productList = filterProductList(req, req.locker.products);
         const productIds = productList.map( x => x.product);
         const products = await Product.find().where('_id').in(productIds).exec();
         return res.status(200).json(products);
@@ -179,7 +179,7 @@ const addProduct = async (req, res) => {
     if (!req.body.product) {
         return res.status(400).json({error: LockerControllerErrors.MissingProduct})
     }
-    let alreadyExists = req.locker.all_products.filter(x=>x.product.toString() == req.body.product).length != 0;
+    let alreadyExists = req.locker.products.filter(x=>x.product.toString() == req.body.product).length != 0;
     if (alreadyExists) {
         return res.status(400).json({error: LockerControllerErrors.ProductAlreadyInLocker});
     }
@@ -202,7 +202,7 @@ const removeProduct = async (req, res) => {
     if (!req.body.product) {
         return res.status(400).json({error: StaticStrings.LockerControllerErrors.MissingProduct})
     }
-    let matchingProducts = req.locker.all_products.filter(x=>x.product.toString() == req.body.product);
+    let matchingProducts = req.locker.products.filter(x=>x.product.toString() == req.body.product);
     if (matchingProducts.length == 0){
         return res.status(400).json({error: StaticStrings.ProductControllerErrors.NotFoundError});
     }

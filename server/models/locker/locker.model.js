@@ -21,7 +21,7 @@ const LockerSchema = new mongoose.Schema(
         ref: 'User',
         required: LockerModelErrors.UserRequired,
       },
-      all_products: [{
+      products: [{
         type: mongoose.Schema.ObjectId,
         ref: 'LockerProduct',
       }],
@@ -39,14 +39,14 @@ const LockerSchema = new mongoose.Schema(
 );
 
 LockerSchema.path('user').validate(async function(userId) {
-  const user = await mongoose.models.User.findById(userId);
-  if (!user) {
-    throw Validator.createValidationError(StaticStrings.UserControllerErrors.NotFoundError);
-  }
   const count = await mongoose.models.Locker.countDocuments({user: userId});
   const isUnique = this ? count == 0 || !this.isModified('user') : count == 0;
   if (!isUnique) {
     throw Validator.createValidationError(StaticStrings.LockerControllerErrors.LockerAlreadyExistsForUser);
+  }
+  const user = await mongoose.models.User.findById(userId);
+  if (!user) {
+    throw Validator.createValidationError(StaticStrings.UserControllerErrors.NotFoundError);
   }
 }, null);
 
@@ -56,7 +56,7 @@ LockerSchema.method('addLockerProduct', async function(lockerProductId) {
     const err = `${StaticStrings.LockerProductControllerErrors.NotFoundError}: ${lockerProductId}`;
     throw Validator.createValidationError(err);
   }
-  await this.updateOne({$addToSet: {all_products: lockerProductId}});
+  await this.updateOne({$addToSet: {products: lockerProductId}});
 });
 
 LockerSchema.method('removeLockerProduct', async function(lockerProductId) {
@@ -65,7 +65,7 @@ LockerSchema.method('removeLockerProduct', async function(lockerProductId) {
     const err = `${StaticStrings.LockerProductControllerErrors.NotFoundError}: ${lockerProductId}`;
     throw Validator.createValidationError(err);
   }
-  await this.updateOne({$pull: {all_products: lockerProductId}});
+  await this.updateOne({$pull: {products: lockerProductId}});
 });
 
 
@@ -80,8 +80,11 @@ LockerSchema.pre('findOneAndUpdate', async function() {
 
 LockerSchema.pre('deleteOne', {document: true, query: false}, async function() {
   // clean up all locker collections
-  for (const lockerProduct of this.all_products){
+  for (const lockerProduct of this.products){
     await (await mongoose.models.LockerProduct.findById(lockerProduct._id)).deleteOne();
+  }
+  for (const lockerCollection of this.collections){
+    await (await mongoose.models.LockerCollection.findById(lockerCollection._id)).deleteOne();
   }
 });
 

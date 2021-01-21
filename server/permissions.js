@@ -80,6 +80,14 @@ const LockerPermissions = {
   EditContent: 'locker:edit',
 }
 
+// all permissions associated with a Locker Collection
+const LockerCollectionPermissions = {
+  Create: 'locker_collection:create',
+  Delete: 'locker_collection:delete',
+  Read: 'locker_collection:read',
+  EditContent: 'locker_collection:edit',
+}
+
 const extend = (...arrayOfPermissions) => {
   const allPermissions = [].concat(...arrayOfPermissions);
   return [...new Set(allPermissions)];
@@ -101,9 +109,12 @@ const getPermissionArray = (type) => {
     PostPermissions.Interact,
     ProductPermissions.Read,
     CollectionPermissions.Read,
-    LockerPermissions.Create,
     LockerPermissions.Read,
     LockerPermissions.EditContent,
+    LockerCollectionPermissions.Create,
+    LockerCollectionPermissions.Read,
+    LockerCollectionPermissions.EditContent,
+    LockerCollectionPermissions.Delete
   ]);
   permissions['employee'] = extend([
     UserPermissions.Read,
@@ -137,6 +148,7 @@ const getPermissionArray = (type) => {
   permissions['admin'] = extend(permissions['user'], permissions['supervisor'], [
     OrganizationPermissions.Create,
     OrganizationPermissions.Delete,
+    LockerPermissions.Create,
     LockerPermissions.Delete,
   ]);
   return permissions[type];
@@ -256,6 +268,7 @@ export default {
   ProductPermissions,
   CollectionPermissions,
   LockerPermissions,
+  LockerCollectionPermissions,
   setUpRBAC,
   getPermissionArray,
 };

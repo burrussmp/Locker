@@ -11,6 +11,8 @@
         "doesnt",
         "fieldname",
         "isassociatedwith",
+        "lockercollection",
+        "lockerproduct",
         "maxlength",
         "mhwca",
         "middlewares",

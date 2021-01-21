@@ -7,13 +7,14 @@ import { app } from '@server/server';
 import Locker from '@server/models/locker/locker.model';
 import RBAC from '@server/models/rbac.model';
 import User from '@server/models/user.model';
+import Employee from '@server/models/employee.model';
 import Organization from '@server/models/organization.model';
 import Media from '@server/models/media.model';
 import { EmployeeData } from '@development/employee.data';
 import { OrganizationData } from '@development/organization.data';
 import { UserData } from '@development/user.data';
 import { CollectionData, getCollectionConstructor } from '@development/collection.data';
-import {createUser, createCollection, dropDatabase, createLocker} from '@test/helper';
+import {createUser, loginAdminEmployee, dropDatabase, createLocker} from '@test/helper';
 import StaticStrings from '@config/StaticStrings';
 import S3Services from '@server/services/s3';
 
@@ -27,24 +28,27 @@ export default () => {
 
     describe(`POST ${url}`, () => {
       const agent = chai.request.agent(app);
-      let user;
+      let user; let admin;
       beforeEach(async () => {
         await dropDatabase();
         user = await createUser(UserData[0]);
+        admin = await loginAdminEmployee();
       });
-      it('Create Locker: Cannot create twice for a given user (should fail)', async () => agent.post(`${url}?access_token=${user.access_token}`)
+      it('Create Locker: Cannot create twice for a given user (should fail)', async () => {
+        const role = await RBAC.findOne({ role: 'admin' });
+        await User.findByIdAndUpdate(user._id, { permissions: role._id });
+        return agent.post(`${url}?access_token=${user.access_token}`)
         .then((res) => {
           res.status.should.eql(400);
           res.body.error.should.eql(StaticStrings.LockerControllerErrors.LockerAlreadyExistsForUser)
-      }));
+        })
+     });
       it('Create Locker: Not logged in (should fail)', async () => agent.post(`${url}`)
         .then((res) => {
           res.status.should.eql(401);
           res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError);
         }));
       it('Create Locker: Bad permissions (should fail)', async () => {
-        const role = await RBAC.findOne({ role: 'none' });
-        await User.findByIdAndUpdate(user._id, { permissions: role._id });
         return agent.post(`${url}?access_token=${user.access_token}`)
           .then(async (res) => {
             res.status.should.eql(403);
@@ -52,7 +56,7 @@ export default () => {
           });
       });
       it('Remove user: Should remove locker (should succeed)', async () => {
-        return agent.delete(`/api/users/${user._id}?access_token=${user.access_token}`)
+        return agent.delete(`/api/users/${user._id}?access_token=${admin.access_token}`)
           .then(async (res) => {
             res.status.should.eql(200);
             const numLockers = await Locker.countDocuments();

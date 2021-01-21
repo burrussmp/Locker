@@ -21,7 +21,7 @@ chai.use(chaiHttp);
 chai.should();
 
 export default () => {
-    describe('Locker Basics Test', () => {
+    describe('Locker Specific Test', () => {
 
         const url = '/api/lockers';
 

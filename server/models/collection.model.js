@@ -77,21 +77,21 @@ CollectionSchema.pre('findOneAndUpdate', async function() {
     }
   }
 
-  this._hero = doc.hero;
+  this._hero = update.hero ? doc.hero : undefined;
 
   this.setUpdate(update);
 });
 
 CollectionSchema.post('findOneAndUpdate', async function() {
-    if (this._hero) {
-      try {
-        const media = await mongoose.models.Media.findById(this._hero);
-        await media.deleteOne();
-      } catch (err) {
-        console.log(`Error: Unable to delete old hero for collection. Reason ${err}`);
-      }
+  if (this._hero) {
+    try {
+      const media = await mongoose.models.Media.findById(this._hero);
+      await media.deleteOne();
+    } catch (err) {
+      console.log(`Error: Unable to delete old hero for collection. Reason ${err}`);
     }
-  });
+  }
+});
 
 CollectionSchema.pre('deleteOne', {document: true, query: false}, async function() {
   // clean up all images

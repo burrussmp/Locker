@@ -19,6 +19,7 @@ import productRoutes from '@server/routes/product.routes';
 import collectionRoutes from '@server/routes/collection.routes';
 
 import lockerRoutes from '@server/routes/locker/locker.routes';
+import lockerCollectionRoutes from '@server/routes/locker/locker.collection.routes';
 
 // modules for server side rendering
 const app = express();
@@ -47,5 +48,6 @@ app.use('/', employeeRoutes);
 app.use('/', productRoutes);
 app.use('/', collectionRoutes);
 app.use('/', lockerRoutes);
+app.use('/', lockerCollectionRoutes)
 
 export default app;
