@@ -41,13 +41,24 @@ const LockerCollectionSchema = new mongoose.Schema(
     },
 );
 
+
+LockerCollectionSchema.path('products').validate(async function(productList) {
+    for (let productId of productList) {
+      const product = await mongoose.models.LockerProduct.findById(productId);
+      if (!product) {
+        const err = `${StaticStrings.LockerProductControllerErrors.NotFoundError}: Product ID ${productId} in list ${productList}`;
+        throw Validator.createValidationError(err);
+      }
+    }
+}, null);
+
 LockerCollectionSchema.method('addLockerProduct', async function(lockerProductId) {
     const lockerProduct = await mongoose.models.LockerProduct.findById(lockerProductId);
     if (!lockerProduct) {
       const err = `${StaticStrings.LockerProductControllerErrors.NotFoundError}: ${lockerProductId}`;
       throw Validator.createValidationError(err);
     }
-    await this.updateOne({$addToSet: {product_list: lockerProductId}});
+    await this.updateOne({$addToSet: {products: lockerProductId}});
 });
   
 LockerCollectionSchema.method('removeLockerProduct', async function(lockerProductId) {
@@ -56,10 +67,10 @@ LockerCollectionSchema.method('removeLockerProduct', async function(lockerProduc
       const err = `${StaticStrings.LockerProductControllerErrors.NotFoundError}: ${lockerProductId}`;
       throw Validator.createValidationError(err);
     }
-    await this.updateOne({$pull: {product_list: lockerProductId}});
+    await this.updateOne({$pull: {products: lockerProductId}});
 });
   
-LockerCollectionSchema.pre('updateOne', async function() {
+LockerCollectionSchema.pre('findOneAndUpdate', async function() {
     // sanitize
     const update = await this.getUpdate();
     if (!update) return;
@@ -70,7 +81,7 @@ LockerCollectionSchema.pre('updateOne', async function() {
     this._hero = update.hero ? doc.hero : undefined;
 });
   
-LockerCollectionSchema.post('updateOne', async function() {
+LockerCollectionSchema.post('findOneAndUpdate', async function() {
     if (this._hero) {
       try {
         const media = await mongoose.models.Media.findById(this._hero)

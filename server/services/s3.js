@@ -127,6 +127,39 @@ const mediaFieldFilter = (mediaMeta) => {
     }
   };
 };
+/**
+ * @desc Add a buffer to S3 and create the media entry in Media collection.
+ * @param {Buffer} buffer The buffer
+ * @param {String} mimetype The mime type (image/png or image/jpeg)
+ * @param {String} originalName The original name of the file
+ * @param {String} mediaType The media type (typically the model name)
+ * @param {String} uploadedBy The ID of who uploaded the image (typically requester)
+ * @param {String} uploadedByType Either User or Employee
+ * @return {Media} The generated media document.
+ */
+const createMedia = async (buffer, mimetype, originalName, mediaType, uploadedBy, uploadedByType) => {
+  let blurhash = undefined;
+  try {
+    blurhash = (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') ? await BlurHashEncoder.encodeBlurHash(buffer, mimetype) : undefined;
+  } catch (err) {
+    console.log(`Unable to create a blur hash from file. Error: ${err}`);
+  }
+  const newMedia = {
+    key: uuid4(),
+    mimetype: mimetype,
+    originalName: originalName,
+    blurhash: blurhash,
+    type: mediaType,
+    uploadedBy: uploadedBy,
+    uploadedByType: uploadedByType,
+  };
+  await putObjectS3(newMedia.key, buffer, mimetype, {
+    type: mediaType,
+    uploader: uploadedBy,
+    uploadedByType: uploadedByType,
+  });
+  return await (new Media(newMedia)).save();
+}
 
 /**
  * @desc (Middleware) Upload multiple images to S3
@@ -158,38 +191,9 @@ const uploadFilesToS3 = (req, res, mediaMeta, next) => {
       allMedia[fieldMeta.name] = [];
       if (req.files && req.files[fieldMeta.name]) {
         for (const file of req.files[fieldMeta.name]) {
-          let blurhash = undefined;
           try {
-            blurhash = (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') ? await BlurHashEncoder.encodeBlurHash(file.buffer, file.mimetype) : undefined;
-          } catch (err) {
-            console.log(`Unable to create a blur hash from file. Error: ${err}`);
-          }
-          const key = uuid4();
-          const newMedia = {
-            key: key,
-            mimetype: file.mimetype,
-            originalName: file.originalname,
-            blurhash: blurhash,
-            type: mediaMeta.type,
-            uploadedBy: mediaMeta.uploadedBy,
-            uploadedByType: mediaMeta.uploadedByType,
-          };
-          try {
-            await putObjectS3(key, file.buffer, file.mimetype, {
-              type: mediaMeta.type,
-              uploader: mediaMeta.uploadedBy,
-              uploadedByType: mediaMeta.uploadedByType,
-            });
-          } catch (err) {
-            return res.status(500).json({error: `Server Error: Unable to upload image to S3. Reason: ${err.message}`});
-          }
-          try {
-            const media = new Media(newMedia);
-            await media.save();
-            allMedia[fieldMeta.name].push({
-              '_id': media._id,
-              'key': media.key,
-            });
+            const newMedia = await createMedia(file.buffer, file.mimetype, file.originalname, mediaMeta.type, mediaMeta.uploadedBy, mediaMeta.uploadedByType);
+            allMedia[fieldMeta.name].push({'_id': newMedia._id, 'key': newMedia.key});
           } catch (err) {
             try {
               await deleteMediaS3(newMedia.key);
@@ -206,6 +210,7 @@ const uploadFilesToS3 = (req, res, mediaMeta, next) => {
 };
 
 export default {
+  createMedia,
   uploadFilesToS3,
   deleteMediaS3,
   getMediaS3,

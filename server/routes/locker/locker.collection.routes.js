@@ -23,15 +23,15 @@ router.route('/api/lockers/:lockerId/collections/:lockerCollectionId')
     .delete(authCtrl.authorize([LockerCollectionPermissions.Delete]), authCtrl.requireOwnership, lockerCollectionCtrl.remove);
 
 
-// router.route('/api/lockers/:lockerId/collections/:lockerCollectionId/products')
-//     .get(authCtrl.authorize([LockerCollectionPermissions.Read]), lockerCollectionCtrl.getProducts) 
-//     .put(authCtrl.authorize([LockerCollectionPermissions.EditContent]), authCtrl.requireOwnership, lockerCollectionCtrl.addProduct) // Add product to collection and locker (if not already there)
-//     .delete(authCtrl.authorize([LockerCollectionPermissions.EditContent]), authCtrl.requireOwnership, lockerCollectionCtrl.removeProduct) // remove product from locker
+router.route('/api/lockers/:lockerId/collections/:lockerCollectionId/products')
+    .put(authCtrl.authorize([LockerCollectionPermissions.EditContent]), authCtrl.requireOwnership, lockerCollectionCtrl.addProduct) // Add product to collection and locker (if not already there)
+    .delete(authCtrl.authorize([LockerCollectionPermissions.EditContent]), authCtrl.requireOwnership, lockerCollectionCtrl.removeProduct) // remove product from locker
+    .get(authCtrl.authorize([LockerCollectionPermissions.Read]), lockerCollectionCtrl.getProducts) 
 
-// router.route('/api/lockers/:lockerId/collections/:lockerCollectionId/clone')
-//     .get(authCtrl.authorize([LockerCollectionPermissions.Read]), lockerCollectionCtrl.cloneCollection) // Clone someone's collection
+router.route('/api/lockers/:lockerId/collections/:lockerCollectionId/clone')
+    .get(authCtrl.authorize([LockerCollectionPermissions.Read]), lockerCollectionCtrl.clone) // Clone someone's collection
 
-// router.route('/api/lockers/:lockerId/collections/:lockerCollectionId/reference')
-//     .get(authCtrl.authorize([LockerCollectionPermissions.Read]), lockerCollectionCtrl.referenceCollection) // Reference someone's collection
+router.route('/api/lockers/:lockerId/collections/:lockerCollectionId/reference')
+    .get(authCtrl.authorize([LockerCollectionPermissions.Read]), lockerCollectionCtrl.reference) // Reference someone's collection
 
 export default router;

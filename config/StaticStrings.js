@@ -34,7 +34,10 @@ const StaticStrings = {
     AddedProductToLocker: "Successfully added product to locker.",
   },
   LockerCollectionControllerErrors: {
-    NotFoundError: "Locker collection not found", 
+    NotFoundError: "Locker collection not found",
+    MissingProduct: "Request body missing 'product' attribute.",
+    ProductAlreadyInLocker: "Product already exists in collection",
+    ServerError: "Server Error: Did not find a locker for the user",
   },
   LockerCollectionModelErrors: {
     NameExceededLength: "The name of the locker collection has exceeded the max length of 24",
