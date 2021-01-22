@@ -140,7 +140,7 @@ const mediaFieldFilter = (mediaMeta) => {
 const createMedia = async (buffer, mimetype, originalName, mediaType, uploadedBy, uploadedByType) => {
   let blurhash = undefined;
   try {
-    blurhash = (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') ? await BlurHashEncoder.encodeBlurHash(buffer, mimetype) : undefined;
+    blurhash = (mimetype === 'image/jpeg' || mimetype === 'image/png') ? await BlurHashEncoder.encodeBlurHash(buffer, mimetype) : undefined;
   } catch (err) {
     console.log(`Unable to create a blur hash from file. Error: ${err}`);
   }

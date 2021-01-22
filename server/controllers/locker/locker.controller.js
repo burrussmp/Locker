@@ -163,7 +163,8 @@ const getProducts = async (req, res) => {
         const productList = filterProductList(req, req.locker.products);
         const productIds = productList.map( x => x.product);
         const products = await Product.find().where('_id').in(productIds).exec();
-        return res.status(200).json(products);
+        const productsFiltered = products.map(x=>LockerServices.filterLockerProduct(x));
+        return res.status(200).json(productsFiltered);
     } catch (err) {
         return res.status(500).json({ error: ErrorHandler.getErrorMessage(err) || err.message });
     }

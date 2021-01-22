@@ -99,7 +99,7 @@ LockerCollectionSchema.pre('deleteOne', { document: true, query: false }, async 
         await media.deleteOne();
     }
     for (const lockerProduct of this.products){
-        await (await mongoose.models.LockerProduct.findById(lockerProduct._id)).deleteOne();
+        await (await mongoose.models.LockerProduct.findById(lockerProduct._id ? lockerProduct._id: lockerProduct)).deleteOne();
     }
 });
 

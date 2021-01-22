@@ -3,12 +3,15 @@
 /* eslint-disable max-len */
 
 // imports
-import fetch from 'node-fetch';
+import Product from '@server/models/product.model';
 import Locker from '@server/models/locker/locker.model';
+import LockerProduct from '@server/models/locker/lockerproduct.model';
 import LockerCollection from '@server/models/locker/locker.collection.model';
 import Media from '@server/models/media.model';
 
 import Validator from '@server/services/validator';
+import ProductCtrl from '@server/controllers/product.controller';
+import LockerServices from '@server/services/database/locker/locker.services';
 import S3Services from '@server/services/s3';
 
 import ErrorHandler from '@server/services/error.handler';
@@ -27,6 +30,7 @@ const filterLockerCollection = (lockerCollection) => {
   filteredLockerCollection.__v = undefined;
   return filteredLockerCollection;
 };
+
 
 /**
  * @desc Middleware to parse url parameter :lockerCollectionId
@@ -206,7 +210,8 @@ const getProducts = async (req, res) => {
   try {
       const productIds = req.lockerCollection.products.map( x => x.product);
       const products = await Product.find().where('_id').in(productIds).exec();
-      return res.status(200).json(products);
+      const productsFiltered = products.map(x=>LockerServices.filterLockerProduct(x));
+      return res.status(200).json(productsFiltered);
   } catch (err) {
       return res.status(500).json({ error: ErrorHandler.getErrorMessage(err) || err.message });
   }

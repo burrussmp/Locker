@@ -80,11 +80,15 @@ LockerSchema.pre('findOneAndUpdate', async function() {
 
 LockerSchema.pre('deleteOne', {document: true, query: false}, async function() {
   // clean up all locker collections
-  for (const lockerProduct of this.products){
-    await (await mongoose.models.LockerProduct.findById(lockerProduct._id)).deleteOne();
-  }
   for (const lockerCollection of this.collections){
-    await (await mongoose.models.LockerCollection.findById(lockerCollection._id)).deleteOne();
+    await (await mongoose.models.LockerCollection.findById(lockerCollection._id ? lockerCollection._id: lockerCollection)).deleteOne();
+  }
+  // clean any remaining products
+  for (const lockerProduct of this.products){
+    const foundProduct = await mongoose.models.LockerProduct.findById(lockerProduct._id ? lockerProduct._id: lockerProduct);
+    if (foundProduct) {
+      await foundProduct.deleteOne();
+    }
   }
 });
 
