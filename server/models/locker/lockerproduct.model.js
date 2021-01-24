@@ -8,6 +8,11 @@ import StaticStrings from '@config/StaticStrings';
 
 export const LockerProductSchema = new mongoose.Schema(
   {
+    user: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'User',
+      required: StaticStrings.LockerProductModelErrors.UserRequired,
+    },
     product: {
       type: mongoose.Schema.ObjectId,
       ref: 'Product',
@@ -30,6 +35,13 @@ export const LockerProductSchema = new mongoose.Schema(
     }
   }
 )
+
+LockerProductSchema.path('user').validate(async function(userID) {
+  const user = await mongoose.models.User.findById(userID);
+  if (!user) {
+    throw Validator.createValidationError(StaticStrings.UserControllerErrors.NotFoundError);
+  }
+}, null);
 
 LockerProductSchema.path('product').validate(async function(productId) {
     const product = await mongoose.models.Product.findById(productId);

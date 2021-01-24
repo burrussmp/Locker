@@ -212,7 +212,7 @@ const addProduct = async (req, res) => {
       // See if product exists for the given locker
       const lockerProduct = await LockerProduct.findOne({locker: req.locker._id, product: req.body.product});
       if (!lockerProduct) {
-        const newLockerProduct = await (new LockerProduct({locker: req.locker._id, product: req.body.product, locker_collections: [req.lockerCollection._id]})).save()
+        const newLockerProduct = await (new LockerProduct({user: req.auth._id, locker: req.locker._id, product: req.body.product, locker_collections: [req.lockerCollection._id]})).save()
         return res.status(200).json({_id: newLockerProduct._id});
       } else {
         await lockerProduct.updateOne({$addToSet: {locker_collections: req.lockerCollection._id}});
@@ -225,7 +225,7 @@ const addProduct = async (req, res) => {
 
 
 /**
- * @desc Remove a locker product from a locker collection and delete product if not being used by any collection
+ * @desc Remove a locker product from a locker collection.
  * @param {Request} req HTTP request object
  * @param {Response} res HTTP response object
  * @return {Promise<Response>}
@@ -235,11 +235,8 @@ const removeProduct = async (req, res) => {
       return res.status(400).json({error: LockerCollectionControllerErrors.MissingLockerProduct})
   }
   try {
-    const lockerProduct = await LockerProduct.findByIdAndUpdate(req.body.locker_product, {$pull: {locker_collections: req.lockerCollection._id}});
-    if (!lockerProduct) {
-      return res.status(400).json({error: StaticStrings.LockerProductControllerErrors.NotFoundError});
-    }
-    return res.status(200).json({_id: lockerProduct._id});
+    await req.locker_product.updateOne({$pull: {locker_collections: req.lockerCollection._id}});
+    return res.status(200).json({_id: req.locker_product._id});
   } catch (err) {
       return res.status(400).json({ error: ErrorHandler.getErrorMessage(err) || err.message });
   }
@@ -287,6 +284,7 @@ const clone = async (req, res) => {
         if (req.auth._id != req.locker.user) {
           newLockerProducts.push(
             await (new LockerProduct({
+              user: req.auth._id,
               product: lockerCollectionProduct.product,
               locker: requesterLocker._id,
               locker_collections: [newLockerCollection._id],

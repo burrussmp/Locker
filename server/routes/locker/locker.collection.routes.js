@@ -12,6 +12,7 @@ const router = express.Router();
 
 router.param('lockerId', lockerCtrl.lockerById);
 router.param('lockerCollectionId', lockerCollectionCtrl.lockerCollectionById);
+router.param('lockerProductId', lockerCtrl.lockerProductById);
 
 router.route('/api/lockers/:lockerId/collections')
     .get(authCtrl.authorize([LockerCollectionPermissions.Read]), lockerCollectionCtrl.list) // get all locker collections
@@ -24,9 +25,11 @@ router.route('/api/lockers/:lockerId/collections/:lockerCollectionId')
 
 
 router.route('/api/lockers/:lockerId/collections/:lockerCollectionId/products')
-    .put(authCtrl.authorize([LockerCollectionPermissions.EditContent]), authCtrl.requireOwnership, lockerCollectionCtrl.addProduct) // Add product to collection and locker (if not already there)
-    .delete(authCtrl.authorize([LockerCollectionPermissions.EditContent]), authCtrl.requireOwnership, lockerCollectionCtrl.removeProduct) // remove product from locker
     .get(authCtrl.authorize([LockerCollectionPermissions.Read]), lockerCollectionCtrl.getProducts) 
+    .post(authCtrl.authorize([LockerCollectionPermissions.EditContent]), authCtrl.requireOwnership, lockerCollectionCtrl.addProduct) // Add product to collection and locker (if not already there)
+
+router.route('/api/lockers/:lockerId/collections/:lockerCollectionId/products/:lockerProductId')
+    .delete(authCtrl.authorize([LockerCollectionPermissions.EditContent]), authCtrl.requireOwnership, lockerCollectionCtrl.removeProduct) // remove product from locker
 
 router.route('/api/lockers/:lockerId/collections/:lockerCollectionId/clone')
     .get(authCtrl.authorize([LockerCollectionPermissions.Read]), lockerCollectionCtrl.clone) // Clone someone's collection
