@@ -22,12 +22,7 @@ const queryBuilder = (req) => {
 const filterLockerProduct = (product) => {
   const filteredLockerProduct = JSON.parse(JSON.stringify(product));
   filteredLockerProduct.__v = undefined;
-  filteredLockerProduct.last_scraped = undefined;
-  filteredLockerProduct.approved = undefined;
-  filteredLockerProduct.visible = undefined;
-  filteredLockerProduct.tags = undefined;
-  filteredLockerProduct.meta = undefined;
-  return filteredLockerProduct
+  return filteredLockerProduct;
 }
 
 export default {

@@ -4,6 +4,7 @@
 import chai from 'chai';
 import chaiHttp from 'chai-http';
 import { app } from '@server/server';
+import LockerProduct from '@server/models/locker/lockerproduct.model';
 import Locker from '@server/models/locker/locker.model';
 import RBAC from '@server/models/rbac.model';
 import User from '@server/models/user.model';
@@ -38,13 +39,11 @@ export default () => {
                 defaultUpdate = { product: product._id };
             });
             it('Add Locker Products: Success', async () => {
-                return agent.put(`${url}?access_token=${user.access_token}`).send(defaultUpdate).then((res) => {
+                return agent.put(`${url}?access_token=${user.access_token}`).send(defaultUpdate).then(async (res) => {
                     res.status.should.eql(200);
-                    res.body.message.should.eql(StaticStrings.LockerControllerErrors.AddedProductToLocker);
-                    return agent.get(`${url}?access_token=${user.access_token}`).then(res=>{
-                        res.body.length.should.eql(1);
-                        res.body[0]._id.should.eql(defaultUpdate.product);
-                    })
+                    const allLockerProducts = await LockerProduct.find({locker: locker._id});
+                    allLockerProducts.length.should.eql(1);
+                    allLockerProducts[0].product.toString().should.eql(defaultUpdate.product);
                 })
             });
             it('Add Locker Products: Product doesnt exist (should fail)', async () => {
@@ -98,7 +97,8 @@ export default () => {
                     return agent.put(`${url}?access_token=${user.access_token}`).send(defaultUpdate).then(async (res)=>{
                         res.status.should.eql(400);
                         res.body.error.should.eql(StaticStrings.LockerControllerErrors.ProductAlreadyInLocker);
-                        (await Locker.findById(locker)).all_products.length.should.eql(1);
+                        const allLockerProducts = await LockerProduct.find({locker: locker._id});
+                        allLockerProducts.length.should.eql(1);
                     })
                 })
             });
@@ -125,8 +125,8 @@ export default () => {
                 locker = JSON.parse(JSON.stringify(await Locker.findOne({ user: user._id })));
                 url = url.replace(':lockerId', locker._id);            
                 const product = await createProduct(ProductData[0]);
-                defaultBody = { product: product._id };
-                await agent.put(`${url}?access_token=${user.access_token}`).send(defaultBody).then();
+                const lockerProductID = await agent.put(`${url}?access_token=${user.access_token}`).send({product: product._id}).then(res => res.body._id);
+                defaultBody = { locker_product: lockerProductID };
             });
             it('Remove Locker Products: Success', async () => {
                 return agent.delete(`${url}?access_token=${user.access_token}`)
@@ -140,13 +140,21 @@ export default () => {
             });
             it('Remove Locker Products: Product doesnt exist (should fail)', async () => {
                 return agent.delete(`${url}?access_token=${user.access_token}`)
-                    .send({product: user._id})
-                    .then((res) => {
+                    .send({locker_product: user._id})
+                    .then(async (res) => {
                         res.status.should.eql(400);
-                        res.body.error.should.include(StaticStrings.ProductControllerErrors.NotFoundError);
-                        return agent.get(`${url}?access_token=${user.access_token}`).then(res=>{
-                            res.body.length.should.eql(1);
-                        })
+                        res.body.error.should.include(StaticStrings.LockerProductControllerErrors.NotFoundError);
+                        (await LockerProduct.find({locker: locker._id})).length.should.eql(1);
+                    })
+            });
+            it('Remove Locker Products: Locker product not in your locker', async () => {
+                const newUser = await createUser(UserData[1]);
+                const otherLocker = await Locker.findOne({user: newUser._id});
+                return agent.delete(`/api/lockers/${otherLocker._id}/products?access_token=${newUser.access_token}`)
+                    .send(defaultBody)
+                    .then(async (res) => {
+                        res.status.should.eql(401);
+                        res.body.error.should.equal(StaticStrings.LockerControllerErrors.LockerProductNotPartOfYourLocker);
                     })
             });
             it('Remove Locker Products: Invalid Product ID (should fail)', async () => {
@@ -188,7 +196,7 @@ export default () => {
                     res.status.should.eql(200);
                     return agent.delete(`${url}?access_token=${user.access_token}`).send(defaultBody).then((res)=>{
                         res.status.should.eql(400);
-                        res.body.error.should.eql(StaticStrings.ProductControllerErrors.NotFoundError)
+                        res.body.error.should.include(StaticStrings.LockerProductControllerErrors.NotFoundError)
                     })
                 })
             });
@@ -256,6 +264,20 @@ export default () => {
                 return agent.get(`${url}?access_token=${user.access_token}&added_after=${added_after}`).then((res) => {
                     res.status.should.eql(200);
                     res.body.length.should.eql(1)
+                })
+            });
+            it('Get Locker Products: Query using "orphan" (should have 1)', async () => {
+                return agent.get(`${url}?access_token=${user.access_token}&orphan=true`).then((res) => {
+                    res.status.should.eql(200);
+                    res.body.length.should.eql(1)
+                })
+            });
+            it('Get Locker Products: Query using "orphan" after adding to collection (should have 0)', async () => {
+                const lockerCollectionId = (await agent.post(`/api/lockers/${locker._id}/collections?access_token=${user.access_token}`).then(res=>res.body))._id;
+                await agent.put(`/api/lockers/${locker._id}/collections/${lockerCollectionId}/products?access_token=${user.access_token}`).send(defaultBody).then();   
+                return agent.get(`${url}?access_token=${user.access_token}&orphan=true`).then((res) => {
+                    res.status.should.eql(200);
+                    res.body.length.should.eql(0)
                 })
             });
         });

@@ -24,20 +24,30 @@ const StaticStrings = {
     UserRequired: "A user is required",
     NameExceededLength: "The name of the locker has exceeded the max length of 24",
   },
-  LockerProductControllerErrors: {
-    NotFoundError: "Locker product not found",
-  },
   LockerControllerErrors: {
     NotFoundError: "Locker not found",
+    MissingProduct: "Missing 'product' in request",
+    LockerProductNotPartOfYourLocker: "The locker product you are trying to remove is not part of you locker",
+    MissingLockerProduct: "Missing 'locker_product' in request",
     LockerAlreadyExistsForUser: "Locker already exists for user.",
     ProductAlreadyInLocker: "Product already in locker",
     AddedProductToLocker: "Successfully added product to locker.",
   },
+  LockerProductModelErrors: {
+    LockerRequired: "A locker product requires a locker",
+    ProductRequired: "A locker product requires a product",
+  },
+  LockerProductControllerErrors: {
+    NotFoundError: "Locker product not found",
+  },
   LockerCollectionControllerErrors: {
     NotFoundError: "Locker collection not found",
     MissingProduct: "Request body missing 'product' attribute.",
+    MissingLockerProduct: "Request body missing 'locker_product' attribute.",
+    LockerProductNotFound: "Locker product not found",
     ProductAlreadyInLocker: "Product already exists in collection",
     ServerError: "Server Error: Did not find a locker for the user",
+    CollectionAndLockerNotOwnedBySameRequester: "The collection and the locker are not owned by the same user",
   },
   LockerCollectionModelErrors: {
     NameExceededLength: "The name of the locker collection has exceeded the max length of 24",

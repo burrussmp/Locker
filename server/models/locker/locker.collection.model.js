@@ -23,10 +23,6 @@ const LockerCollectionSchema = new mongoose.Schema(
             type: mongoose.Schema.ObjectId,
             ref: 'Media',
         },
-        products: [{
-            type: mongoose.Schema.ObjectId,
-            ref: 'LockerProduct',
-        }],
         description: {
             type: String,
             trim: true,
@@ -41,35 +37,6 @@ const LockerCollectionSchema = new mongoose.Schema(
     },
 );
 
-
-LockerCollectionSchema.path('products').validate(async function(productList) {
-    for (let productId of productList) {
-      const product = await mongoose.models.LockerProduct.findById(productId);
-      if (!product) {
-        const err = `${StaticStrings.LockerProductControllerErrors.NotFoundError}: Product ID ${productId} in list ${productList}`;
-        throw Validator.createValidationError(err);
-      }
-    }
-}, null);
-
-LockerCollectionSchema.method('addLockerProduct', async function(lockerProductId) {
-    const lockerProduct = await mongoose.models.LockerProduct.findById(lockerProductId);
-    if (!lockerProduct) {
-      const err = `${StaticStrings.LockerProductControllerErrors.NotFoundError}: ${lockerProductId}`;
-      throw Validator.createValidationError(err);
-    }
-    await this.updateOne({$addToSet: {products: lockerProductId}});
-});
-  
-LockerCollectionSchema.method('removeLockerProduct', async function(lockerProductId) {
-    const lockerProduct = await mongoose.models.LockerProduct.findById(lockerProductId);
-    if (!lockerProduct) {
-      const err = `${StaticStrings.LockerProductControllerErrors.NotFoundError}: ${lockerProductId}`;
-      throw Validator.createValidationError(err);
-    }
-    await this.updateOne({$pull: {products: lockerProductId}});
-});
-  
 LockerCollectionSchema.pre('findOneAndUpdate', async function() {
     // sanitize
     const update = await this.getUpdate();
@@ -98,9 +65,9 @@ LockerCollectionSchema.pre('deleteOne', { document: true, query: false }, async 
     if (media) {
         await media.deleteOne();
     }
-    for (const lockerProduct of this.products){
-        await (await mongoose.models.LockerProduct.findById(lockerProduct._id ? lockerProduct._id: lockerProduct)).deleteOne();
-    }
+    // pull collection from all lockers and products that reference it
+    await mongoose.models.Locker.updateMany({locker_collections: {$in: [this._id]}}, {$pull: {locker_collections: this._id}});
+    await mongoose.models.LockerProduct.updateMany({locker_collections: {$in: [this._id]}}, {$pull: {locker_collections: this._id}});
 });
 
 export default mongoose.model('LockerCollection', LockerCollectionSchema);

@@ -37,9 +37,7 @@ const filterLocker = (locker) => {
  */
 const lockerById = async (req, res, next, id) => {
     try {
-        const locker = await Locker.findById(id)
-            .populate('products')
-            .exec();
+        const locker = await Locker.findById(id).populate('products').exec();
         if (!locker) {
             return res.status(404).json({ error: LockerControllerErrors.NotFoundError });
         }
@@ -58,15 +56,12 @@ const lockerById = async (req, res, next, id) => {
  * @return {Promise<Response>}
  */
 const create = async (req, res) => {
-    const lockerData = {
-        user: req.auth._id,
-    };
+    const lockerData = {user: req.auth._id};
     try {
-        const locker = new Locker(lockerData);
-        await locker.save();
+        const locker = await (new Locker(lockerData)).save();
         return res.status(200).json({ _id: locker._id });
     } catch (err) {
-        return res.status(400).json({ error: ErrorHandler.getErrorMessage(err) });
+        return res.status(400).json({ error: ErrorHandler.getErrorMessage(err) || err.message });
     }
 };
 
@@ -80,9 +75,7 @@ const read = (req, res) => {
     try {
         return res.status(200).json(filterLocker(req.locker));
     } catch (err) {
-        return res.status(500).json({
-            error: ErrorHandler.getErrorMessage(err),
-        });
+        return res.status(500).json({ error: ErrorHandler.getErrorMessage(err) || err.message });
     }
 };
 
@@ -129,27 +122,28 @@ const update = async (req, res) => Validator.validateUpdateFields(req, res, ['na
  */
 const remove = async (req, res) => {
     try {
-        const deletedDocument = await req.locker.deleteOne();
-        return res.json(deletedDocument);
+        return res.json(await req.locker.deleteOne());
     } catch (err) {
-        return res.status(500).json({ error: ErrorHandler.getErrorMessage(err) });
+        return res.status(500).json({ error: ErrorHandler.getErrorMessage(err) || err.message });
     }
 };
 
 /**
- * @desc Filter allProducts based on req query parameters
- * @param {Request} req HTTP request object
- * @param {Array} allProducts 
- */
-const filterProductList = (req, allProducts) => {
-    let filteredProducts = JSON.parse(JSON.stringify(allProducts));
+ * @desc Retrieve all locker products associated with a locker and query based on the HTTP query params
+ * @param {Object} req HTTP request object
+\ */
+const getQueriedLockerProductList = async (req) => {
+    let filteredLockerProducts = await LockerProduct.find({locker: req.locker._id});
     if (req.query.added_after) {
-        filteredProducts = filteredProducts.filter( product => {
-            const addedDate = new Date(product.timestamp_added).getTime() / 1000;
+        filteredLockerProducts = filteredLockerProducts.filter( lockerProduct => {
+            const addedDate = new Date(lockerProduct.timestamp_locked).getTime() / 1000;
             return addedDate > req.query.added_after
         });
     }
-    return filteredProducts;
+    if (req.query.orphan) {
+        filteredLockerProducts = filteredLockerProducts.filter( lockerProduct => !lockerProduct.locker_collections || lockerProduct.locker_collections.length == 0);  
+    }
+    return filteredLockerProducts;
 }
 
 /**
@@ -160,11 +154,8 @@ const filterProductList = (req, allProducts) => {
  */
 const getProducts = async (req, res) => {
     try {
-        const productList = filterProductList(req, req.locker.products);
-        const productIds = productList.map( x => x.product);
-        const products = await Product.find().where('_id').in(productIds).exec();
-        const productsFiltered = products.map(x=>LockerServices.filterLockerProduct(x));
-        return res.status(200).json(productsFiltered);
+        const queryFilteredProducts = await getQueriedLockerProductList(req);
+        return res.status(200).json(queryFilteredProducts.map(x=>LockerServices.filterLockerProduct(x)));
     } catch (err) {
         return res.status(500).json({ error: ErrorHandler.getErrorMessage(err) || err.message });
     }
@@ -180,14 +171,13 @@ const addProduct = async (req, res) => {
     if (!req.body.product) {
         return res.status(400).json({error: LockerControllerErrors.MissingProduct})
     }
-    let alreadyExists = req.locker.products.filter(x=>x.product.toString() == req.body.product).length != 0;
-    if (alreadyExists) {
-        return res.status(400).json({error: LockerControllerErrors.ProductAlreadyInLocker});
-    }
     try {
-        const newLockerProduct = await (new LockerProduct({product: req.body.product})).save()
-        await req.locker.addLockerProduct(newLockerProduct._id)
-        return res.status(200).json({message: LockerControllerErrors.AddedProductToLocker})
+        const lockerProduct = await LockerProduct.findOne({locker: req.locker._id, product: req.body.product});
+        if (lockerProduct) {
+            return res.status(400).json({error: LockerControllerErrors.ProductAlreadyInLocker});
+        }
+        const newLockerProduct = await (new LockerProduct({locker: req.locker._id, product: req.body.product})).save()
+        return res.status(200).json({_id: newLockerProduct._id})
     } catch (err) {
         return res.status(400).json({ error: ErrorHandler.getErrorMessage(err) || err.message });
     }
@@ -200,19 +190,20 @@ const addProduct = async (req, res) => {
  * @return {Promise<Response>}
  */
 const removeProduct = async (req, res) => {
-    if (!req.body.product) {
-        return res.status(400).json({error: StaticStrings.LockerControllerErrors.MissingProduct})
-    }
-    let matchingProducts = req.locker.products.filter(x=>x.product.toString() == req.body.product);
-    if (matchingProducts.length == 0){
-        return res.status(400).json({error: StaticStrings.ProductControllerErrors.NotFoundError});
+    if (!req.body.locker_product) {
+        return res.status(400).json({error: LockerControllerErrors.MissingLockerProduct})
     }
     try {
-        
-        await req.locker.removeLockerProduct(matchingProducts[0]._id)
-        return res.status(200).json({message: "Successfully removed product from locker."})
+        const lockerProduct = await LockerProduct.findById(req.body.locker_product);
+        if (!lockerProduct) {
+            return res.status(400).json({error: `${StaticStrings.LockerProductControllerErrors.NotFoundError}: ${req.body.locker_product}`});
+        }
+        if (lockerProduct.locker.toString() != req.locker._id.toString()) {
+            return res.status(401).json({error: LockerControllerErrors.LockerProductNotPartOfYourLocker})
+        }
+        return res.status(200).json(await lockerProduct.deleteOne())
     } catch (err) {
-        return res.status(400).json({ error: ErrorHandler.getErrorMessage(err) });
+        return res.status(400).json({ error: ErrorHandler.getErrorMessage(err) || err.message });
     }
 };
 
