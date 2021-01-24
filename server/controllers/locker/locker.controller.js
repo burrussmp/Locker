@@ -212,9 +212,6 @@ const addProduct = async (req, res) => {
  * @return {Promise<Response>}
  */
 const removeProduct = async (req, res) => {
-    if (!req.body.locker_product) {
-        return res.status(400).json({error: LockerControllerErrors.MissingLockerProduct})
-    }
     try {
         return res.status(200).json(await req.locker_product.deleteOne())
     } catch (err) {

@@ -32,9 +32,9 @@ router.route('/api/lockers/:lockerId/collections/:lockerCollectionId/products/:l
     .delete(authCtrl.authorize([LockerCollectionPermissions.EditContent]), authCtrl.requireOwnership, lockerCollectionCtrl.removeProduct) // remove product from locker
 
 router.route('/api/lockers/:lockerId/collections/:lockerCollectionId/clone')
-    .get(authCtrl.authorize([LockerCollectionPermissions.Read]), lockerCollectionCtrl.clone) // Clone someone's collection
+    .post(authCtrl.authorize([LockerCollectionPermissions.Read]), lockerCollectionCtrl.clone) // Clone someone's collection
 
 router.route('/api/lockers/:lockerId/collections/:lockerCollectionId/reference')
-    .get(authCtrl.authorize([LockerCollectionPermissions.Read]), lockerCollectionCtrl.reference) // Reference someone's collection
+    .post(authCtrl.authorize([LockerCollectionPermissions.Read]), lockerCollectionCtrl.reference) // Reference someone's collection
 
 export default router;

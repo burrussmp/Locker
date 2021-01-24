@@ -39,7 +39,7 @@ export default () => {
                 lockerCollectionId1 = (await agent.post(`/api/lockers/${locker1._id}/collections?access_token=${user1.access_token}`).then(res=>res.body))._id;
                 url = url.replace(':lockerId', locker1._id).replace(':lockerCollectionId', lockerCollectionId1);
                 const product = await createProduct(ProductData[0]);
-                lockerProductId = await agent.put(`/api/lockers/${locker1._id}/collections/${lockerCollectionId1}/products?access_token=${user1.access_token}`).send({ product: product._id }).then(res=>res.body._id);
+                lockerProductId = await agent.post(`/api/lockers/${locker1._id}/collections/${lockerCollectionId1}/products?access_token=${user1.access_token}`).send({ product: product._id }).then(res=>res.body._id);
             });
             
             it('Deleting a user cleans up their collections and products', async () => {
@@ -73,7 +73,7 @@ export default () => {
             });
 
             it('Removing a product from a locker deletes the product', async () => {
-                return agent.delete(`/api/lockers/${locker1._id}/products?access_token=${user1.access_token}`).send({locker_product: lockerProductId}).then( async (res2) => {
+                return agent.delete(`/api/lockers/${locker1._id}/products/${lockerProductId}?access_token=${user1.access_token}`).then( async (res2) => {
                     res2.status.should.eql(200);
                     (await LockerProduct.countDocuments()).should.eql(0);
                 });

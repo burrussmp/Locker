@@ -231,9 +231,6 @@ const addProduct = async (req, res) => {
  * @return {Promise<Response>}
  */
 const removeProduct = async (req, res) => {
-  if (!req.body.locker_product) {
-      return res.status(400).json({error: LockerCollectionControllerErrors.MissingLockerProduct})
-  }
   try {
     await req.locker_product.updateOne({$pull: {locker_collections: req.lockerCollection._id}});
     return res.status(200).json({_id: req.locker_product._id});

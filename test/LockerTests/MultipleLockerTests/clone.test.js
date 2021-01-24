@@ -49,13 +49,13 @@ export default () => {
                 lockerCollectionId1 = (await agent.post(`/api/lockers/${locker1._id}/collections?access_token=${user1.access_token}`).then(res=>res.body))._id;
                 url = url.replace(':lockerId', locker1._id).replace(':lockerCollectionId', lockerCollectionId1);
                 const product = await createProduct(ProductData[0]);
-                await agent.put(`/api/lockers/${locker1._id}/collections/${lockerCollectionId1}/products?access_token=${user1.access_token}`).send({ product: product._id }).then(res=>res.body._id);
+                await agent.post(`/api/lockers/${locker1._id}/collections/${lockerCollectionId1}/products?access_token=${user1.access_token}`).send({ product: product._id }).then(res=>res.body._id);
                 user2 = await createUser(UserData[1]);
                 locker2 = JSON.parse(JSON.stringify(await Locker.findOne({ user: user2._id })));
             });
 
             it('Clone Locker: User 2 Successfully Clones Collection owned by User 1', async () => {
-                return agent.get(`${url}?access_token=${user2.access_token}`).then(async (res) => {
+                return agent.post(`${url}?access_token=${user2.access_token}`).then(async (res) => {
                     res.status.should.eql(200);
                     (await Locker.countDocuments()).should.eql(2);
                     (await LockerCollection.countDocuments()).should.eql(2);
@@ -69,7 +69,7 @@ export default () => {
             });
 
             it('Clone Locker: User 1 successfully clones own collection', async () => {
-                return agent.get(`${url}?access_token=${user1.access_token}`).then(async (res) => {
+                return agent.post(`${url}?access_token=${user1.access_token}`).then(async (res) => {
                     res.status.should.eql(200);
                     (await LockerCollection.countDocuments()).should.eql(2);
                     (await LockerProduct.countDocuments()).should.eql(1);
@@ -80,7 +80,7 @@ export default () => {
             });
 
             it('Clone Locker: User 2 clones collection owned by user 1 and user 2 deletes new collection (should succeed but not affect original collection)', async () => {
-                return agent.get(`${url}?access_token=${user2.access_token}`).then(async (res) => {
+                return agent.post(`${url}?access_token=${user2.access_token}`).then(async (res) => {
                     res.status.should.eql(200);
                     return agent.delete(`/api/lockers/${locker2._id}/collections/${res.body._id}?access_token=${user2.access_token}`).then( async (res2) => {
                         res2.status.should.eql(200);
@@ -94,7 +94,7 @@ export default () => {
             });
 
             it('Clone Locker: User 2 clones collection owned by user 1 and user 1 tries to delete user 2 collection (should fail)', async () => {
-                return agent.get(`${url}?access_token=${user2.access_token}`).then(async (res) => {
+                return agent.post(`${url}?access_token=${user2.access_token}`).then(async (res) => {
                     res.status.should.eql(200);
                     return agent.delete(`/api/lockers/${locker2._id}/collections/${res.body._id}?access_token=${user1.access_token}`).then( async (res2) => {
                         res2.status.should.eql(403);
@@ -104,7 +104,7 @@ export default () => {
             });
 
             it('Clone Locker: User 2 clones collection owned by user 1 and user 1 tries to delete user 2 collection (should fail)', async () => {
-                return agent.get(`${url}?access_token=${user2.access_token}`).then(async (res) => {
+                return agent.post(`${url}?access_token=${user2.access_token}`).then(async (res) => {
                     res.status.should.eql(200);
                     return agent.delete(`/api/lockers/${locker2._id}/collections/${res.body._id}?access_token=${user1.access_token}`).then( async (res2) => {
                         res2.status.should.eql(403);
@@ -114,7 +114,7 @@ export default () => {
             });
 
             it('Clone Locker: User 2 clones collection owned by user 1 and user 1 tries to delete using own locker in query (should fail)', async () => {
-                return agent.get(`${url}?access_token=${user2.access_token}`).then(async (res) => {
+                return agent.post(`${url}?access_token=${user2.access_token}`).then(async (res) => {
                     res.status.should.eql(200);
                     return agent.delete(`/api/lockers/${locker1._id}/collections/${res.body._id}?access_token=${user1.access_token}`).then( async (res2) => {
                         res2.status.should.eql(401);
@@ -124,7 +124,7 @@ export default () => {
             });
 
             it('Clone Locker: Not logged in (should fail)', async () => {
-                return agent.get(`${url}`).then(async (res) => {
+                return agent.post(`${url}`).then(async (res) => {
                     res.status.should.eql(401);
                     res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError);
                 });
@@ -132,7 +132,7 @@ export default () => {
             it('Clone Locker: Bad permissions (should fail)', async () => {
                 const role = await RBAC.findOne({ role: 'none' });
                 await User.findByIdAndUpdate(user2._id, { permissions: role._id });
-                return agent.get(`${url}?access_token=${user2.access_token}`).then(async (res) => {
+                return agent.post(`${url}?access_token=${user2.access_token}`).then(async (res) => {
                     res.status.should.eql(403);
                     res.body.error.should.eql(StaticStrings.InsufficientPermissionsError)
                 })

@@ -40,13 +40,13 @@ export default () => {
                 lockerCollectionId1 = (await agent.post(`/api/lockers/${locker1._id}/collections?access_token=${user1.access_token}`).then(res=>res.body))._id;
                 url = url.replace(':lockerId', locker1._id).replace(':lockerCollectionId', lockerCollectionId1);
                 const product = await createProduct(ProductData[0]);
-                await agent.put(`/api/lockers/${locker1._id}/collections/${lockerCollectionId1}/products?access_token=${user1.access_token}`).send({ product: product._id }).then(res=>res.body._id);
+                await agent.post(`/api/lockers/${locker1._id}/collections/${lockerCollectionId1}/products?access_token=${user1.access_token}`).send({ product: product._id }).then(res=>res.body._id);
                 user2 = await createUser(UserData[1]);
                 locker2 = JSON.parse(JSON.stringify(await Locker.findOne({ user: user2._id })));
             });
 
             it('Reference Locker: User 2 references collection owned by User 1', async () => {
-                return agent.get(`${url}?access_token=${user2.access_token}`).then(async (res) => {
+                return agent.post(`${url}?access_token=${user2.access_token}`).then(async (res) => {
                     res.status.should.eql(200);
                     (await LockerCollection.countDocuments()).should.eql(1);
                     (await LockerCollection.find({user: user1._id})).length.should.eql(1);
@@ -58,7 +58,7 @@ export default () => {
             });
 
             it('Reference Locker: User 1 references own collection which is a noop', async () => {
-                return agent.get(`${url}?access_token=${user1.access_token}`).then(async (res) => {
+                return agent.post(`${url}?access_token=${user1.access_token}`).then(async (res) => {
                     res.status.should.eql(200);
                     (await LockerCollection.find({user: user1._id})).length.should.eql(1);
                     (await Locker.findOne({user: user1._id})).locker_collections.should.include(lockerCollectionId1);
@@ -66,7 +66,7 @@ export default () => {
             });
 
             it('Reference Locker: User 2 references collection owned by user 1 and then attempts to delete collection (should fail)', async () => {
-                return agent.get(`${url}?access_token=${user2.access_token}`).then(async (res) => {
+                return agent.post(`${url}?access_token=${user2.access_token}`).then(async (res) => {
                     res.status.should.eql(200);
                     return agent.delete(`/api/lockers/${locker2._id}/collections/${lockerCollectionId1}?access_token=${user2.access_token}`).then( async (res2) => {
                         res2.status.should.eql(401);
@@ -76,7 +76,7 @@ export default () => {
             });
 
             it('Reference Locker: User 2 references collection owned by user 1 and account deleted (should keep collection)', async () => {
-                return agent.get(`${url}?access_token=${user2.access_token}`).then(async (res) => {
+                return agent.post(`${url}?access_token=${user2.access_token}`).then(async (res) => {
                     res.status.should.eql(200);
                     return agent.delete(`/api/users/${user2._id}?access_token=${user2.access_token}`).then( async (res2) => {
                         res2.status.should.eql(200);
@@ -90,7 +90,7 @@ export default () => {
             });
 
             it('Reference Locker: User 2 references collection owned by user 1 and user 1 deletes collection (should remove from user 2)', async () => {
-                return agent.get(`${url}?access_token=${user2.access_token}`).then(async (res) => {
+                return agent.post(`${url}?access_token=${user2.access_token}`).then(async (res) => {
                     res.status.should.eql(200);
                     (await Locker.findById(locker2._id)).locker_collections.length.should.eql(1);
                     return agent.delete(`/api/lockers/${locker1._id}/collections/${lockerCollectionId1}?access_token=${user1.access_token}`).then( async (res2) => {
@@ -101,7 +101,7 @@ export default () => {
             });
 
             it('Reference Locker: Not logged in (should fail)', async () => {
-                return agent.get(`${url}`).then(async (res) => {
+                return agent.post(`${url}`).then(async (res) => {
                     res.status.should.eql(401);
                     res.body.error.should.eql(StaticStrings.UnauthorizedMissingTokenError);
                 });
@@ -109,7 +109,7 @@ export default () => {
             it('Reference Locker: Bad permissions (should fail)', async () => {
                 const role = await RBAC.findOne({ role: 'none' });
                 await User.findByIdAndUpdate(user2._id, { permissions: role._id });
-                return agent.get(`${url}?access_token=${user2.access_token}`).then(async (res) => {
+                return agent.post(`${url}?access_token=${user2.access_token}`).then(async (res) => {
                     res.status.should.eql(403);
                     res.body.error.should.eql(StaticStrings.InsufficientPermissionsError)
                 })
