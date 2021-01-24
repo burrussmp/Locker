@@ -54,6 +54,28 @@ export default () => {
                 locker2 = JSON.parse(JSON.stringify(await Locker.findOne({ user: user2._id })));
             });
 
+            it('Clone Locker: User 2 Successfully Clones Collection owned by User 1 (collection has all fields filled and a product).', async () => {
+                const fields = {"name": "name", "description": "description"}
+                const hero = process.cwd() + '/test/resources/alo_yoga_logo.png'
+                const lockerCollectionId = (await agent.post(`/api/lockers/${locker1._id}/collections?access_token=${user1.access_token}`)
+                    .attach('hero', hero)
+                    .field(fields)
+                    .then(res=>res.body))._id;
+                const product = await createProduct(ProductData[1]);
+                await agent.post(`/api/lockers/${locker1._id}/collections/${lockerCollectionId}/products?access_token=${user1.access_token}`).send({ product: product._id }).then(res=>res.body._id);
+                const numMedia = await Media.countDocuments();
+                const numProducts = await LockerProduct.countDocuments();
+                return agent.post(`/api/lockers/${locker1._id}/collections/${lockerCollectionId}/clone?access_token=${user2.access_token}`).then(async (res) => {
+                    res.status.should.eql(200);
+                    res.body.locker_products.length.should.eql(1);
+                    numMedia.should.eql((await Media.countDocuments()) - 1);
+                    numProducts.should.eql((await LockerProduct.countDocuments()) - 1);
+                    const newCollection = await LockerCollection.findById(res.body._id);
+                    for (let key of Object.keys(fields)) {
+                        newCollection[key].should.eql(fields[key]);
+                    }
+                })
+            });
             it('Clone Locker: User 2 Successfully Clones Collection owned by User 1', async () => {
                 return agent.post(`${url}?access_token=${user2.access_token}`).then(async (res) => {
                     res.status.should.eql(200);

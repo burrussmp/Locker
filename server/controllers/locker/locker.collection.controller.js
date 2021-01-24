@@ -149,7 +149,9 @@ const update = async (req, res) => Validator.validateUpdateFields(req, res, ['na
       req.body.hero = allImages.hero[0]._id;
     }
     try {
-      const updatedLockerCollection = await LockerCollection.findOneAndUpdate({_id: req.lockerCollection._id}, req.body, { new: true, runValidators: true });
+      const updatedLockerCollection = await LockerCollection.findOneAndUpdate({_id: req.lockerCollection._id}, req.body, { new: true, runValidators: true })
+      .populate('hero', 'key blurhash mimetype')
+      .exec();
       return res.status(200).json(filterLockerCollection(updatedLockerCollection));
     } catch (err) {
       if (allImages.hero.length !== 0) {
@@ -265,7 +267,7 @@ const clone = async (req, res) => {
     // create a deep copy of the hero image
     if (req.lockerCollection.hero) {
       const originalMedia = await Media.findById(req.lockerCollection.hero._id);
-      const heroBuffer = (await S3Services.getMediaS3(lockerCollectionData.hero.key)).Body;
+      const heroBuffer = (await S3Services.getMediaS3(originalMedia.key)).Body;
       const newHeroMedia = await S3Services.createMedia(heroBuffer, originalMedia.mimetype, originalMedia.originalName,
         originalMedia.type, req.auth._id, originalMedia.uploadedByType);
       lockerCollectionData.hero = newHeroMedia._id;
