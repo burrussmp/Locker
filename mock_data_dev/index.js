@@ -25,27 +25,28 @@ require('@server/models/locker/lockerproduct.model');
 const productModel = require('@server/models/product.model');
 
 (async () => {
-  // console.log('Dropping data base (Users and Posts)');
-  
-  // await helper.dropDatabase(false);
 
-  // console.log('Populating with users and adding their profile photos...');
-  // for (let i = 0; i < Users.data.length; ++i) {
-  //   const user_signup = helper.filterUserData(Users.data[i]); // signup
-  //   const {_id, access_token} = await API.SignUp(user_signup);
-  //   Users.data[i]['access_token'] = access_token;
-  //   Users.data[i]['_id'] = _id;
-  //   await API.UpdateProfilePhoto(_id, access_token, Users.data[i].avatar);
-  // }
-  // console.log('Setting up following relationship');
-  // for (let i = 0; i < Users.data.length; ++i) {
-  //   const follows = Users.data[i].follows;
-  //   const token = Users.data[i].access_token;
-  //   for (const index of follows) {
-  //     const _id = Users.data[index]._id;
-  //     await API.Follow(_id, token);
-  //   }
-  // }
+  console.log('Dropping data base (Users and Posts)');
+  
+  await helper.dropDatabase(false);
+
+  console.log('Populating with users and adding their profile photos...');
+  for (let i = 0; i < Users.data.length; ++i) {
+    const user_signup = helper.filterUserData(Users.data[i]); // signup
+    const {_id, access_token} = await API.SignUp(user_signup);
+    Users.data[i]['access_token'] = access_token;
+    Users.data[i]['_id'] = _id;
+    await API.UpdateProfilePhoto(_id, access_token, Users.data[i].avatar);
+  }
+  console.log('Setting up following relationship');
+  for (let i = 0; i < Users.data.length; ++i) {
+    const follows = Users.data[i].follows;
+    const token = Users.data[i].access_token;
+    for (const index of follows) {
+      const _id = Users.data[index]._id;
+      await API.Follow(_id, token);
+    }
+  }
 
 
   const admin = await API.LoginAdminEmployee();
@@ -58,6 +59,7 @@ const productModel = require('@server/models/product.model');
     await API.CreateProductPost(allProducts[i]._id, admin.access_token);
   }
   console.log('Done!');
+
 
   // console.log('Creating posts');
   // for (let i = 0; i < Users.data.length; ++i) {

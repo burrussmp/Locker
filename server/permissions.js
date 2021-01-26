@@ -165,7 +165,10 @@ const setUpRBAC = async () => {
   try {
     await (new RBAC(UserRole)).save();
   } catch (err) {
-    // console.log(ErrorHandler.getErrorMessage(err));
+    await RBAC.findOneAndUpdate({role: UserRole.role}, {
+      level: UserRole.level,
+      permissions: UserRole.permissions,
+    });
   }
 
   const adminRole = {
@@ -177,7 +180,10 @@ const setUpRBAC = async () => {
   try {
     await (new RBAC(adminRole)).save();
   } catch (err) {
-    // console.log(ErrorHandler.getErrorMessage(err));
+    await RBAC.findOneAndUpdate({role: adminRole.role}, {
+      level: adminRole.level,
+      permissions: adminRole.permissions,
+    });
   }
 
   const supervisorRole = {
@@ -189,7 +195,10 @@ const setUpRBAC = async () => {
   try {
     await (new RBAC(supervisorRole)).save();
   } catch (err) {
-    // console.log(ErrorHandler.getErrorMessage(err));
+    await RBAC.findOneAndUpdate({role: supervisorRole.role}, {
+      level: supervisorRole.level,
+      permissions: supervisorRole.permissions,
+    });
   }
 
   const employeeRole = {
@@ -200,7 +209,10 @@ const setUpRBAC = async () => {
   try {
     await (new RBAC(employeeRole)).save();
   } catch (err) {
-    // console.log(ErrorHandler.getErrorMessage(err));
+    await RBAC.findOneAndUpdate({role: employeeRole.role}, {
+      level: employeeRole.level,
+      permissions: employeeRole.permissions,
+    });
   }
 
   const NARole = {
