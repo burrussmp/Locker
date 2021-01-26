@@ -27,6 +27,7 @@ const StaticStrings = {
   LockerControllerErrors: {
     NotFoundError: "Locker not found",
     MissingProduct: "Missing 'product' in request",
+    LockerProductNotPartOfYourLocker: "The locker product you are trying to remove is not part of you locker",
     MissingLockerProduct: "Missing 'locker_product' in request",
     LockerAlreadyExistsForUser: "Locker already exists for user.",
     ProductAlreadyInLocker: "Product already in locker",

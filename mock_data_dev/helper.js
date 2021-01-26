@@ -11,7 +11,7 @@ import RBAC from '@server/models/rbac.model';
 import permissions from '@server/permissions';
 
 
-const filterUser_signup = (data) => {
+const filterUserData = (data) => {
   return {
     username: data.username,
     first_name: data.first_name,
@@ -64,7 +64,7 @@ const update_fuzzy = async (attrs) => {
 };
 
 
-exports.filterUser_signup = filterUser_signup;
+exports.filterUserData = filterUserData;
 exports.filter_product_post_create = filter_product_post_create;
 exports.filter_comment_create = filter_comment_create;
 exports.filter_reply_create = filter_reply_create;
