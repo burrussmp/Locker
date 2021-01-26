@@ -127,7 +127,7 @@ UserSchema.pre('deleteOne', {document: true, query: false}, async function() {
 
 UserSchema.post('save', async function() {
   const locker = new mongoose.models.Locker({user: this._id});
-  await locker.save()
+  await locker.save();
 });
 
 UserSchema.pre('findOneAndUpdate', async function() {

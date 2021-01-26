@@ -29,7 +29,7 @@ router.route('/api/lockers/:lockerId/collections/:lockerCollectionId/products')
     .post(authCtrl.authorize([LockerCollectionPermissions.EditContent]), authCtrl.requireOwnership, lockerCollectionCtrl.addProduct) // Add product to collection and locker (if not already there)
 
 router.route('/api/lockers/:lockerId/collections/:lockerCollectionId/products/:lockerProductId')
-    .delete(authCtrl.authorize([LockerCollectionPermissions.EditContent]), authCtrl.requireOwnership, lockerCollectionCtrl.removeProduct) // remove product from locker
+    .delete(authCtrl.authorize([LockerCollectionPermissions.EditContent]), authCtrl.requireOwnership, lockerCollectionCtrl.removeProduct); // remove product from locker
 
 router.route('/api/lockers/:lockerId/collections/:lockerCollectionId/clone')
     .post(authCtrl.authorize([LockerCollectionPermissions.Read]), lockerCollectionCtrl.clone) // Clone someone's collection

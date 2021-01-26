@@ -33,9 +33,9 @@ app.use(helmet());
 // enable CORS - Cross Origin Resource Sharing
 app.use(cors());
 // add logger
-if (process.env.NODE_ENV == 'development') {
-  app.use(logger);
-}
+// if (process.env.NODE_ENV == 'development') {
+//   app.use(logger);
+// }
 // mount routes
 app.use('/', userRoutes);
 app.use('/', authRoutes);

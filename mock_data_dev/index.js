@@ -8,7 +8,8 @@ require('dotenv').config();
 
 const mongoURI = `mongodb+srv://MatthewBurruss:${process.env.MONGO_DEV_PASSWORD}@devopenmarket.mhwca.mongodb.net/${process.env.MONGO_DEV_DB_NAME}?retryWrites=true&w=majority`;
 mongoose.Promise = global.Promise;
-mongoose.connect(mongoURI, {useNewUrlParser: true, useCreateIndex: false, useUnifiedTopology: true, useFindAndModify: false, autoIndex: true});
+mongoose.connect(mongoURI, {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false});
+mongoose.set('useCreateIndex', true);
 mongoose.connection.on('error', () => {
   throw new Error(`unable to connect to database: ${mongoURI}`);
 });
@@ -18,7 +19,6 @@ mongoose.connection.on('error', () => {
 // const Users = require('./_user_data');
 const helper = require('./helper');
 require('@server/models/comment.model');
-require('@server/models/posts/product.post.model');
 
 (async () => {
   console.log('Dropping data base...');

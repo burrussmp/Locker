@@ -231,7 +231,7 @@ Resources:
       Name: DevEnvSecretManager
       Description: "Secret manager for all non-resource related secrets for dev environment"
       GenerateSecretString:
-        SecretStringTemplate: '{"admin_email": "matthew.p.burruss@vanderbit.edu"}'
+        SecretStringTemplate: '{"admin_email": "matthew.p.burruss@vanderbilt.edu"}'
         GenerateStringKey: "admin_password"
         PasswordLength: 32
         ExcludeCharacters: '"@/\'

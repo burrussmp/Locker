@@ -2,7 +2,9 @@ import fs from 'fs';
 import fetch from 'node-fetch';
 import FormData from 'form-data';
 
-import RBAC from './models/rbac.model';
+import RBAC from '@server/models/rbac.model';
+import Employee from '@server/models/employee.model';
+import Organization from '@server/models/organization.model'
 
 import SecretManagerServices from '@server/services/secret.manager';
 
@@ -222,40 +224,50 @@ const setUpRBAC = async () => {
     password: process.env.ADMIN_PASSWORD,
     role_type: 'admin',
   };
-
+  const employee = await Employee.findOne({email: admin.email});
+  let session;
   try {
-    await fetch(`http://${config.address}:${config.port}/api/employees?access_token=${process.env.ADMIN_SECRET}`, {
+    if (!employee) {
+      session = await fetch(`http://${config.address}:${config.port}/api/employees?access_token=${process.env.ADMIN_SECRET}`, {
+        'method': 'POST',
+        'headers': {
+          'Content-Type': 'application/json',
+        },
+        'body': JSON.stringify(admin),
+      }).then((res) => res.json());
+    } else {
+      session = await fetch(`http://${config.address}:${config.port}/auth/ent/login`, {
+        'method': 'POST',
+        'headers': {
+          'Content-Type': 'application/json',
+        },
+        'body': JSON.stringify({
+          login: admin.email,
+          password: admin.password,
+        }),
+      }).then((res) => res.json());
+    }
+    const form = new FormData();
+    form.append('media', fs.createReadStream(process.cwd() + '/images/logo.png'));
+    form.append('name', 'Locker Company');
+    form.append('url', 'https://locker.com');
+    form.append('description', 'Locker Company');
+    await fetch(`http://${config.address}:${config.port}/api/organizations?access_token=${session.access_token}`, {
+      method: 'POST',
+      body: form,
+    });
+    const organization = await Organization.findOne({name: "Locker Company"});
+    await fetch(`http://${config.address}:${config.port}/api/organizations/${organization._id.toString()}/employees?access_token=${session.access_token}`, {
       'method': 'POST',
       'headers': {
         'Content-Type': 'application/json',
       },
-      'body': JSON.stringify(admin),
-    }).then((res) => res.json()).then(async (res) => {
-      const accessToken = res.access_token;
-      const employeeId = res._id;
-      const form = new FormData();
-      form.append('media', fs.createReadStream(process.cwd() + '/images/logo.png'));
-      form.append('name', 'Locker Company');
-      form.append('url', 'https://locker.com');
-      form.append('description', 'Locker Company');
-      await fetch(`http://${config.address}:${config.port}/api/organizations?access_token=${accessToken}`, {
-        method: 'POST',
-        body: form,
-      }).then((res) => res.json()).then(async (org) => {
-        const organizationId = org._id;
-        await fetch(`http://${config.address}:${config.port}/api/organizations/${organizationId}/employees/?access_token=${accessToken}`, {
-          'method': 'POST',
-          'headers': {
-            'Content-Type': 'application/json',
-          },
-          'body': JSON.stringify({
-            employeeId: employeeId,
-          }),
-        });
-      });
+      'body': JSON.stringify({
+        employeeId: session._id,
+      }),
     });
   } catch (err) {
-    console.log(ErrorHandler.getErrorMessage(err));
+    console.log(ErrorHandler.getErrorMessage(err) || err.message);
   }
 };
 
