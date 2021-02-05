@@ -4,6 +4,7 @@
 // imports
 import Product from '@server/models/product.model';
 import Post from '@server/models/post.model';
+import LockerProduct from '@server/models/locker/lockerproduct.model';
 
 import StaticStrings from '@config/StaticStrings';
 import ErrorHandler from '@server/services/error.handler';
@@ -101,7 +102,10 @@ const getProductPost = async (req, res) => {
         },
       })
       .exec();
-    return res.status(200).json(filterProductPost(post));
+
+    const productPost = JSON.parse(JSON.stringify(filterProductPost(post)));
+    productPost.content.isLocked = (await LockerProduct.find({user: req.auth._id})).some(x => x.product == productPost.content._id);
+    return res.status(200).json(productPost)
   } catch (err) {
     return res.status(500).json({
       error: StaticStrings.UnknownServerError + '\nReason: ' + err.message,

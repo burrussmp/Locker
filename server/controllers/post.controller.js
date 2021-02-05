@@ -1,8 +1,5 @@
 /* eslint-disable new-cap */
 /* eslint-disable max-len */
-
-'use strict';
-
 // imports
 import mongoose from 'mongoose';
 import Post from '@server/models/post.model';
