@@ -53,7 +53,7 @@ const listPosts = async (req, res) => {
   try {
     const query = PostServices.queryBuilder(req);
     if (req.query.product) {
-      return ProductPostController.fetchbyProductID(req, res, req.query.product);
+      return ProductPostController.fetchByProductID(req, res, req.query.product);
     }
     const posts = await Post.find(query, null, {limit: 100}).select('_id createdAt');
     return res.status(200).json(posts);

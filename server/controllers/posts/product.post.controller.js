@@ -25,7 +25,7 @@ const filterProductPost = (productPost) => {
  * @param {string} productID The product ID
  * @return {Promise<Response>} Returns the created post
 */
-const fetchbyProductID = async (req, res, productID) => {
+const fetchByProductID = async (req, res, productID) => {
   let post;
   try {
     post = await Post.findOne({content: productID})
@@ -39,12 +39,14 @@ const fetchbyProductID = async (req, res, productID) => {
     })
     .exec();
   } catch (err) {
-    return res.status(400).json({error: error.handler.getErrorMessage(err)});
+    return res.status(400).json({error: ErrorHandler.getErrorMessage(err)});
   }
   if (!post) {
     return res.status(404).json({error: `Post unable to be find with query 'product=${productID}'`});
   }
-  return res.status(200).json(filterProductPost(post)); 
+  post = JSON.parse(JSON.stringify(filterProductPost(post)));
+  post.content.is_locked = (await LockerProduct.find({user: req.auth._id})).some(x => x.product == post.content._id);
+  return res.status(200).json(post); 
 };
 
 
@@ -104,7 +106,7 @@ const getProductPost = async (req, res) => {
       .exec();
 
     const productPost = JSON.parse(JSON.stringify(filterProductPost(post)));
-    productPost.content.isLocked = (await LockerProduct.find({user: req.auth._id})).some(x => x.product == productPost.content._id);
+    productPost.content.is_locked = (await LockerProduct.find({user: req.auth._id})).some(x => x.product == productPost.content._id);
     return res.status(200).json(productPost)
   } catch (err) {
     return res.status(500).json({
@@ -135,7 +137,7 @@ const editProductPost = async (req, res) => {
 
 export default {
   createProductPost,
-  fetchbyProductID,
+  fetchByProductID,
   getProductPost,
   editProductPost,
 };
