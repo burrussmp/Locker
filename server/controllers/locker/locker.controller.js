@@ -6,7 +6,6 @@
 
 import Locker from '@server/models/locker/locker.model';
 import LockerProduct from '@server/models/locker/lockerproduct.model';
-import Product from '@server/models/product.model';
 
 import Validator from '@server/services/validator';
 import LockerServices from '@server/services/database/locker/locker.services';

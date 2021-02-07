@@ -116,7 +116,8 @@ const getPermissionArray = (type) => {
     LockerCollectionPermissions.Create,
     LockerCollectionPermissions.Read,
     LockerCollectionPermissions.EditContent,
-    LockerCollectionPermissions.Delete
+    LockerCollectionPermissions.Delete,
+    OrganizationPermissions.Read,
   ]);
   permissions['employee'] = extend([
     UserPermissions.Read,

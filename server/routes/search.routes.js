@@ -6,21 +6,14 @@ import searchCtrl from '@server/controllers/search.controller';
 import authCtrl from '@server/controllers/auth.controller';
 import permission from '@server/permissions';
 
-const UserPermissions = permission.UserPermissions;
 // create new router
 const router = express.Router();
 
-// handle path parameters
-// router.param('userId', userCtrl.userByID)
-
-/*
-  * -------------- Search API ------------------
-  * For specific documentation, please see /Documentation/index.html
-*/
-
-
 router.route('/api/search/users')
-    .post(authCtrl.authorize([UserPermissions.Read]), searchCtrl.searchUsers);
+    .post(authCtrl.authorize([permission.UserPermissions.Read]), searchCtrl.searchUsers);
 
+router.route('/api/search/organizations')
+    .post(authCtrl.authorize([permission.OrganizationPermissions.Read]), searchCtrl.searchOrganizations);
+  
 export default router;
 
