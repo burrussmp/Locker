@@ -138,13 +138,13 @@ const read = (req, res) => {
 const list = async (req, res) => {
   const query = OrganizationServices.queryBuilder(req);
   try {
-    const organizations = await Organization.find(query).select(
-        '_id updatedAt createdAt',
-    );
+    const organizations = await Organization.find(query, '_id updatedAt createdAt logo')
+      .populate('logo', 'key blurhash mimetype')
+      .exec()
     return res.json(organizations);
   } catch (err) {
     return res.status(500).json({
-      error: ErrorHandler.getErrorMessage(err),
+      error: ErrorHandler.getErrorMessage(err) || err.message,
     });
   }
 };

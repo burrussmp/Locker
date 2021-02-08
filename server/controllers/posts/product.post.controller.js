@@ -45,7 +45,8 @@ const fetchByProductID = async (req, res, productID) => {
     return res.status(404).json({error: `Post unable to be find with query 'product=${productID}'`});
   }
   post = JSON.parse(JSON.stringify(filterProductPost(post)));
-  post.content.is_locked = await LockerProduct.find({user: req.auth._id, product: post.content._id});
+  const lockerProduct = await LockerProduct.findOne({user: req.auth._id, product: post.content._id});
+  if (lockerProduct) post.content.locker_product = lockerProduct._id;
   return res.status(200).json(post); 
 };
 
@@ -106,7 +107,8 @@ const getProductPost = async (req, res) => {
       .exec();
 
     const productPost = JSON.parse(JSON.stringify(filterProductPost(post)));
-    productPost.content.is_locked = await LockerProduct.find({user: req.auth._id, product: post.content._id});
+    const lockerProduct = await LockerProduct.findOne({user: req.auth._id, product: post.content._id});
+    if (lockerProduct) productPost.content.locker_product = lockerProduct._id;
     return res.status(200).json(productPost)
   } catch (err) {
     return res.status(500).json({

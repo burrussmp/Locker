@@ -5,7 +5,7 @@ import compress from 'compression';
 import cors from 'cors';
 import helmet from 'helmet';
 
-import logger from '@server/logger';
+// import logger from '@server/logger';
 
 import userRoutes from '@server/routes/user.routes';
 import authRoutes from '@server/routes/auth.routes';
