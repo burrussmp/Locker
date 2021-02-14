@@ -2,11 +2,13 @@
 /* eslint-disable no-invalid-this */
 /* eslint-disable max-len */
 import mongoose from 'mongoose';
+import mongoose_fuzzy_searching from 'mongoose-fuzzy-searching';
+
 import Media from '@server/models/media.model';
+import StreamClient from '@server/services/stream/client';
 import Validator from '@server/services/validator';
 import StaticStrings from '@config/StaticStrings';
 
-import mongoose_fuzzy_searching from 'mongoose-fuzzy-searching';
 
 const { OrganizationModelErrors } = StaticStrings;
 
@@ -68,6 +70,8 @@ OrgSchema.pre('deleteOne', { document: true, query: false }, async function () {
       await media.deleteOne();
     }
   }
+  // clean the organization in stream
+  await StreamClient.clean.Organization(this._id);
 });
 
 

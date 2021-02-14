@@ -80,12 +80,23 @@ const getAWSConfig = () => {
   }
 };
 
+const getStreamConfig = () => {
+  if (process.env.NODE_ENV == 'development') {
+    return {
+      key: process.env.STREAM_API_KEY_DEV,
+      secret: process.env.STREAM_API_SECRET_DEV,
+      appId: process.env.STREAM_APP_ID_DEV,
+    }
+  }
+};
+
 const config = {
   env: process.env.NODE_ENV,
   port: getPort(),
   address: getIPAddress(),
   mongoUri: getMongodbURI(),
   aws_config: getAWSConfig(),
+  stream: getStreamConfig(),
 };
 
 export default config;

@@ -3,11 +3,13 @@
 'use strict';
 
 import mongoose from 'mongoose';
+import stream from 'getstream-node';
 // eslint-disable-next-line camelcase
 import mongoose_fuzzy_searching from 'mongoose-fuzzy-searching';
 
 import CognitoAPI from '@server/services/cognito';
 import Validator from '@server/services/validator';
+import StreamClient from '@server/services/stream/client';
 import StaticStrings from '@config/StaticStrings';
 
 
@@ -117,6 +119,9 @@ UserSchema.pre('deleteOne', {document: true, query: false}, async function() {
     console.log(err);
   }
 
+  // clean all activities with this user's foreign ID
+  await StreamClient.clean.User(this._id);
+
   // clean up comments I DON'T THINK WE SHOULD DO THIS TBH
   // let comments = await mongoose.models.Comment.find({'postedBy':this._id});
   // for (let comment of comments){
@@ -187,5 +192,7 @@ UserSchema.plugin(mongoose_fuzzy_searching, {
     },
   },
 });
+
+stream.mongoose.setupMongoose(mongoose);
 
 export default mongoose.model('User', UserSchema);
