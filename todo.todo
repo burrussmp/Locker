@@ -1,13 +1,2 @@
-1. Add unit tests for querying list posts by product ID
-1a. Cover unit test if the post doesn't exist
-2. Add visibility to product post and product
-3. Update all update fields using the validator in Validator.js
-4. Whenever an ID is part of a field, add a validator on the path that ensures
-that the ID exists
-5. Add tests on update if media is updated that cleaned up
-
-
-Add unit tests to delete of locker when collections and products
-Add unit test to collection when update that old media is deleted.
-
-Update from findByIdAndUpdate to updateOne
+1. Add unit tests for offset and limit
+2. Consider do we need to still store the follower relationship on our end? Yes?

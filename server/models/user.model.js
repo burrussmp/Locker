@@ -99,6 +99,7 @@ UserSchema.pre('deleteOne', {document: true, query: false}, async function() {
   }
   // clean up followers/following
   for (const followingID of this.following) {
+    await StreamClient.feed.unfollow.User(this._id, followingID);
     // remove from list of who they follow
     await mongoose.models.User.findOneAndUpdate(
         {_id: followingID},
@@ -121,6 +122,7 @@ UserSchema.pre('deleteOne', {document: true, query: false}, async function() {
 
   // clean all activities with this user's foreign ID
   await StreamClient.clean.User(this._id);
+  
 
   // clean up comments I DON'T THINK WE SHOULD DO THIS TBH
   // let comments = await mongoose.models.Comment.find({'postedBy':this._id});
