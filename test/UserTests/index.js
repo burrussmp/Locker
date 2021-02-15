@@ -7,10 +7,10 @@ import UpdatePasswordTest from './change.password.test';
 import FollowTest from './follow.test';
 
 const userTests = () => {
-  describe('PATH: \'/api/users/\'', BaseTest);
-  describe('PATH: \'/api/users/:userId\'', ProfileTest);
-  describe('PATH /api/users/:userId/avatar', AvatarTest);
-  describe('PATH /api/users/:userId/password', UpdatePasswordTest);
+  // describe('PATH: \'/api/users/\'', BaseTest);
+  // describe('PATH: \'/api/users/:userId\'', ProfileTest);
+  // describe('PATH /api/users/:userId/avatar', AvatarTest);
+  // describe('PATH /api/users/:userId/password', UpdatePasswordTest);
   describe('PATH /api/users/:userId/follow', FollowTest);
 };
 

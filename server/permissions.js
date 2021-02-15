@@ -36,6 +36,7 @@ const UserPermissions = {
   Read: 'user:read', // Read information from user
   EditContent: 'user:edit', // Edit only editable content (like caption, etc.)
   ChangePassword: 'user:change_password', // able to change password
+  Follow: 'user:follow',
 };
 
 // all permissions associated with User
@@ -53,6 +54,7 @@ const OrganizationPermissions = {
   Delete: 'organization:delete',
   Read: 'organization:read',
   EditContent: 'organization:edit',
+  Follow: 'organization:follow',
   EditAccessList: 'organization:edit_access_list',
   AddEmployee: 'organization:add_employee',
   DeleteEmployee: 'organization:delete_employee',
@@ -102,6 +104,7 @@ const getPermissionArray = (type) => {
     UserPermissions.Delete,
     UserPermissions.Read,
     UserPermissions.ChangePassword,
+    UserPermissions.Follow,
     CommentPermissions.Create,
     CommentPermissions.EditContent,
     CommentPermissions.Read,
@@ -118,6 +121,7 @@ const getPermissionArray = (type) => {
     LockerCollectionPermissions.EditContent,
     LockerCollectionPermissions.Delete,
     OrganizationPermissions.Read,
+    OrganizationPermissions.Follow,
   ]);
   permissions['employee'] = extend([
     UserPermissions.Read,

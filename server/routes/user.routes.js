@@ -4,6 +4,8 @@
 import express from 'express';
 import userCtrl from '@server/controllers/user.controller';
 import authCtrl from '@server/controllers/auth.controller';
+import relationshipCtrl from '@server/controllers/relationship.controller';
+
 import permission from '@server/permissions';
 
 const UserPermissions = permission.UserPermissions;
@@ -37,8 +39,8 @@ router.route('/api/users/:userId/password')
     .put(authCtrl.authorize([UserPermissions.ChangePassword]), authCtrl.requireOwnership, userCtrl.changePassword);
 
 router.route('/api/users/:userId/follow')
-    .get(authCtrl.authorize([UserPermissions.Read]), userCtrl.listFollow)
-    .put(authCtrl.authorize([UserPermissions.EditContent]), userCtrl.Follow)
-    .delete(authCtrl.authorize([UserPermissions.EditContent]), userCtrl.Unfollow);
+    .get(authCtrl.authorize([UserPermissions.Follow]), relationshipCtrl.listFollow('User'))
+    .put(authCtrl.authorize([UserPermissions.Follow]), relationshipCtrl.follow('User'))
+    .delete(authCtrl.authorize([UserPermissions.Follow]), relationshipCtrl.unfollow('User'));
 
 export default router;

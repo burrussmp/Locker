@@ -7,6 +7,8 @@ import stream from 'getstream-node';
 // eslint-disable-next-line camelcase
 import mongoose_fuzzy_searching from 'mongoose-fuzzy-searching';
 
+import RelationshipModels from '@server/models/relationship.models';
+
 import CognitoAPI from '@server/services/cognito';
 import Validator from '@server/services/validator';
 import StreamClient from '@server/services/stream/client';
@@ -60,8 +62,8 @@ const UserSchema = new mongoose.Schema(
         maxlength: [300, 'Bio cannot exceed 300 characters'],
       },
       profile_photo: {type: mongoose.Schema.ObjectId, ref: 'Media'},
-      following: [{type: mongoose.Schema.ObjectId, ref: 'User'}],
-      followers: [{type: mongoose.Schema.ObjectId, ref: 'User'}],
+      following: [RelationshipModels.Following],
+      followers: [RelationshipModels.Follower],
     },
     {
       timestamps: {
@@ -97,13 +99,24 @@ UserSchema.pre('deleteOne', {document: true, query: false}, async function() {
   for (const post of posts) {
     await post.deleteOne();
   }
-  // clean up followers/following
-  for (const followingID of this.following) {
-    await StreamClient.feed.unfollow.User(this._id, followingID);
+
+  // clean up following: Update their followers
+  for (const following of this.following) {
+    await StreamClient.feed.unfollow[following.type](this._id.toString(), following.actor.toString());
     // remove from list of who they follow
-    await mongoose.models.User.findOneAndUpdate(
-        {_id: followingID},
-        {$pull: {followers: this._id}},
+    await mongoose.models[following.type].findOneAndUpdate(
+        {_id: following.actor},
+        {$pull: {followers: {actor: this._id}}},
+    );
+  }
+
+  // clean up followers: Update their following
+  for (const follower of this.followers) {
+    await StreamClient.feed.unfollow.User(follower.actor.toString(), this._id.toString());
+    // remove from list of who they follow
+    await mongoose.models[follower.type].findOneAndUpdate(
+        {_id: follower.actor},
+        {$pull: {following: {actor: this._id}}},
     );
   }
 
@@ -121,7 +134,7 @@ UserSchema.pre('deleteOne', {document: true, query: false}, async function() {
   }
 
   // clean all activities with this user's foreign ID
-  await StreamClient.clean.User(this._id);
+  await StreamClient.clean.User(this._id.toString());
   
 
   // clean up comments I DON'T THINK WE SHOULD DO THIS TBH

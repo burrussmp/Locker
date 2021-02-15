@@ -15,6 +15,12 @@ const StaticStrings = {
   UnauthorizedAdminRequired: 'This request requires admin access',
   UnknownServerError: 'ServerError: Unknown',
   NotImplementedError: 'Not Implemented',
+  RelationshipControllerErrors: {
+    MissingLeftOrRightSide: 'Server Error: Missing either ID of follower or following.',
+    FollowSelfError: 'Cannot follow yourself',
+    UnfollowSelfError: 'Cannot unfollow yourself',
+
+  },
   AuthErrors: {
     ForgotPasswordMissingEmail: 'Bad Request: Must include an email field to reset password',
     ConfirmPasswordMissingFields: 'Bad Request: Missing required fields',
@@ -74,9 +80,6 @@ const StaticStrings = {
   UserControllerErrors: {
     BadUploadSuccessfulDelete: 'ServerError: Unable to update profile picture but clean up S3 worked.',
     ProfilePhotoNotFound: 'Profile photo not found',
-    FollowSelfError: 'Cannot follow yourself',
-    UnfollowSelfError: 'Cannot unfollow yourself',
-    FollowingMissingID: 'Missing either ID of follower or following. This is actually a server error.',
   },
   MediaModelErrors: {
     KeyRequired: 'S3 file key is required',

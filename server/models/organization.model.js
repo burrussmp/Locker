@@ -4,6 +4,8 @@
 import mongoose from 'mongoose';
 import mongoose_fuzzy_searching from 'mongoose-fuzzy-searching';
 
+import RelationshipModels from '@server/models/relationship.models';
+
 import Media from '@server/models/media.model';
 import StreamClient from '@server/services/stream/client';
 import Validator from '@server/services/validator';
@@ -36,6 +38,8 @@ const OrgSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    following: [RelationshipModels.Following],
+    followers: [RelationshipModels.Follower],
   },
   {
     timestamps: {
@@ -70,6 +74,27 @@ OrgSchema.pre('deleteOne', { document: true, query: false }, async function () {
       await media.deleteOne();
     }
   }
+
+  // clean up following: Update their followers
+  for (const following of this.following) {
+    await StreamClient.feed.unfollow[following.type](this._id.toString(), following.actor.toString());
+    // remove from list of who they follow
+    await mongoose.models[following.type].findOneAndUpdate(
+        {_id: following.actor},
+        {$pull: {followers: {actor: this._id}}},
+    );
+  }
+
+  // clean up followers: Update their following
+  for (const follower of this.followers) {
+    await StreamClient.feed.unfollow.Organization(follower.actor.toString(), this._id.toString());
+    // remove from list of who they follow
+    await mongoose.models[follower.type].findOneAndUpdate(
+        {_id: follower.actor},
+        {$pull: {following: {actor: this._id}}},
+    );
+  }
+
   // clean the organization in stream
   await StreamClient.clean.Organization(this._id);
 });

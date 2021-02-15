@@ -11,7 +11,6 @@ import Media from '@server/models/media.model';
 import authController from '@server/controllers/auth.controller';
 import mediaController from '@server/controllers/media.controller';
 
-import StreamClient from '@server/services/stream/client';
 import S3Services from '@server/services/s3';
 import CognitoAPI from '@server/services/cognito';
 
@@ -47,8 +46,6 @@ const filterUser = (user) => {
 const userByID = async (req, res, next, id) => {
   try {
     const user = await User.findById(id)
-        .populate('following', '_id name')
-        .populate('followers', '_id name')
         .populate('profile_photo', 'key blurhash mimetype')
         .exec();
     if (!user) {
@@ -187,7 +184,7 @@ const remove = async (req, res) => {
     const deletedUser = await req.profile.deleteOne();
     return res.json(deletedUser);
   } catch (err) {
-    return res.status(500).json({error: ErrorHandler.getErrorMessage(err)});
+    return res.status(500).json({error: ErrorHandler.getErrorMessage(err)} || err.message);
   }
 };
 
@@ -306,90 +303,6 @@ const removeProfilePhoto = async (req, res) => {
   }
 };
 
-/**
- * @desc Get all the followers of a user
- * @param {Request} req HTTP request object
- * @param {Response} res HTTP response object
- * @return {Promise<Response>} A 200 if success else an error message
-*/
-const listFollow = async (req, res) => {
-  const offset = req.query.offset || 0;
-  const limit = req.query.limit || 25;
-  try {
-    const query = {'_id': req.params.userId};
-    const user = await User.findById(query)
-        .populate('following', '_id username')
-        .populate('followers', '_id username')
-        .exec();
-    const response = {
-      'following': user.following.slice(offset, limit),
-      'followers': user.followers.slice(offset, limit),
-    };
-    return res.status(200).json(response);
-  } catch (err) {
-    return res.status(400).json({error: ErrorHandler.getErrorMessage(err)});
-  }
-};
-
-/**
- * @desc Follow a user
- * @param {Request} req HTTP request object
- * @param {Response} res HTTP response object
- * @return {Promise<Response>} A 200 if success else an error message
-*/
-const Follow = async (req, res) => {
-  if (!req.auth._id || !req.params.userId) {
-    return res.status(400).json({error: StaticStrings.UserControllerErrors.FollowingMissingID});
-  }
-  if (req.auth._id == req.params.userId) {
-    return res.status(422).json({error: StaticStrings.UserControllerErrors.FollowSelfError}); // cannot follow self
-  } else {
-    try {
-      await User.findOneAndUpdate({'_id': req.params.userId}, {$addToSet: {followers: req.auth._id}}); // update their account
-      try {
-        await User.findOneAndUpdate({'_id': req.auth._id}, {$addToSet: {following: req.params.userId}}); // update our account
-      } catch (err) {
-        await User.findOneAndUpdate({'_id': req.params.userId}, {$pull: {followers: req.auth._id}}); // if updating theirs succeeded, but ours didn't we have to undo ours
-        return res.status(500).json({error: StaticStrings.UnknownServerError+err.message}); // send the error
-      }
-      await StreamClient.feed.follow.User(req.auth._id, req.params.userId);
-      return res.status(200).json({message: StaticStrings.AddedFollowerSuccess});
-    } catch (err) {
-      return res.status(500).json({error: StaticStrings.UnknownServerError+err.message}); // no accounts were changed
-    }
-  }
-};
-
-/**
- * @desc Unfollow a user
- * @param {Request} req HTTP request object
- * @param {Response} res HTTP response object
- * @return {Promise<Response>} A 200 if success else an error message
-*/
-const Unfollow = async (req, res) => {
-  if (!req.auth._id || !req.params.userId) {
-    return res.status(400).json({error: StaticStrings.UserControllerErrors.FollowingMissingID});
-  }
-  if (req.auth._id == req.params.userId) {
-    return res.status(422).json({error: StaticStrings.UserControllerErrors.UnfollowSelfError}); // cannot follow self
-  } else {
-    try {
-      await User.findOneAndUpdate({'_id': req.params.userId}, {$pull: {followers: req.auth._id}}); // update their account
-      try {
-        await User.findOneAndUpdate({'_id': req.auth._id}, {$pull: {following: req.params.userId}}); // update our account
-      } catch (err) {
-        await User.findOneAndUpdate({'_id': req.params.userId}, {$addToSet: {followers: req.auth._id}}); // if updating ours failed, reset theirs
-        return res.status(500).json({error: err.message});
-      }
-      await StreamClient.feed.unfollow.User(req.auth._id, req.params.userId);
-      return res.status(200).json({message: StaticStrings.RemovedFollowerSuccess}); // else all succeeded and we are good
-    } catch (err) {
-      return res.status(500).json({error: ErrorHandler.getErrorMessage(err)});
-    }
-  }
-};
-
-
 export default {
   create,
   userByID,
@@ -401,7 +314,4 @@ export default {
   uploadProfilePhoto,
   removeProfilePhoto,
   changePassword,
-  listFollow,
-  Follow,
-  Unfollow,
 };

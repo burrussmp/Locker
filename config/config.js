@@ -87,6 +87,12 @@ const getStreamConfig = () => {
       secret: process.env.STREAM_API_SECRET_DEV,
       appId: process.env.STREAM_APP_ID_DEV,
     }
+  } else if (process.env.NODE_ENV == 'test') {
+    return {
+      key: process.env.STREAM_API_KEY_TEST,
+      secret: process.env.STREAM_API_SECRET_TEST,
+      appId: process.env.STREAM_APP_ID_TEST,
+    }
   }
 };
 

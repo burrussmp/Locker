@@ -20,8 +20,8 @@ import {dropDatabase} from '@test/helper';
 // describe('Post Test', PostTest);
 // describe('Comment Test', CommentTest);
 // describe('Media Test', MediaTest);
-// describe('Organization Test', OrganizationTest);
+describe('Organization Test', OrganizationTest);
 // describe('Employee Test', EmployeeTest);
 // describe('Product Tests', ProductTest);
 // describe ('CollectionTests', CollectionTest);
-describe('Locker Test', LockerTest)
+// describe('Locker Test', LockerTest)

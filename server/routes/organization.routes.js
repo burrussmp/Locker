@@ -3,6 +3,7 @@
 import express from 'express';
 import orgCtrl from '@server/controllers/organization.controller';
 import authCtrl from '@server/controllers/auth.controller';
+import relationshipCtrl from '@server/controllers/relationship.controller';
 import permission from '@server/permissions';
 
 const OrganizationPermissions = permission.OrganizationPermissions;
@@ -27,5 +28,11 @@ router.route('/api/organizations/:organizationId/logo')
 router.route('/api/organizations/:organizationId/employees')
     .post(authCtrl.authorize([OrganizationPermissions.AddEmployee]), orgCtrl.addEmployee)
     .delete(authCtrl.authorize([OrganizationPermissions.DeleteEmployee]), orgCtrl.enforceSameOrganization, orgCtrl.removeEmployee);
+
+router.route('/api/organizations/:organizationId/follow')
+    .get(authCtrl.authorize([OrganizationPermissions.Follow]), relationshipCtrl.listFollow('Organization'))
+    .put(authCtrl.authorize([OrganizationPermissions.Follow]), relationshipCtrl.follow('Organization'))
+    .delete(authCtrl.authorize([OrganizationPermissions.Follow]), relationshipCtrl.unfollow('Organization'));
+
 
 export default router;

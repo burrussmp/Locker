@@ -52,12 +52,12 @@ const StreamClient = () => {
          * @desc Delete all activities from User feed
          * @param {string} userId The ID of the User.
          */
-        User: async (userId) => await removeAllActivities(getOrCreate(userId).User(), userId),
+        User: async (userId) => removeAllActivities(getOrCreate.User(userId), userId),
         /**
          * @desc Delete all activities from Organization feed
          * @param {string} organizationId The ID of the organization
          */
-        Organization: async (organizationId) => await removeAllActivities(getOrCreate(organizationId).Organization(), organizationId),
+        Organization: async (organizationId) => removeAllActivities(getOrCreate.Organization(organizationId), organizationId),
     }
 
     /**
@@ -71,7 +71,7 @@ const StreamClient = () => {
          * @param {string} userB A user ID
          */
         User: async (userA, userB) => {
-            await getOrCreate.User(userA).follow('user', userB); 
+            return getOrCreate.User(userA).follow('user', userB); 
         },
         /**
          * @desc user follows organization feed
@@ -79,7 +79,7 @@ const StreamClient = () => {
          * @param {string} organization An organization ID
          */
         Organization: async (user, organization) => {
-            await getOrCreate.User(user).follow('organization', organization); 
+            return getOrCreate.User(user).follow('organization', organization); 
         }
     }
 
@@ -94,7 +94,7 @@ const StreamClient = () => {
          * @param {string} userB A user ID
          */
         User: async (userA, userB) => {
-            await getOrCreate.User(userA).unfollow('user', userB); 
+            return getOrCreate.User(userA).unfollow('user', userB); 
         },
         /**
          * @desc user unfollows organization feed
@@ -102,7 +102,7 @@ const StreamClient = () => {
          * @param {string} organization An organization ID
          */
         Organization: async (user, organization) => {
-            await getOrCreate.User(user).unfollow('organization', organization); 
+            return getOrCreate.User(user).unfollow('organization', organization); 
         }
     }
 
@@ -117,7 +117,7 @@ const StreamClient = () => {
          * @param {object} options Options like limit, offset, etc
          */
         User: async (user, options = {}) => {
-            await getOrCreate.User(user).followers(options); 
+            return getOrCreate.User(user).followers(options); 
         },
         /**
          * @desc Get organization followers
@@ -125,7 +125,7 @@ const StreamClient = () => {
          * @param {object} options Options like limit, offset, etc
          */
         Organization: async (organization, options = {}) => {
-            await getOrCreate.Organization(organization).followers(options); 
+            return getOrCreate.Organization(organization).followers(options); 
         },
     }
 
@@ -139,7 +139,7 @@ const StreamClient = () => {
          * @param {object} options Options like limit, offset, etc
          */
         User: async (user, options = {}) => {
-            await getOrCreate.User(user).following(options); 
+            return getOrCreate.User(user).following(options); 
         },
     }
 
@@ -154,7 +154,7 @@ const StreamClient = () => {
          * @param {object} options Options followerSlugs or followingSlugs
          */
         User: async (user, options = {}) => {
-            await getOrCreate.User(user).followStats(options); 
+            return getOrCreate.User(user).followStats(options); 
         },
         /**
          * @desc Get the following stats for a organization
@@ -162,7 +162,7 @@ const StreamClient = () => {
          * @param {object} options Options followerSlugs or followingSlugs
          */
         Organization: async (organization, options = {}) => {
-            await getOrCreate.Organization(organization).followers(options); 
+            return getOrCreate.Organization(organization).followers(options); 
         },
     }
 
