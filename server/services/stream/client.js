@@ -166,14 +166,50 @@ const StreamClient = () => {
         },
     }
 
+    /**
+     * @property {function} User Activity adder for User
+     * @property {function} Organization Activity adder for Organization
+     */
+    const addActivity = {
+        User: async (user, activity) => getOrCreate.User(user).addActivity(activity),
+        Organization: async (organization, activity) => getOrCreate.Organization(organization).addActivity(activity),
+    }
+
+    /**
+     * @property {function} User Activity remover for User
+     * @property {function} Organization Activity remover for Organization
+     */
+    const removeActivity = {
+        User: async (user, type, foreignId) => getOrCreate.User(user).removeActivity({ foreignId: `${type}:${foreignId}` }),
+        Organization: async (organization, type, foreignId) => getOrCreate.Organization(
+            organization).removeActivity({ foreignId: `${type}:${foreignId}` }),
+    }
+
+    /**
+     * @property {function} User Activity updater for User
+     * @property {function} Organization Activity updater for Organization
+     */
+    const updateActivity = {
+        User: async (user, type, foreignId, update) => getOrCreate.User(
+            user).removeActivity({ foreignId: `${type}:${foreignId}`, ...update}),
+        Organization: async (organization, type, foreignId, update) => getOrCreate.Organization(
+            organization).removeActivity({ foreignId: `${type}:${foreignId}`, ...update}),
+    }
+
     return {
         clean: clean,
+        addActivity,
         feed: {
             follow: follow,
             unfollow: unfollow,
             getFollowers: getFollowers,
             getFollowing: getFollowing,
             getFollowingStats: getFollowingStats,
+        },
+        activity: {
+            add: addActivity,
+            remove: removeActivity,
+            update: updateActivity,
         }
     }
 }
