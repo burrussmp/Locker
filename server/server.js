@@ -1,6 +1,7 @@
 import config from '@config/config';
 import app from '@server/express';
 import mongoose from 'mongoose';
+import '@server/services/redis';
 
 import StaticStrings from '@config/StaticStrings';
 

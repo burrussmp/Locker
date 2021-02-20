@@ -96,6 +96,18 @@ const getStreamConfig = () => {
   }
 };
 
+const getRedisConfig = () => {
+  if (process.env.NODE_ENV == 'development') {
+    return {
+      url: 'redis://127.0.0.1:6379'
+    }
+  } else if (process.env.NODE_ENV == 'test') {
+    return {
+      url: 'redis://127.0.0.1:6379'
+    }
+  }
+};
+
 const config = {
   env: process.env.NODE_ENV,
   port: getPort(),
@@ -103,6 +115,7 @@ const config = {
   mongoUri: getMongodbURI(),
   aws_config: getAWSConfig(),
   stream: getStreamConfig(),
+  redis: getRedisConfig(),
 };
 
 export default config;

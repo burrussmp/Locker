@@ -47,9 +47,10 @@ const listFollow = (relationshipType) => {
       try {
         const query = {'_id': objectB};
         const doc = await model.findById(query)
-            .populate('following.actor')
-            .populate('followers.actor')
-            .exec();
+          .cache({ expire: 10 })
+          .populate('following.actor')
+          .populate('followers.actor')
+          .exec();
         const response = {
           'following': doc.following.slice(offset, limit),
           'followers': doc.followers.slice(offset, limit),
